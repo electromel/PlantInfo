@@ -1,0 +1,185 @@
+package com.plantinfo.data.remote.ai
+
+import com.plantinfo.domain.model.PhotoOrgan
+import com.plantinfo.domain.model.SpeciesCandidate
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+/**
+ * Construction du prompt structuré envoyé aux modèles multimodaux et parsing de leur réponse JSON.
+ * Le même prompt et le même schéma sont utilisés pour Claude, Gemini et GPT afin de garantir des
+ * résultats comparables quel que soit le fournisseur.
+ */
+object AiPrompt {
+
+    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
+
+    /** Instruction système/utilisateur commune. */
+    fun buildInstruction(input: AiAnalysisInput): String {
+        val plantNet = if (input.plantNetCandidates.isEmpty()) {
+            "Aucun résultat Pl@ntNet fourni (ex. champignon, ou plante non couverte)."
+        } else {
+            input.plantNetCandidates.joinToString("\n") {
+                "- ${it.scientificName} (${it.commonName ?: "nom commun inconnu"}) : score ${it.score}/100"
+            }
+        }
+        val geo = input.gps?.let {
+            buildString {
+                append("Latitude ${it.latitude}, longitude ${it.longitude}")
+                it.altitude?.let { a -> append(", altitude ${a.toInt()} m") }
+                it.accuracyMeters?.let { acc -> append(" (précision GPS ~${acc.toInt()} m)") }
+            }
+        } ?: "Position GPS non disponible."
+
+        return """
+Tu es un expert en botanique et mycologie. Analyse la ou les photo(s) fournie(s) d'une plante,
+d'un arbre ou d'un champignon et produis une identification.
+
+Contexte :
+- Résultats de l'API Pl@ntNet (peu fiable ou absent pour les champignons) :
+$plantNet
+- Lieu de la prise de vue : $geo
+  Utilise la région, l'altitude et le climat comme critères complémentaires de plausibilité.
+
+Consignes :
+1. Croise ta propre analyse visuelle avec les résultats Pl@ntNet : valide, corrige ou complète.
+2. Pour un champignon, base-toi surtout sur l'image (Pl@ntNet n'est pas fiable ici).
+3. Évalue l'état de santé visible (décoloration, taches, flétrissement, parasites) et donne des
+   recommandations concrètes si l'état n'est pas satisfaisant.
+4. Indique si l'espèce est protégée dans la région détectée (en particulier en Suisse).
+5. Renseigne la comestibilité (edible) et la toxicité (toxic) pour l'humain : true/false si tu es sûr,
+   null si tu ne peux pas te prononcer. Dans edibilityNote, précise les parties concernées, les
+   éventuelles précautions de préparation et surtout les risques et confusions dangereuses.
+6. Donne une confiance globale sur 100 tenant compte de l'accord/désaccord avec Pl@ntNet.
+7. Si la confiance est < 60, demande UNE photo complémentaire précise (organ + raison).
+8. Fournis 2 à 3 hypothèses alternatives si tu n'es pas certain.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exact suivant :
+{
+  "commonName": "nom commun en français",
+  "scientificName": "Nom latin",
+  "confidence": 0-100,
+  "isFungus": true|false,
+  "isProtected": true|false,
+  "alternatives": [{"scientificName":"...","commonName":"...","score":0-100}],
+  "health": {"status":"description courte","isHealthy":true|false,"recommendations":["..."]},
+  "habitat": "habitat et répartition typiques",
+  "description": "description et particularités : morphologie, saisonnalité, usages",
+  "edible": true|false|null,
+  "toxic": true|false|null,
+  "edibilityNote": "précisions sur comestibilité/toxicité, parties concernées, dangers et confusions",
+  "complementaryPhoto": {"organ":"leaf|flower|fruit|bark|habit|cap|gills|other","reason":"..."} | null
+}
+""".trimIndent()
+    }
+
+    /** Parse la réponse texte du modèle en AiAnalysis. Lève AiException(PARSE) si illisible. */
+    fun parse(responseText: String): AiAnalysis {
+        val jsonText = extractJsonObject(responseText)
+            ?: throw AiException(AiFailureReason.PARSE, "Réponse IA sans objet JSON identifiable.")
+        val dto = try {
+            json.decodeFromString<AiResponseDto>(jsonText)
+        } catch (e: Exception) {
+            throw AiException(AiFailureReason.PARSE, "JSON IA invalide : ${e.message}", e)
+        }
+        return dto.toDomain()
+    }
+
+    /** Extrait le premier objet JSON équilibré du texte (les modèles ajoutent parfois du texte). */
+    private fun extractJsonObject(text: String): String? {
+        val start = text.indexOf('{')
+        if (start < 0) return null
+        var depth = 0
+        var inString = false
+        var escaped = false
+        for (i in start until text.length) {
+            val c = text[i]
+            when {
+                escaped -> escaped = false
+                c == '\\' && inString -> escaped = true
+                c == '"' -> inString = !inString
+                !inString && c == '{' -> depth++
+                !inString && c == '}' -> {
+                    depth--
+                    if (depth == 0) return text.substring(start, i + 1)
+                }
+            }
+        }
+        return null
+    }
+
+    private fun mapOrgan(value: String?): PhotoOrgan = when (value?.lowercase()) {
+        "leaf" -> PhotoOrgan.LEAF
+        "flower" -> PhotoOrgan.FLOWER
+        "fruit" -> PhotoOrgan.FRUIT
+        "bark" -> PhotoOrgan.BARK
+        "habit" -> PhotoOrgan.HABIT
+        "cap" -> PhotoOrgan.CAP
+        "gills" -> PhotoOrgan.GILLS
+        else -> PhotoOrgan.OTHER
+    }
+
+    private fun AiResponseDto.toDomain(): AiAnalysis = AiAnalysis(
+        commonName = commonName?.takeIf { it.isNotBlank() } ?: scientificName ?: "Inconnu",
+        scientificName = scientificName?.takeIf { it.isNotBlank() } ?: "Inconnu",
+        confidence = confidence?.coerceIn(0, 100) ?: 0,
+        isFungus = isFungus ?: false,
+        isProtected = isProtected ?: false,
+        alternatives = alternatives.orEmpty().mapNotNull {
+            val sci = it.scientificName ?: return@mapNotNull null
+            SpeciesCandidate(sci, it.commonName, (it.score ?: 0).coerceIn(0, 100))
+        },
+        healthStatus = health?.status ?: "État non évalué",
+        isHealthy = health?.isHealthy ?: true,
+        recommendations = health?.recommendations.orEmpty().filter { it.isNotBlank() },
+        habitat = habitat?.takeIf { it.isNotBlank() },
+        description = description?.takeIf { it.isNotBlank() },
+        edible = edible,
+        toxic = toxic,
+        edibilityNote = edibilityNote?.takeIf { it.isNotBlank() },
+        complementary = complementaryPhoto?.let {
+            val reason = it.reason ?: return@let null
+            AiComplementaryRequest(mapOrgan(it.organ), reason)
+        },
+    )
+
+    // --- DTO de parsing ---
+
+    @Serializable
+    private data class AiResponseDto(
+        val commonName: String? = null,
+        val scientificName: String? = null,
+        val confidence: Int? = null,
+        val isFungus: Boolean? = null,
+        val isProtected: Boolean? = null,
+        val alternatives: List<AltDto>? = null,
+        val health: HealthDto? = null,
+        val habitat: String? = null,
+        val description: String? = null,
+        val edible: Boolean? = null,
+        val toxic: Boolean? = null,
+        val edibilityNote: String? = null,
+        @SerialName("complementaryPhoto") val complementaryPhoto: ComplementaryDto? = null,
+    )
+
+    @Serializable
+    private data class AltDto(
+        val scientificName: String? = null,
+        val commonName: String? = null,
+        val score: Int? = null,
+    )
+
+    @Serializable
+    private data class HealthDto(
+        val status: String? = null,
+        val isHealthy: Boolean? = null,
+        val recommendations: List<String>? = null,
+    )
+
+    @Serializable
+    private data class ComplementaryDto(
+        val organ: String? = null,
+        val reason: String? = null,
+    )
+}

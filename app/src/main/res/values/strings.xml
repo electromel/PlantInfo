@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PlantInfo</string>
+
+    <!-- Navigation -->
+    <string name="nav_capture">Identifier</string>
+    <string name="nav_history">Historique</string>
+    <string name="nav_settings">Paramètres</string>
+
+    <!-- Avertissements de sécurité -->
+    <string name="fungus_safety_warning">Ne jamais consommer un champignon sur la seule base de cette identification automatique. En cas de doute, consultez un contrôle mycologique officiel ou un expert qualifié.</string>
+    <string name="protected_species_warning">Espèce potentiellement protégée dans cette région : la cueillette est déconseillée, voire interdite. Renseignez-vous auprès des autorités locales.</string>
+    <string name="range_disclaimer">Zone de répartition approximative, basée sur les observations connues (GBIF). Il ne s\'agit pas d\'une limite scientifique ou légale précise.</string>
+
+    <!-- Messages génériques -->
+    <string name="no_ai_key_message">Aucune clé IA configurée : seul le résultat brut de Pl@ntNet est affiché (sans diagnostic de santé ni informations complémentaires). Ajoutez une clé dans les paramètres pour l\'analyse complète.</string>
+    <string name="low_confidence_hint">Identification peu fiable. Ajoutez une photo complémentaire pour affiner le résultat.</string>
+</resources>

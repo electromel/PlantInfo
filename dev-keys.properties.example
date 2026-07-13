@@ -1,0 +1,16 @@
+# Modèle de clés API par défaut pour le développement (§3.2).
+#
+# 1. Copiez ce fichier en « dev-keys.properties » (à la racine, à côté de local.properties).
+# 2. Renseignez vos clés ci-dessous.
+# 3. Le fichier dev-keys.properties est gitignoré : il n'est jamais versionné.
+#
+# Au premier lancement, si aucune clé n'est encore enregistrée dans le stockage chiffré pour
+# un fournisseur, la valeur ci-dessous sert à pré-remplir les paramètres. Une clé déjà saisie
+# manuellement n'est jamais écrasée.
+#
+# Seule PLANTNET_API_KEY est nécessaire au minimum (première étape d'identification des plantes).
+
+PLANTNET_API_KEY=
+CLAUDE_API_KEY=
+GEMINI_API_KEY=
+OPENAI_API_KEY=

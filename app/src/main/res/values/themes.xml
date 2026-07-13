@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Thème de base appliqué avant que Compose ne prenne le relais.
+         DayNight + edge-to-edge ; les couleurs réelles sont définies dans le thème Compose. -->
+    <style name="Theme.PlantInfo" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/surface</item>
+    </style>
+</resources>

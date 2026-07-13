@@ -1,0 +1,21 @@
+*.iml
+.gradle/
+/local.properties
+/dev-keys.properties
+/.idea/
+
+# Signature de publication — NE JAMAIS versionner (secret critique + clé de signature)
+/keystore.properties
+*.jks
+*.keystore
+.DS_Store
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Journal de développement — mémoire de projet, non incluse dans le build de l'app.
+# Décommentez la ligne suivante si vous ne souhaitez pas versionner le journal.
+# /log/
