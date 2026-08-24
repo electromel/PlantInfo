@@ -107,7 +107,7 @@ warnings du compilateur Kotlin et d'AGP.
 ## Structure
 
 ```
-app/src/main/java/com/plantinfo/
+app/src/main/java/ch/electromel/plantinfo/
 ├── data/
 │   ├── db/       Room (entité, DAO, base, migrations, convertisseurs)
 │   ├── keys/     ApiKeyStore chiffré, guides d'obtention, surveillance de validité

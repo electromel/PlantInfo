@@ -32,11 +32,11 @@ val keystoreProps = Properties().apply {
 val hasReleaseSigning = keystoreProps.getProperty("storeFile")?.isNotBlank() == true
 
 android {
-    namespace = "com.plantinfo"
+    namespace = "ch.electromel.plantinfo"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.plantinfo"
+        applicationId = "ch.electromel.plantinfo"
         minSdk = 29
         targetSdk = 35
         // versionCode : strictement croissant, un numéro ne peut jamais être réutilisé sur la Console.

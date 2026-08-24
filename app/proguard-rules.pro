@@ -2,10 +2,10 @@
 # mais on conserve les annotations de sérialisation kotlinx au cas où la minification serait activée.
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
--keep,includedescriptorclasses class com.plantinfo.**$$serializer { *; }
--keepclassmembers class com.plantinfo.** {
+-keep,includedescriptorclasses class ch.electromel.plantinfo.**$$serializer { *; }
+-keepclassmembers class ch.electromel.plantinfo.** {
     *** Companion;
 }
--keepclasseswithmembers class com.plantinfo.** {
+-keepclasseswithmembers class ch.electromel.plantinfo.** {
     kotlinx.serialization.KSerializer serializer(...);
 }

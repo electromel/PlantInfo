@@ -38,7 +38,7 @@ $jbr = "C:\Program Files\Android\Android Studio\jbr"
 
 # Un seul test / une seule classe
 & C:\DEV\PlantInfo\gradlew.bat -p C:\DEV\PlantInfo "-Dorg.gradle.java.installations.paths=$jbr" `
-    :app:testDebugUnitTest --tests "com.plantinfo.domain.ConfidenceEngineTest"
+    :app:testDebugUnitTest --tests "ch.electromel.plantinfo.domain.ConfidenceEngineTest"
 ```
 
 Si `gradlew.bat`/`gradle-wrapper.jar` manquent, les régénérer avec une distribution Gradle en cache
