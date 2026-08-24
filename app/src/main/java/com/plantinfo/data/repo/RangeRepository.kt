@@ -28,7 +28,11 @@ class RangeRepository @Inject constructor(
     private val json = Json { ignoreUnknownKeys = true }
     private val pointSerializer = ListSerializer(LatLng.serializer())
 
-    suspend fun getRange(scientificName: String): SpeciesRange {
+    /**
+     * @param gbifKey clé taxonomique GBIF si Pl@ntNet l'a rapportée pour cette espèce (évite la
+     *   résolution par nom côté GbifClient). Le cache reste indexé par nom scientifique.
+     */
+    suspend fun getRange(scientificName: String, gbifKey: Long? = null): SpeciesRange {
         val key = scientificName.trim()
         if (key.isBlank()) return SpeciesRange(scientificName, emptyList(), hasData = false)
 
@@ -41,7 +45,7 @@ class RangeRepository @Inject constructor(
 
         // 2. Récupération réseau ; en cas d'échec, retomber sur un cache périmé s'il existe.
         return try {
-            val range = gbifClient.fetchRange(key)
+            val range = gbifClient.fetchRange(key, gbifKey)
             dao.upsert(range.toEntity())
             range
         } catch (e: Exception) {

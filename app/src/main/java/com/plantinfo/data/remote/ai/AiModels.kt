@@ -1,9 +1,12 @@
 package com.plantinfo.data.remote.ai
 
 import com.plantinfo.domain.model.AiProviderType
+import com.plantinfo.domain.model.CareTask
 import com.plantinfo.domain.model.GpsLocation
 import com.plantinfo.domain.model.PhotoOrgan
 import com.plantinfo.domain.model.SpeciesCandidate
+import com.plantinfo.domain.model.SpeciesUse
+import com.plantinfo.domain.model.TokenUsage
 import com.plantinfo.domain.model.label
 
 /** Une image à analyser : octets JPEG/WebP + type MIME. */
@@ -41,10 +44,30 @@ data class AiAnalysis(
     val recommendations: List<String>,
     val habitat: String?,
     val description: String?,
+    val matureHeight: String?,    // hauteur à maturité (texte libre avec unité), null si non évaluable
+    val matureDiameter: String?,  // diamètre / étalement à maturité
+    val timeToMaturity: String?,  // temps pour atteindre la maturité
     val edible: Boolean?,
     val toxic: Boolean?,
     val edibilityNote: String?,
+    val careCalendar: List<CareTask>, // plantation, taille, arrosage, récolte… ; vide si non évaluable
+    val uses: List<SpeciesUse>,       // usages documentés par domaine ; vide si aucun connu
+    val symbolism: String?,           // signification symbolique/culturelle, null si aucune
     val complementary: AiComplementaryRequest?,
+    // Jetons consommés par l'appel, rapportés par le fournisseur. Renseigné par le client HTTP
+    // après le parsing du JSON métier (AiPrompt.parse n'en sait rien) ; null si le fournisseur
+    // ne rapporte rien d'exploitable.
+    val usage: TokenUsage? = null,
+)
+
+/**
+ * Réponse à une question libre : le texte et, quand le fournisseur le rapporte, les jetons
+ * consommés. Un simple String ne suffisait plus dès lors que le coût de chaque question doit être
+ * affiché à l'utilisateur.
+ */
+data class AiAnswer(
+    val text: String,
+    val usage: TokenUsage?,
 )
 
 /** Motif d'échec d'un fournisseur IA, utilisé par l'orchestrateur de repli et les messages (§3.1). */

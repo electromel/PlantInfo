@@ -17,7 +17,7 @@ interface AiProvider {
      * Répond à une question libre (texte seul) sur une plante déjà identifiée. Le [prompt] contient
      * déjà le contexte de la plante et le lieu de prise de vue. Lève AiException en cas d'échec.
      */
-    suspend fun ask(prompt: String, apiKey: String): String
+    suspend fun ask(prompt: String, apiKey: String): AiAnswer
 
     /** Appel de test léger pour valider une clé depuis l'écran Paramètres (§3.1). */
     suspend fun testKey(apiKey: String): Boolean

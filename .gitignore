@@ -10,6 +10,7 @@
 *.keystore
 .DS_Store
 /build
+/.kotlin/
 /app/build
 /captures
 .externalNativeBuild

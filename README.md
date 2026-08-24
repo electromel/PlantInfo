@@ -1,23 +1,27 @@
 # PlantInfo
 
 Application Android native d'identification de **plantes, arbres et champignons** par photo, avec
-diagnostic de santé, informations, géolocalisation et historique **100 % local**.
+diagnostic de santé, informations, géolocalisation, questions à l'IA et historique **100 % local**.
 
-> État : **Phase 2 terminée** (carte + aire de répartition) — voir le journal de développement dans
-> [`log/`](log/) et le découpage par phases plus bas.
+> État : **Phase 4 terminée** — voir le journal de développement dans [`log/`](log/) et le découpage
+> par phases plus bas.
 
 ## Fonctionnement
 
 1. On photographie (caméra) ou importe (galerie) une plante/arbre/champignon.
 2. La position GPS (latitude, longitude, altitude, précision) est récupérée comme critère
-   complémentaire.
+   complémentaire. Pour une photo importée, le géotag EXIF du fichier prime sur la position courante.
 3. Pipeline hybride :
    - **Pl@ntNet** identifie les candidats taxonomiques (plantes/arbres).
    - Une **IA générative multimodale** (Claude → Gemini → GPT, avec repli automatique) valide/corrige,
      identifie les champignons, évalue l'état de santé, enrichit et calcule un **score d'exactitude
      sur 100**.
-4. Le résultat s'affiche (score, avertissements, habitat, santé, infos, alternatives) et est
-   enregistré dans l'historique local.
+4. Le résultat s'affiche (score, avertissements, comestibilité, habitat, santé, dimensions à
+   maturité, calendrier d'entretien, usages, symbolique, alternatives, carte) et est enregistré dans
+   l'historique local.
+5. On peut poser des **questions libres à l'IA** sur la plante identifiée, au clavier ou à la voix.
+6. Après chaque identification et chaque question, l'app affiche les **jetons consommés et le coût
+   estimé** de l'appel.
 
 ## Choix techniques
 
@@ -28,10 +32,10 @@ diagnostic de santé, informations, géolocalisation et historique **100 % local
 | Base locale | Room (SQLite), photos compressées en stockage interne |
 | Réseau | OkHttp + kotlinx.serialization (appels directs, **aucun backend**) |
 | Caméra | CameraX (`LifecycleCameraController`) |
-| Localisation | FusedLocationProvider (lat/long + altitude + précision) |
+| Localisation | FusedLocationProvider (lat/long + altitude + précision) + EXIF des photos importées |
 | Clés API | `EncryptedSharedPreferences` (Android Keystore) — chiffrées au repos |
-| Carte (Phase 2) | osmdroid (OpenStreetMap, libre) |
-| File hors-ligne (Phase 3) | WorkManager |
+| Carte | osmdroid (OpenStreetMap, libre) + occurrences GBIF |
+| File hors-ligne | WorkManager |
 | minSdk / targetSdk | 29 (Android 10) / 35 |
 
 Toutes les données personnelles (photos, GPS, historique) **restent sur l'appareil** (LPD/CH). Seuls
@@ -40,17 +44,30 @@ coordonnées, sans conservation côté application.
 
 ## Clés API nécessaires
 
-Renseignées par l'utilisateur dans **Paramètres** (chiffrées localement). Boutons de raccourci vers
-les pages de création + test immédiat de validité.
+Au **premier lancement**, l'application invite à ouvrir les Paramètres et explique ce qu'est une clé
+API. L'écran Paramètres n'affiche que les clés **déjà renseignées** ; les autres s'ajoutent avec le
+bouton **« + »**. Chaque clé propose une **aide pas à pas** (rôle, coût réel, marche à suivre
+numérotée, piège classique) et un test de validité immédiat.
 
-| Fournisseur | Rôle | Obtention |
-|---|---|---|
-| **Pl@ntNet** (obligatoire) | Identification taxonomique | https://my.plantnet.org/account/settings |
-| Claude (Anthropic) | Synthèse, diagnostic, champignons | https://console.anthropic.com/settings/keys |
-| Gemini (Google) | Repli | https://aistudio.google.com/apikey |
-| GPT (OpenAI) | Repli | https://platform.openai.com/api-keys |
+| Fournisseur | Rôle | Coût | Obtention |
+|---|---|---|---|
+| **Pl@ntNet** (indispensable) | Identification taxonomique | Gratuit (quota quotidien) | https://my.plantnet.org/account/settings |
+| **Gemini** (Google) | Description, santé, champignons, Q&A | Gratuit dans le palier gratuit | https://aistudio.google.com/apikey |
+| Claude (Anthropic) | Même rôle, alternative | Payant à l'usage | https://console.anthropic.com/settings/keys |
+| GPT (OpenAI) | Même rôle, alternative | Payant à l'usage | https://platform.openai.com/api-keys |
+
+Un abonnement Claude Pro ou ChatGPT Plus **n'inclut aucun crédit API** : le compte développeur se
+crédite séparément. Le mode **« IA gratuite (Gemini seul) »**, actif par défaut, ignore Claude et GPT
+pour éviter de consommer des crédits par inadvertance.
 
 Sans clé IA, l'app affiche le résultat **Pl@ntNet brut** avec un message explicite.
+
+### Clé devenue invalide
+
+Les clés enregistrées sont retestées **une fois par jour** au lancement. Une clé refusée, un compte
+sans crédit ou un quota épuisé sont signalés au démarrage, avec le motif réel, et l'écran Paramètres
+permet de forcer une revérification. Un simple échec réseau ne fait jamais passer une clé valide pour
+invalide.
 
 ### Clés par défaut pour le développement
 
@@ -61,37 +78,47 @@ premier lancement (sans jamais écraser une clé saisie manuellement). Voir le c
 
 ## Build & installation
 
-Prérequis : **Android Studio** (Ladybug ou plus récent). Utiliser le **JDK 17 embarqué**
-d'Android Studio (Gradle 9.1 requiert au minimum JDK 17 pour s'exécuter).
+Prérequis : **Android Studio** (Ladybug ou plus récent). Le daemon Gradle exige un **JDK JetBrains
+21** (`gradle/gradle-daemon-jvm.properties` : `toolchainVendor=jetbrains`, `toolchainVersion=21`) ;
+le JBR livré avec Android Studio convient — `C:\Program Files\Android\Android Studio\jbr`.
 
 1. Ouvrir le dossier du projet dans Android Studio → il génère le wrapper Gradle et synchronise.
-   - En ligne de commande, générer le wrapper une fois avec un Gradle local : `gradle wrapper`
-     (le binaire `gradle/wrapper/gradle-wrapper.jar` n'est pas versionné dans ce dépôt).
+   - Le binaire `gradle/wrapper/gradle-wrapper.jar` n'est pas versionné ; en ligne de commande,
+     le régénérer une fois avec un Gradle local (`gradle wrapper --gradle-version 9.1.0`).
 2. Créer `local.properties` avec le chemin du SDK (`sdk.dir=...`) — Android Studio le crée
    automatiquement.
 3. (Optionnel) Renseigner `dev-keys.properties`.
-4. Compiler l'APK debug :
-   ```
-   ./gradlew assembleDebug
+4. Compiler et tester en ligne de commande (PowerShell) — passer explicitement le JBR, sinon Gradle
+   tente de télécharger un toolchain et échoue :
+   ```powershell
+   $jbr = "C:\Program Files\Android\Android Studio\jbr"
+   & .\gradlew.bat "-Dorg.gradle.java.installations.paths=$jbr" `
+       :app:compileDebugKotlin :app:testDebugUnitTest --console=plain
+   & .\gradlew.bat "-Dorg.gradle.java.installations.paths=$jbr" assembleDebug
    ```
    APK produit dans `app/build/outputs/apk/debug/`.
 5. **Installation par side-loading** sur un appareil Android 10+ (APK direct), ou via une piste de
    test interne (Google Play Internal Testing / Firebase App Distribution). Pas de publication
    publique prévue.
 
+Les tests sont des tests JVM (`src/test`, JUnit4 + MockK). Il n'y a pas de lint configuré au-delà des
+warnings du compilateur Kotlin et d'AGP.
+
 ## Structure
 
 ```
 app/src/main/java/com/plantinfo/
 ├── data/
-│   ├── db/       Room (entité, DAO, base, convertisseurs)
-│   ├── keys/     ApiKeyStore chiffré + ordre de repli
-│   ├── remote/   Pl@ntNet + clients IA (Claude/Gemini/GPT) + orchestrateur
-│   └── repo/     IdentificationRepository, HistoryRepository, mappers
-├── domain/       Modèles + ConfidenceEngine (fusion des scores)
+│   ├── db/       Room (entité, DAO, base, migrations, convertisseurs)
+│   ├── keys/     ApiKeyStore chiffré, guides d'obtention, surveillance de validité
+│   ├── prefs/    Réglages en clair (seuils de sécurité, accueil vu)
+│   ├── remote/   Pl@ntNet + clients IA (Claude/Gemini/GPT) + orchestrateur + GBIF
+│   └── repo/     IdentificationRepository, HistoryRepository, PlantQaRepository, mappers
+├── domain/       Modèles, ConfidenceEngine (fusion des scores), listes de sécurité, tarifs IA
 ├── di/           Modules Hilt (réseau, base)
-├── ui/           Écrans Compose (capture, result, history, detail, settings) + thème
-└── util/         Compression image, localisation
+├── ui/           Écrans Compose (capture, result, detail, history, settings, startup, qa, map)
+├── util/         Compression image, EXIF, localisation, export PDF, partage, notifications
+└── work/         File d'attente hors-ligne (WorkManager)
 ```
 
 ## Découpage par phases
@@ -103,8 +130,12 @@ app/src/main/java/com/plantinfo/
   + alerte espèces protégées (liste Suisse indicative).
 - **Phase 4 (faite)** : export PDF, partage natif (image + résumé), filtres historique avancés
   (période, localisés), finitions d'accessibilité.
+- **Depuis** : comestibilité/toxicité, dimensions à maturité, calendrier d'entretien, usages et
+  symbolique, questions libres à l'IA, avertissement de confusion toxique réglable, accompagnement
+  des clés API (premier lancement, aide novice, ajout par « + », alerte de clé invalide) et
+  affichage des jetons et du coût de chaque appel IA.
 
-## Limites connues (après Phase 4)
+## Limites connues
 
 - La **notification** de résultat différé ouvre l'app, sans deep-link direct vers la fiche.
 - Le **guidage des photos complémentaires** est indiqué sur la fiche mais le flux « ajouter la photo
@@ -114,8 +145,12 @@ app/src/main/java/com/plantinfo/
   fait foi.
 - L'**aire de répartition** est une enveloppe convexe approximative des occurrences GBIF (avertissement
   affiché), pas une limite scientifique/légale.
-- Modèles IA par défaut : `claude-sonnet-5`, `gemini-2.0-flash`, `gpt-4o` (modifiables dans le code
-  des clients `data/remote/ai/`).
+- Le **coût affiché** est une estimation au tarif public du modèle : les paliers gratuits, les
+  remises de cache et les tarifs d'introduction ne sont pas modélisés. La table de tarifs
+  (`domain/model/TokenUsage.kt`) est tenue à la main et doit être relue quand un fournisseur change
+  ses prix ou quand on change de modèle.
+- Modèles IA par défaut : `claude-sonnet-5`, `gemini-flash-latest`, `gpt-4o` (modifiables dans le
+  code des clients `data/remote/ai/`).
 
 ## Emplacement du projet
 
@@ -125,6 +160,6 @@ projet hors d'un dossier synchronisé évite ces conflits.
 
 ## Versions de build
 
-AGP 8.13.2 / Gradle 9.1.0 / Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / JBR 17 (Android Studio). Ne pas
+AGP 8.13.2 / Gradle 9.1.0 / Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / JBR 21 (Android Studio). Ne pas
 accepter l'auto-montée vers AGP 9 proposée par Android Studio sans migration dédiée (elle casse KSP).
-Le wrapper vise Gradle 9.1.0 ; AGP 8.13.2 reste compatible avec Gradle 9.x.
+Les versions sont centralisées dans `gradle/libs.versions.toml`.

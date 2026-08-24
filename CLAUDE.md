@@ -62,6 +62,25 @@ Pour le développement, copier `dev-keys.properties.example` → `dev-keys.prope
 versionné) : les valeurs sont injectées dans `BuildConfig` (`app/build.gradle.kts`) et **pré-remplissent**
 uniquement les clés absentes du stockage — une clé saisie manuellement n'est jamais écrasée.
 
+### Accompagnement de l'utilisateur (à ne pas contourner)
+
+- **Premier lancement** : `ui/startup/StartupViewModel` + `WelcomeDialog` invitent à renseigner les
+  paramètres. Le drapeau « accueil vu » vit dans `data/prefs/OnboardingStore`.
+- **Aide novice** : `data/keys/ApiKeyGuide.kt` porte, par fournisseur, le rôle, le coût réel et la
+  marche à suivre numérotée. C'est du **contenu**, pas du code : le mettre à jour quand l'interface
+  web d'un fournisseur change, sans toucher à `ApiProvider`.
+- **Écran Paramètres** : n'affiche que les clés **renseignées** ; les autres se choisissent derrière
+  le bouton « + » (`SettingsUiState.addable`).
+- **Clé devenue invalide** : `data/keys/KeyHealthMonitor` retente les clés stockées **une fois par
+  24 h** (`CHECK_INTERVAL_MS`) et persiste le verdict, ce qui permet de le rappeler à chaque
+  lancement sans rappeler les API. Deux règles à respecter :
+  - un échec **réseau/serveur** donne `UNVERIFIABLE` et ne dégrade jamais un verdict précédent ;
+  - tout test payé ailleurs (saisie d'une clé dans les Paramètres) est reversé au moniteur via
+    `record()` plutôt que refait.
+
+  Chaque vérification consomme une vraie requête chez le fournisseur — le palier gratuit de Gemini
+  se compte en dizaines de requêtes par jour : ne pas raccourcir l'intervalle.
+
 ## Architecture (le fil conducteur)
 
 MVVM + Repository, module unique `app`, DI **Hilt**, UI **Jetpack Compose (Material 3)**. Navigation
@@ -90,6 +109,23 @@ résultat Pl@ntNet brut ; toutes les IA en échec réseau → mise en file `work
 (WorkManager, contrainte réseau) qui rejoue via `IdentificationWorker` et notifie
 (`util/NotificationHelper`).
 
+### Jetons consommés et coût affiché
+
+Chaque appel IA rapporte sa consommation ; l'app l'affiche après l'identification (carte « Coût de
+l'identification ») et sous chaque réponse du Q&A.
+
+- Chaque client IA extrait le bloc d'usage de **sa** réponse (`usage` chez Anthropic/OpenAI,
+  `usageMetadata` chez Gemini — dont `thoughtsTokenCount`, facturé comme de la sortie) et le pose
+  dans `AiAnalysis.usage` / `AiAnswer.usage`.
+- `domain/model/TokenUsage.kt` porte le modèle (**pas** le fournisseur : les tarifs sont par modèle)
+  et la table `AiPricing`. **Le coût n'est jamais persisté** : il est recalculé à l'affichage, si
+  bien qu'une mise à jour des tarifs corrige aussi l'historique.
+- Les tarifs sont relevés à la main (aucune API de tarification n'existe) : les mettre à jour dans
+  `AiPricing.rates` **en même temps** que tout changement de modèle dans un client, sinon un modèle
+  inconnu s'affiche sans montant.
+- Un fournisseur muet sur l'usage donne `null` : on affiche alors les jetons sans montant, jamais un
+  zéro qui se lirait comme la gratuité.
+
 ### Ajouter un champ au résultat d'identification (checklist)
 
 Un champ qui traverse tout le pipeline doit être ajouté de façon cohérente à **tous** ces endroits
@@ -109,6 +145,19 @@ Un champ qui traverse tout le pipeline doit être ajouté de façon cohérente �
 
 La migration Room est le point le plus facile à oublier : sans elle l'app crashe au démarrage sur un
 appareil ayant l'ancienne base.
+
+### Avertissements de sécurité (comestibilité)
+
+Trois garde-fous cumulatifs, tous **renforçants et jamais désactivants** :
+
+- `domain/FungusChecker` et `domain/ToxicSpeciesChecker` complètent le jugement de l'IA par des
+  listes locales — un candidat Pl@ntNet arrive toujours avec `toxic == null`, sans la liste locale
+  l'hypothèse concurrente ne déclencherait jamais d'alerte.
+- `IdentificationResult.toxicConfusionWarningText()` produit **le** texte de l'avertissement, utilisé
+  identiquement par `ui/result/ToxicConfusionBanner`, `util/PdfExporter` et `util/ShareHelper` : une
+  fiche partagée ne doit jamais être plus rassurante que la fiche à l'écran.
+- Les deux seuils de déclenchement sont réglables dans les Paramètres et persistés en clair par
+  `data/prefs/SafetySettingsStore` (bornés à l'écriture **et** à la lecture).
 
 ### UI partagée Résultat / Détail
 

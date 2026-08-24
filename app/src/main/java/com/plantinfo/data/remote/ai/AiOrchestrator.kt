@@ -4,6 +4,7 @@ import android.util.Log
 import com.plantinfo.data.keys.ApiKeyStore
 import com.plantinfo.data.keys.ApiProvider
 import com.plantinfo.domain.model.AiProviderType
+import com.plantinfo.domain.model.TokenUsage
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,7 +28,12 @@ sealed interface AiOutcome {
 
 /** Résultat d'une question libre posée à l'IA sur une plante identifiée (§Q&A). */
 sealed interface AiAnswerOutcome {
-    data class Success(val answer: String, val provider: AiProviderType) : AiAnswerOutcome
+    data class Success(
+        val answer: String,
+        val provider: AiProviderType,
+        /** Jetons consommés par la question, ou null si le fournisseur n'en rapporte pas. */
+        val usage: TokenUsage?,
+    ) : AiAnswerOutcome
     data object NoProvidersConfigured : AiAnswerOutcome
     data class AllFailed(val failures: List<ProviderFailure>) : AiAnswerOutcome
 }
@@ -88,7 +94,7 @@ class AiOrchestrator @Inject constructor(
             val key = keyStore.getKey(apiProvider) ?: continue
             try {
                 val answer = provider.ask(prompt, key)
-                return AiAnswerOutcome.Success(answer, type)
+                return AiAnswerOutcome.Success(answer.text, type, answer.usage)
             } catch (e: AiException) {
                 Log.w(TAG, "Question IA — ${type.label} en échec : ${e.reason} — ${e.message}")
                 failures += ProviderFailure(type, e.reason)

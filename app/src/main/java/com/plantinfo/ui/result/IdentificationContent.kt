@@ -49,8 +49,16 @@ import com.plantinfo.domain.model.AiProviderType
 import com.plantinfo.domain.model.EdibilityVerdict
 import com.plantinfo.domain.model.IdentificationResult
 import com.plantinfo.domain.model.SpeciesCandidate
+import com.plantinfo.domain.model.TokenUsage
+import com.plantinfo.domain.model.UseDomain
+import com.plantinfo.domain.model.careCalendarLines
+import com.plantinfo.domain.model.costText
 import com.plantinfo.domain.model.edibilityVerdict
+import com.plantinfo.domain.model.iucnStatus
 import com.plantinfo.domain.model.label
+import com.plantinfo.domain.model.maturityLines
+import com.plantinfo.domain.model.tokensText
+import com.plantinfo.domain.model.usesByDomain
 import com.plantinfo.ui.components.BannerSeverity
 import com.plantinfo.ui.components.FullscreenPhotoViewer
 import com.plantinfo.ui.components.ScoreBadge
@@ -208,6 +216,9 @@ fun IdentificationContent(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+        // Confusion possible avec une espèce toxique : avertissement permanent, au même titre que
+        // celui des champignons. Seuils réglables dans les Paramètres (voir ToxicConfusionBanner).
+        ToxicConfusionBanner(result, Modifier.fillMaxWidth())
         // Divergence et faible confiance ne s'affichent plus une fois l'espèce validée par l'utilisateur.
         if (!entity.userConfirmed && result.sourcesDisagree) {
             WarningBanner(
@@ -246,6 +257,9 @@ fun IdentificationContent(
             }
         }
 
+        // Statut de conservation UICN (rapporté par Pl@ntNet, absent pour les champignons).
+        ConservationSection(result)
+
         // État de santé
         result.health?.let { health ->
             SectionCard("État de santé", Modifier.fillMaxWidth()) {
@@ -266,6 +280,14 @@ fun IdentificationContent(
                 Text(it, style = MaterialTheme.typography.bodyLarge)
             }
         }
+
+        // Dimensions à maturité (IA uniquement : absentes d'un résultat Pl@ntNet brut).
+        MaturitySection(result)
+
+        // Calendrier de plantation et d'entretien, usages et symbolique (IA uniquement).
+        CareCalendarSection(result)
+        UsesSection(result)
+        SymbolismSection(result)
 
         // Alternatives (masquées avec le détail du score quand la confiance est bonne).
         if (result.alternatives.isNotEmpty() && showScoreDetails) {
@@ -347,11 +369,159 @@ fun IdentificationContent(
                 scientificName = result.scientificName,
                 title = result.commonName,
                 modifier = Modifier.fillMaxWidth(),
+                gbifKey = result.gbifKey,
             )
         }
 
+        // Consommation de l'appel IA d'identification (jetons + coût estimé).
+        result.usage?.let { AiUsageSection("Coût de l'identification", it, result.aiProvider) }
+
         // Questions à l'IA sur la plante (texte ou dictée vocale).
         PlantQaSection(entity = entity, modifier = Modifier.fillMaxWidth())
+    }
+}
+
+/**
+ * Section « Dimensions à maturité » : taille de l'espèce adulte, pas du sujet photographié.
+ * Masquée tant qu'aucune des trois mesures n'est renseignée (résultat Pl@ntNet brut, ou IA restée
+ * prudente) plutôt que d'afficher des tirets.
+ */
+@Composable
+private fun MaturitySection(result: IdentificationResult) {
+    val lines = result.maturityLines()
+    if (lines.isEmpty()) return
+
+    SectionCard("Dimensions à maturité", Modifier.fillMaxWidth()) {
+        lines.forEach { (label, value) ->
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(label, style = MaterialTheme.typography.bodyLarge)
+                Text(value, style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium)
+            }
+        }
+        Text(
+            "Taille de l'espèce adulte, à titre indicatif : elle varie avec le sol, l'exposition et le climat.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        )
+    }
+}
+
+/**
+ * Section « Quand planter et entretenir » : opérations saisonnières (semis, taille, récolte…).
+ * Pour un champignon, l'IA y décrit la période de pousse et de cueillette. Masquée si le calendrier
+ * est vide (résultat Pl@ntNet brut, ou espèce sans conduite de culture connue).
+ */
+@Composable
+private fun CareCalendarSection(result: IdentificationResult) {
+    val tasks = result.careCalendarLines()
+    if (tasks.isEmpty()) return
+
+    val title = if (result.isFungus) "Période de pousse et de cueillette" else "Quand planter et entretenir"
+    SectionCard(title, Modifier.fillMaxWidth()) {
+        tasks.forEach { task ->
+            Column(Modifier.fillMaxWidth()) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        task.label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        task.period,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 12.dp),
+                    )
+                }
+                task.note?.takeIf { it.isNotBlank() }?.let {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    )
+                }
+            }
+        }
+        Text(
+            "Périodes indicatives pour le climat du lieu de prise de vue : décalez-les selon " +
+                "l'altitude, l'exposition et la météo de l'année.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        )
+    }
+}
+
+/**
+ * Section « Usages » : ce qui est fait de l'espèce, regroupé par domaine (santé, alimentation,
+ * cosmétique/parfumerie, chimie, artisanat…). Les usages médicinaux sont rapportés à titre
+ * documentaire : la mise en garde n'est affichée que lorsqu'ils sont réellement présents.
+ */
+@Composable
+private fun UsesSection(result: IdentificationResult) {
+    val grouped = result.usesByDomain()
+    if (grouped.isEmpty()) return
+
+    SectionCard("Usages", Modifier.fillMaxWidth()) {
+        grouped.forEach { (domain, details) ->
+            Text(domain.label, style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold)
+            details.forEach { detail ->
+                Text("•  $detail", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        if (grouped.any { (domain, _) -> domain == UseDomain.MEDICINAL }) {
+            Text(
+                "Usages traditionnels ou documentés, cités à titre informatif : ce ne sont pas des " +
+                    "conseils thérapeutiques. Demandez l'avis d'un professionnel de santé avant tout usage.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            )
+        }
+    }
+}
+
+/** Section « Symbolique » : charge culturelle, religieuse ou langage des fleurs. Masquée si aucune. */
+@Composable
+private fun SymbolismSection(result: IdentificationResult) {
+    val symbolism = result.symbolism?.takeIf { it.isNotBlank() } ?: return
+
+    SectionCard("Symbolique", Modifier.fillMaxWidth()) {
+        Text(symbolism, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+/**
+ * Section « Statut de conservation » : catégorie UICN telle que rapportée par Pl@ntNet.
+ * Distincte du drapeau « espèce protégée » : l'UICN est un statut mondial, la protection une règle
+ * locale. Les deux peuvent diverger, et les afficher séparément évite de les confondre.
+ */
+@Composable
+private fun ConservationSection(result: IdentificationResult) {
+    val status = result.iucnStatus ?: return
+
+    SectionCard("Statut de conservation", Modifier.fillMaxWidth()) {
+        Text(
+            "${status.label} (${status.code})",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (status.threatened) scoreTextColor(0) else MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            "Liste rouge UICN mondiale, via Pl@ntNet. Un statut de conservation ne vaut pas " +
+                "protection juridique : la réglementation locale peut être plus stricte.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        )
     }
 }
 
@@ -463,4 +633,50 @@ private fun ProviderChip(provider: AiProviderType) {
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(horizontal = 12.dp, vertical = 6.dp),
     )
+}
+
+/**
+ * Jetons consommés et coût estimé d'un appel IA (§3.x). Réutilisée telle quelle par la zone de
+ * questions, pour que le même appel soit chiffré de la même façon partout.
+ *
+ * Le montant est présenté comme une **estimation** : le tarif public du modèle ne tient compte ni
+ * des paliers gratuits (le mode « Gemini gratuit seul » ne coûte rien tant que le quota tient) ni
+ * des remises de cache. Un modèle sans tarif connu n'affiche que les jetons — jamais un faux zéro.
+ */
+@Composable
+fun AiUsageSection(
+    title: String,
+    usage: TokenUsage,
+    provider: AiProviderType,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+) {
+    SectionCard(title, modifier) {
+        UsageLine("Fournisseur", "${provider.label} · ${usage.model}")
+        UsageLine("Jetons", usage.tokensText())
+        UsageLine("Coût estimé", usage.costText() ?: "tarif du modèle inconnu")
+        Text(
+            "Estimation au tarif public du modèle. Nulle si votre compte est encore sur un palier " +
+                "gratuit du fournisseur.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        )
+    }
+}
+
+@Composable
+private fun UsageLine(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+        )
+    }
 }

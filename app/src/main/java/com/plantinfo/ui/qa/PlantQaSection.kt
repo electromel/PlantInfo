@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.plantinfo.data.db.IdentificationEntity
+import com.plantinfo.domain.model.costText
+import com.plantinfo.domain.model.tokensText
 import com.plantinfo.ui.components.SectionCard
 
 /**
@@ -151,6 +153,21 @@ fun PlantQaSection(
                                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                                 .padding(12.dp),
                         )
+                        // Coût de *cette* question, sous la réponse : chaque échange se paie
+                        // séparément, un total de section masquerait la question qui a coûté cher.
+                        exchange.usage?.let { usage ->
+                            Text(
+                                buildString {
+                                    append(exchange.provider.label)
+                                    append(" · ")
+                                    append(usage.tokensText())
+                                    usage.costText()?.let { append(" · ~").append(it) }
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
                     }
                 }
             }

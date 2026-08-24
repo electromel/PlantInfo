@@ -21,6 +21,7 @@ import com.plantinfo.domain.model.IdentificationRequest
 import com.plantinfo.domain.model.IdentificationResult
 import com.plantinfo.domain.model.PhotoOrgan
 import com.plantinfo.domain.model.SpeciesCandidate
+import com.plantinfo.domain.model.iucnStatus
 import com.plantinfo.util.ImageStorage
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -163,15 +164,20 @@ class IdentificationRepository @Inject constructor(
     }
 
     /**
-     * Croisement avec la liste de référence Suisse : renforce le drapeau « espèce protégée »
-     * renvoyé par l'IA (§2.4) sans jamais le désactiver.
+     * Croisement avec la liste de référence Suisse **et** le statut UICN rapporté par Pl@ntNet :
+     * renforce le drapeau « espèce protégée » renvoyé par l'IA (§2.4) sans jamais le désactiver.
+     *
+     * Une espèce menacée au sens UICN n'est pas juridiquement protégée pour autant (le statut est
+     * mondial, la protection est cantonale/fédérale) ; on l'assimile ici volontairement, l'objectif
+     * du drapeau étant de déconseiller la cueillette. Le statut UICN reste par ailleurs affiché tel
+     * quel, pour ne pas travestir les deux notions.
      */
-    private fun withProtectedFlag(result: IdentificationResult): IdentificationResult =
-        if (!result.isProtected && ProtectedSpeciesChecker.isProtected(result.scientificName)) {
-            result.copy(isProtected = true)
-        } else {
-            result
-        }
+    private fun withProtectedFlag(result: IdentificationResult): IdentificationResult {
+        if (result.isProtected) return result
+        val listed = ProtectedSpeciesChecker.isProtected(result.scientificName)
+        val threatened = result.iucnStatus?.threatened == true
+        return if (listed || threatened) result.copy(isProtected = true) else result
+    }
 
     private suspend fun persist(result: IdentificationResult, request: IdentificationRequest): Long {
         val flagged = withProtectedFlag(result)

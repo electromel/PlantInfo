@@ -2,15 +2,20 @@ package com.plantinfo.data.repo
 
 import com.plantinfo.data.db.IdentificationEntity
 import com.plantinfo.domain.model.AiProviderType
+import com.plantinfo.domain.model.CareTask
 import com.plantinfo.domain.model.GpsLocation
 import com.plantinfo.domain.model.HealthAssessment
 import com.plantinfo.domain.model.IdentificationResult
 import com.plantinfo.domain.model.SpeciesCandidate
+import com.plantinfo.domain.model.SpeciesUse
+import com.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 
 private val json = Json { ignoreUnknownKeys = true }
 private val candidateListSerializer = ListSerializer(SpeciesCandidate.serializer())
+private val careTaskListSerializer = ListSerializer(CareTask.serializer())
+private val useListSerializer = ListSerializer(SpeciesUse.serializer())
 
 /** Convertit un résultat de domaine + contexte en entité persistable. */
 fun IdentificationResult.toEntity(
@@ -38,9 +43,23 @@ fun IdentificationResult.toEntity(
     recommendations = health?.recommendations ?: emptyList(),
     habitat = habitat,
     description = description,
+    matureHeight = matureHeight,
+    matureDiameter = matureDiameter,
+    timeToMaturity = timeToMaturity,
     edible = edible,
     toxic = toxic,
     edibilityNote = edibilityNote,
+    // Une liste vide est stockée comme null : rien à afficher, et la fiche reste identique à celles
+    // d'avant la v6 au relecture.
+    careCalendarJson = careCalendar.takeIf { it.isNotEmpty() }
+        ?.let { json.encodeToString(careTaskListSerializer, it) },
+    usesJson = uses.takeIf { it.isNotEmpty() }?.let { json.encodeToString(useListSerializer, it) },
+    symbolism = symbolism,
+    gbifKey = gbifKey,
+    iucnCategory = iucnCategory,
+    usageModel = usage?.model,
+    usageInputTokens = usage?.inputTokens,
+    usageOutputTokens = usage?.outputTokens,
     alternativesJson = json.encodeToString(candidateListSerializer, alternatives),
     sourcesDisagree = sourcesDisagree,
 )
@@ -50,8 +69,18 @@ fun IdentificationEntity.toResult(): IdentificationResult {
     val alternatives = runCatching {
         json.decodeFromString(candidateListSerializer, alternativesJson)
     }.getOrDefault(emptyList())
+    val careCalendar = careCalendarJson?.let {
+        runCatching { json.decodeFromString(careTaskListSerializer, it) }.getOrNull()
+    }.orEmpty()
+    val uses = usesJson?.let {
+        runCatching { json.decodeFromString(useListSerializer, it) }.getOrNull()
+    }.orEmpty()
     val health = healthStatus?.let {
         HealthAssessment(it, isHealthy ?: true, recommendations)
+    }
+    // Le modèle suffit à identifier la mesure : sans lui, les compteurs ne seraient pas tarifables.
+    val usage = usageModel?.let {
+        TokenUsage(it, usageInputTokens ?: 0, usageOutputTokens ?: 0).takeIf { u -> !u.isEmpty }
     }
     return IdentificationResult(
         commonName = commonName,
@@ -66,11 +95,20 @@ fun IdentificationEntity.toResult(): IdentificationResult {
         health = health,
         habitat = habitat,
         description = description,
+        matureHeight = matureHeight,
+        matureDiameter = matureDiameter,
+        timeToMaturity = timeToMaturity,
         edible = edible,
         toxic = toxic,
         edibilityNote = edibilityNote,
+        careCalendar = careCalendar,
+        uses = uses,
+        symbolism = symbolism,
+        gbifKey = gbifKey,
+        iucnCategory = iucnCategory,
         sourcesDisagree = sourcesDisagree,
         complementaryPhotoRequest = null, // non persisté ; pertinent uniquement au moment de l'ID
+        usage = usage,
     )
 }
 

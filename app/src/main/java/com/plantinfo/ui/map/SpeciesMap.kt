@@ -55,12 +55,13 @@ fun SpeciesMap(
     scientificName: String,
     title: String,
     modifier: Modifier = Modifier,
+    gbifKey: Long? = null,
     viewModel: MapViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val rangeState by viewModel.range.collectAsStateWithLifecycle()
 
-    LaunchedEffect(scientificName) { viewModel.load(scientificName) }
+    LaunchedEffect(scientificName) { viewModel.load(scientificName, gbifKey) }
 
     val hasCapturePoint = latitude != null && longitude != null
 

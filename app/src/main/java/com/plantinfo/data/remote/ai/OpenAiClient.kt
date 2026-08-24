@@ -1,6 +1,7 @@
 package com.plantinfo.data.remote.ai
 
 import com.plantinfo.domain.model.AiProviderType
+import com.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -55,10 +56,10 @@ class OpenAiClient @Inject constructor(
             .build()
 
         val response = HttpSupport.execute(client, request, "GPT")
-        return AiPrompt.parse(extractText(response))
+        return AiPrompt.parse(extractText(response)).copy(usage = extractUsage(response))
     }
 
-    override suspend fun ask(prompt: String, apiKey: String): String {
+    override suspend fun ask(prompt: String, apiKey: String): AiAnswer {
         val body = buildJsonObject {
             put("model", MODEL)
             put("max_tokens", 1000)
@@ -77,7 +78,8 @@ class OpenAiClient @Inject constructor(
             .header("content-type", HttpSupport.JSON_MEDIA)
             .post(body.toString().toRequestBody())
             .build()
-        return extractText(HttpSupport.execute(client, request, "GPT")).trim()
+        val response = HttpSupport.execute(client, request, "GPT")
+        return AiAnswer(extractText(response).trim(), extractUsage(response))
     }
 
     override suspend fun testKey(apiKey: String): Boolean {
@@ -98,6 +100,18 @@ class OpenAiClient @Inject constructor(
             .build()
         HttpSupport.execute(client, request, "GPT")
         return true
+    }
+
+    /** Bloc `usage` de la réponse OpenAI ; null si absent ou vide (rien à afficher). */
+    private fun extractUsage(response: String): TokenUsage? {
+        val usage = runCatching {
+            json.parseToJsonElement(response).jsonObject["usage"]?.jsonObject
+        }.getOrNull() ?: return null
+        return TokenUsage(
+            model = MODEL,
+            inputTokens = usage["prompt_tokens"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
+            outputTokens = usage["completion_tokens"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
+        ).takeIf { !it.isEmpty }
     }
 
     private fun extractText(response: String): String {

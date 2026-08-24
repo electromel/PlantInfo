@@ -1,6 +1,7 @@
 package com.plantinfo.data.remote.ai
 
 import com.plantinfo.domain.model.AiProviderType
+import com.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -51,10 +52,10 @@ class GeminiClient @Inject constructor(
             .build()
 
         val response = HttpSupport.execute(client, request, "Gemini")
-        return AiPrompt.parse(extractText(response))
+        return AiPrompt.parse(extractText(response)).copy(usage = extractUsage(response))
     }
 
-    override suspend fun ask(prompt: String, apiKey: String): String {
+    override suspend fun ask(prompt: String, apiKey: String): AiAnswer {
         val body = buildJsonObject {
             putJsonArray("contents") {
                 addJsonObject {
@@ -69,7 +70,8 @@ class GeminiClient @Inject constructor(
             .header("content-type", HttpSupport.JSON_MEDIA)
             .post(body.toString().toRequestBody())
             .build()
-        return extractText(HttpSupport.execute(client, request, "Gemini")).trim()
+        val response = HttpSupport.execute(client, request, "Gemini")
+        return AiAnswer(extractText(response).trim(), extractUsage(response))
     }
 
     override suspend fun testKey(apiKey: String): Boolean {
@@ -90,6 +92,22 @@ class GeminiClient @Inject constructor(
             .build()
         HttpSupport.execute(client, request, "Gemini")
         return true
+    }
+
+    /**
+     * Bloc `usageMetadata` de la réponse Gemini. Les jetons de raisonnement (`thoughtsTokenCount`)
+     * sont facturés comme de la sortie : on les y ajoute, sans quoi le coût serait sous-estimé.
+     */
+    private fun extractUsage(response: String): TokenUsage? {
+        val usage = runCatching {
+            json.parseToJsonElement(response).jsonObject["usageMetadata"]?.jsonObject
+        }.getOrNull() ?: return null
+        fun count(name: String) = usage[name]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+        return TokenUsage(
+            model = MODEL,
+            inputTokens = count("promptTokenCount"),
+            outputTokens = count("candidatesTokenCount") + count("thoughtsTokenCount"),
+        ).takeIf { !it.isEmpty }
     }
 
     private fun extractText(response: String): String {

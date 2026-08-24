@@ -6,6 +6,8 @@ import com.plantinfo.data.db.IdentificationEntity
 import com.plantinfo.data.remote.ai.AiAnswerOutcome
 import com.plantinfo.data.remote.ai.summary
 import com.plantinfo.data.repo.PlantQaRepository
+import com.plantinfo.domain.model.AiProviderType
+import com.plantinfo.domain.model.TokenUsage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,8 +15,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Un échange question/réponse affiché sous le champ de saisie. */
-data class QaExchange(val question: String, val answer: String)
+/**
+ * Un échange question/réponse affiché sous le champ de saisie, avec ce que l'appel a coûté.
+ * [usage] est null quand le fournisseur ne rapporte pas sa consommation — l'échange s'affiche alors
+ * sans ligne de coût plutôt qu'avec un zéro trompeur.
+ */
+data class QaExchange(
+    val question: String,
+    val answer: String,
+    val provider: AiProviderType,
+    val usage: TokenUsage?,
+)
 
 /**
  * État de la zone « Questions à l'IA » : historique des échanges de la session, indicateur de
@@ -42,7 +53,8 @@ class PlantQaViewModel @Inject constructor(
             val message = when (val outcome = repository.ask(entity, trimmed)) {
                 is AiAnswerOutcome.Success ->
                     _state.value.copy(
-                        exchanges = _state.value.exchanges + QaExchange(trimmed, outcome.answer),
+                        exchanges = _state.value.exchanges +
+                            QaExchange(trimmed, outcome.answer, outcome.provider, outcome.usage),
                         loading = false,
                         error = null,
                     )

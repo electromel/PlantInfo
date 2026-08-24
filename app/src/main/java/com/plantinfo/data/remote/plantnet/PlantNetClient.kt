@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -52,8 +54,9 @@ class PlantNetClient @Inject constructor(
             val organ = organs.getOrElse(i) { "auto" }
             bodyBuilder.addFormDataPart("organs", organ)
         }
+        // lang=fr : noms vernaculaires en français plutôt que le défaut anglais de l'API.
         val request = Request.Builder()
-            .url("https://my-api.plantnet.org/v2/identify/all?api-key=$apiKey&nb-results=5")
+            .url("https://my-api.plantnet.org/v2/identify/all?api-key=$apiKey&nb-results=5&lang=fr")
             .post(bodyBuilder.build())
             .build()
 
@@ -77,6 +80,8 @@ class PlantNetClient @Inject constructor(
                         scientificName = sci,
                         commonName = r.species.commonNames?.firstOrNull(),
                         score = ((r.score ?: 0.0) * 100).toInt().coerceIn(0, 100),
+                        gbifKey = r.gbif?.id?.contentOrNull?.toLongOrNull(),
+                        iucnCategory = r.iucn?.category?.takeIf { it.isNotBlank() },
                     )
                 }
                 PlantNetResult(candidates, if (candidates.isEmpty()) PlantNetError.NO_MATCH else null)
@@ -116,11 +121,23 @@ class PlantNetClient @Inject constructor(
     private data class PlantNetResponse(val results: List<PlantNetItem>? = null)
 
     @Serializable
-    private data class PlantNetItem(val score: Double? = null, val species: PlantNetSpecies? = null)
+    private data class PlantNetItem(
+        val score: Double? = null,
+        val species: PlantNetSpecies? = null,
+        val gbif: PlantNetGbif? = null,
+        val iucn: PlantNetIucn? = null,
+    )
 
     @Serializable
     private data class PlantNetSpecies(
         val scientificNameWithoutAuthor: String? = null,
         val commonNames: List<String>? = null,
     )
+
+    /** L'API rend `id` tantôt en nombre, tantôt en chaîne : JsonPrimitive absorbe les deux. */
+    @Serializable
+    private data class PlantNetGbif(val id: JsonPrimitive? = null)
+
+    @Serializable
+    private data class PlantNetIucn(val category: String? = null)
 }

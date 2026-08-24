@@ -24,6 +24,9 @@ object DatabaseModule {
                 PlantInfoDatabase.MIGRATION_1_2,
                 PlantInfoDatabase.MIGRATION_2_3,
                 PlantInfoDatabase.MIGRATION_3_4,
+                PlantInfoDatabase.MIGRATION_4_5,
+                PlantInfoDatabase.MIGRATION_5_6,
+                PlantInfoDatabase.MIGRATION_6_7,
             )
             .build()
 

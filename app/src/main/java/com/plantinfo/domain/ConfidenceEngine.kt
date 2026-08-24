@@ -63,6 +63,11 @@ object ConfidenceEngine {
             ComplementaryPhotoRequest(it.organ, it.reason)
         } ?: complementaryFallback(scoreFinal, ai.isFungus)
 
+        // Clé GBIF et statut UICN appartiennent au taxon reconnu par Pl@ntNet. L'espèce finalement
+        // retenue est celle de l'IA, qui a pu corriger Pl@ntNet : on ne reprend ces métadonnées que
+        // du candidat portant réellement le même nom, sinon la carte interrogerait le mauvais taxon.
+        val matched = plantNetCandidates.firstOrNull { namesMatch(it.scientificName, ai.scientificName) }
+
         return IdentificationResult(
             commonName = ai.commonName,
             scientificName = ai.scientificName,
@@ -76,11 +81,20 @@ object ConfidenceEngine {
             health = HealthAssessment(ai.healthStatus, ai.isHealthy, ai.recommendations),
             habitat = ai.habitat,
             description = ai.description,
+            matureHeight = ai.matureHeight,
+            matureDiameter = ai.matureDiameter,
+            timeToMaturity = ai.timeToMaturity,
             edible = ai.edible,
             toxic = ai.toxic,
             edibilityNote = ai.edibilityNote,
+            careCalendar = ai.careCalendar,
+            uses = ai.uses,
+            symbolism = ai.symbolism,
+            gbifKey = matched?.gbifKey,
+            iucnCategory = matched?.iucnCategory,
             sourcesDisagree = sourcesDisagree,
             complementaryPhotoRequest = complementary,
+            usage = ai.usage,
         )
     }
 
@@ -101,11 +115,23 @@ object ConfidenceEngine {
             health = null,
             habitat = null,
             description = null,
+            // Dimensions à maturité : information IA uniquement, absente d'un résultat Pl@ntNet brut.
+            matureHeight = null,
+            matureDiameter = null,
+            timeToMaturity = null,
             edible = null,
             toxic = null,
             edibilityNote = null,
+            // Calendrier, usages et symbolique : informations IA uniquement.
+            careCalendar = emptyList(),
+            uses = emptyList(),
+            symbolism = null,
+            gbifKey = top.gbifKey,
+            iucnCategory = top.iucnCategory,
             sourcesDisagree = false,
             complementaryPhotoRequest = complementaryFallback(top.score, isFungus = false),
+            // Aucune IA interrogée : aucun jeton consommé, donc rien à facturer ni à afficher.
+            usage = null,
         )
     }
 

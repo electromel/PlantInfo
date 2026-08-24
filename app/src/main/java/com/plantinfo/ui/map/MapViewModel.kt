@@ -27,12 +27,12 @@ class MapViewModel @Inject constructor(
     private var loadedFor: String? = null
 
     /** Charge l'aire de répartition (idempotent pour un même nom scientifique). */
-    fun load(scientificName: String) {
+    fun load(scientificName: String, gbifKey: Long? = null) {
         if (loadedFor == scientificName) return
         loadedFor = scientificName
         _range.value = RangeState.Loading
         viewModelScope.launch {
-            _range.value = RangeState.Loaded(rangeRepository.getRange(scientificName))
+            _range.value = RangeState.Loaded(rangeRepository.getRange(scientificName, gbifKey))
         }
     }
 }

@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.plantinfo.data.keys.ApiKeyStore
 import com.plantinfo.data.keys.ApiProvider
-import com.plantinfo.data.remote.ai.AiFailureReason
+import com.plantinfo.data.keys.KeyHealth
+import com.plantinfo.data.keys.KeyHealthMonitor
+import com.plantinfo.data.prefs.SafetySettingsStore
 import com.plantinfo.data.remote.ai.AiOrchestrator
 import com.plantinfo.data.remote.plantnet.PlantNetClient
-import com.plantinfo.data.remote.plantnet.PlantNetError
 import com.plantinfo.domain.model.AiProviderType
+import com.plantinfo.domain.model.ToxicAlertThresholds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,31 +32,124 @@ data class ProviderUiState(
     val hasStoredKey: Boolean,
     val input: String = "",
     val test: KeyTestState = KeyTestState.Idle,
+    /** Motif du dernier verdict « inutilisable », ou null si la clé est saine ou non vérifiée. */
+    val problem: String? = null,
 )
 
 data class SettingsUiState(
+    /**
+     * Uniquement les fournisseurs à montrer : ceux dont une clé est enregistrée, plus celui que
+     * l'utilisateur vient d'ajouter via le « + ». Les autres n'encombrent pas l'écran.
+     */
     val providers: List<ProviderUiState> = emptyList(),
+    /** Fournisseurs sans clé, proposés derrière le bouton « + ». */
+    val addable: List<ApiProvider> = emptyList(),
     val fallbackOrder: List<AiProviderType> = AiProviderType.DEFAULT_FALLBACK_ORDER,
     val freeGeminiOnly: Boolean = true,
+    val toxicAlert: ToxicAlertThresholds = ToxicAlertThresholds(),
+    val rechecking: Boolean = false,
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val keyStore: ApiKeyStore,
+    private val safetySettings: SafetySettingsStore,
     private val aiOrchestrator: AiOrchestrator,
     private val plantNetClient: PlantNetClient,
+    private val keyHealth: KeyHealthMonitor,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(buildState())
+    /**
+     * Fournisseurs ouverts à la saisie sans clé enregistrée. Vit dans le ViewModel et non dans le
+     * stockage : c'est un état d'écran, qui doit disparaître si l'utilisateur quitte sans saisir.
+     */
+    private var beingAdded: Set<ApiProvider> = emptySet()
+
+    private val _state = MutableStateFlow(SettingsUiState())
     val state: StateFlow<SettingsUiState> = _state.asStateFlow()
 
+    init {
+        _state.value = buildState()
+        // Le verdict d'une clé peut changer hors de cet écran (vérification au lancement) : la
+        // carte doit le refléter sans qu'on ait à retester ici.
+        viewModelScope.launch {
+            keyHealth.problems.collect { refreshProviders() }
+        }
+    }
+
     private fun buildState(): SettingsUiState = SettingsUiState(
-        providers = ApiProvider.entries.map { p ->
-            ProviderUiState(provider = p, hasStoredKey = keyStore.getKey(p) != null)
-        },
+        providers = visibleProviders().map { p -> ProviderUiState(p, keyStore.getKey(p) != null) },
+        addable = addableProviders(),
         fallbackOrder = keyStore.fallbackOrder(),
         freeGeminiOnly = keyStore.freeGeminiOnly(),
-    )
+        toxicAlert = safetySettings.current(),
+    ).withProblems()
+
+    private fun visibleProviders(): List<ApiProvider> =
+        ApiProvider.entries.filter { keyStore.getKey(it) != null || it in beingAdded }
+
+    private fun addableProviders(): List<ApiProvider> =
+        ApiProvider.entries.filter { keyStore.getKey(it) == null && it !in beingAdded }
+
+    /** Recompose la liste des cartes en conservant la saisie et le test en cours de chacune. */
+    private fun refreshProviders() {
+        _state.update { s ->
+            val previous = s.providers.associateBy { it.provider }
+            s.copy(
+                providers = visibleProviders().map { p ->
+                    previous[p]?.copy(hasStoredKey = keyStore.getKey(p) != null)
+                        ?: ProviderUiState(p, keyStore.getKey(p) != null)
+                },
+                addable = addableProviders(),
+            ).withProblems()
+        }
+    }
+
+    /** Reporte sur chaque carte le motif d'inutilisabilité connu du moniteur de santé. */
+    private fun SettingsUiState.withProblems(): SettingsUiState {
+        val byProvider = keyHealth.problems.value.associate { it.provider to it.reason }
+        return copy(providers = providers.map { it.copy(problem = byProvider[it.provider]) })
+    }
+
+    /** Ouvre une carte de saisie pour un fournisseur encore sans clé (bouton « + »). */
+    fun beginAdd(provider: ApiProvider) {
+        beingAdded = beingAdded + provider
+        refreshProviders()
+    }
+
+    /** Referme une carte ouverte par erreur, tant qu'aucune clé n'y a été enregistrée. */
+    fun cancelAdd(provider: ApiProvider) {
+        beingAdded = beingAdded - provider
+        refreshProviders()
+    }
+
+    /** Retente immédiatement toutes les clés enregistrées, sans attendre le contrôle quotidien. */
+    fun recheckKeys() {
+        if (_state.value.rechecking) return
+        _state.update { it.copy(rechecking = true) }
+        viewModelScope.launch {
+            keyHealth.refresh(force = true)
+            _state.update { it.copy(rechecking = false) }
+            refreshProviders()
+        }
+    }
+
+    /** Score final sous lequel l'avertissement de confusion toxique peut se déclencher. */
+    fun setToxicAlertMaxScore(value: Int) {
+        safetySettings.setMaxScore(value)
+        _state.update { it.copy(toxicAlert = safetySettings.current()) }
+    }
+
+    /** Score au-dessus duquel une hypothèse alternative est jugée plausible. */
+    fun setToxicAlertMinAlternativeScore(value: Int) {
+        safetySettings.setMinAlternativeScore(value)
+        _state.update { it.copy(toxicAlert = safetySettings.current()) }
+    }
+
+    fun resetToxicAlertThresholds() {
+        safetySettings.resetToxicAlertThresholds()
+        _state.update { it.copy(toxicAlert = safetySettings.current()) }
+    }
 
     /** Active/désactive le mode « Gemini gratuit seul » (ignore Claude et GPT payants). */
     fun setFreeGeminiOnly(enabled: Boolean) {
@@ -71,22 +166,33 @@ class SettingsViewModel @Inject constructor(
         val input = _state.value.providers.firstOrNull { it.provider == provider }?.input.orEmpty()
         if (input.isBlank()) return
         keyStore.setKey(provider, input)
+        beingAdded = beingAdded - provider // la carte tient désormais debout par sa clé enregistrée
         updateProvider(provider) { it.copy(test = KeyTestState.Testing, hasStoredKey = true) }
         viewModelScope.launch {
-            val result = runTest(provider, input)
+            val verdict = runTest(provider, input)
+            // Le test vient d'être payé : on en fait profiter le moniteur plutôt que de le refaire
+            // au prochain lancement — et l'alerte de démarrage disparaît dès la correction.
+            keyHealth.record(provider, verdict)
             updateProvider(provider) {
-                it.copy(test = result, input = if (result is KeyTestState.Valid) "" else it.input)
+                it.copy(
+                    test = verdict.toTestState(),
+                    input = if (verdict.health == KeyHealth.VALID) "" else it.input,
+                )
             }
             // L'ordre de repli disponible peut changer quand une clé IA devient valide.
             _state.update { s -> s.copy(fallbackOrder = keyStore.fallbackOrder()) }
+            refreshProviders()
         }
     }
 
     fun clearKey(provider: ApiProvider) {
         keyStore.setKey(provider, "")
+        keyHealth.forget(provider)
+        beingAdded = beingAdded - provider
         updateProvider(provider) {
-            it.copy(hasStoredKey = false, input = "", test = KeyTestState.Idle)
+            it.copy(hasStoredKey = false, input = "", test = KeyTestState.Idle, problem = null)
         }
+        refreshProviders()
     }
 
     fun moveFallback(type: AiProviderType, up: Boolean) {
@@ -100,36 +206,29 @@ class SettingsViewModel @Inject constructor(
         _state.update { it.copy(fallbackOrder = order) }
     }
 
-    private suspend fun runTest(provider: ApiProvider, key: String): KeyTestState {
-        return if (provider == ApiProvider.PLANTNET) {
-            when (val e = plantNetClient.testKey(key)) {
-                null -> KeyTestState.Valid
-                else -> KeyTestState.Invalid(describePlantNet(e))
-            }
+    private suspend fun runTest(provider: ApiProvider, key: String): KeyHealthMonitor.Verdict =
+        if (provider == ApiProvider.PLANTNET) {
+            KeyHealthMonitor.verdictFor(plantNetClient.testKey(key))
         } else {
-            val type = provider.aiType ?: return KeyTestState.Invalid("Fournisseur inconnu")
-            when (val r = aiOrchestrator.testKey(type, key)) {
-                null -> KeyTestState.Valid
-                else -> KeyTestState.Invalid(describeAi(r))
+            val type = provider.aiType
+            if (type == null) {
+                KeyHealthMonitor.Verdict(KeyHealth.UNVERIFIABLE, null)
+            } else {
+                KeyHealthMonitor.verdictFor(aiOrchestrator.testKey(type, key))
             }
         }
-    }
 
-    private fun describePlantNet(e: PlantNetError): String = when (e) {
-        PlantNetError.INVALID_KEY -> "Clé refusée (401/403)."
-        PlantNetError.QUOTA -> "Quota atteint."
-        PlantNetError.NETWORK -> "Pas de connexion."
-        PlantNetError.SERVER -> "Service indisponible."
-        else -> "Échec de validation."
-    }
-
-    private fun describeAi(r: AiFailureReason): String = when (r) {
-        AiFailureReason.INVALID_KEY -> "Clé refusée (401/403)."
-        AiFailureReason.QUOTA -> "Quota atteint."
-        AiFailureReason.BILLING -> "Clé acceptée mais crédit épuisé : rechargez le compte du fournisseur."
-        AiFailureReason.NETWORK -> "Pas de connexion."
-        AiFailureReason.SERVER -> "Service indisponible."
-        else -> "Échec de validation."
+    /**
+     * Traduit le verdict en retour d'écran. [KeyHealth.UNVERIFIABLE] n'est pas un échec de la clé :
+     * le message doit désigner le réseau ou le service, pas accuser la clé qu'on vient de saisir.
+     */
+    private fun KeyHealthMonitor.Verdict.toTestState(): KeyTestState = when (health) {
+        KeyHealth.VALID -> KeyTestState.Valid
+        KeyHealth.INVALID -> KeyTestState.Invalid(reason?.replaceFirstChar { it.uppercase() } ?: "Clé refusée.")
+        KeyHealth.UNVERIFIABLE, KeyHealth.UNKNOWN -> KeyTestState.Invalid(
+            "Impossible de vérifier la clé pour l'instant (réseau ou service indisponible). " +
+                "Elle est enregistrée : réessayez plus tard.",
+        )
     }
 
     private fun updateProvider(provider: ApiProvider, transform: (ProviderUiState) -> ProviderUiState) {

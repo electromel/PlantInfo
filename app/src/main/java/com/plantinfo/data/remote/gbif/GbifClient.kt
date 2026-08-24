@@ -27,8 +27,16 @@ class GbifClient @Inject constructor(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun fetchRange(scientificName: String): SpeciesRange = withContext(Dispatchers.IO) {
-        val usageKey = matchTaxon(scientificName)
+    /**
+     * @param gbifKey clé taxonomique déjà connue (rapportée par Pl@ntNet). Quand elle est fournie,
+     *   l'étape species/match est sautée : une requête réseau de moins et surtout aucun risque que
+     *   la correspondance floue par nom retombe sur un homonyme.
+     */
+    suspend fun fetchRange(
+        scientificName: String,
+        gbifKey: Long? = null,
+    ): SpeciesRange = withContext(Dispatchers.IO) {
+        val usageKey = gbifKey ?: matchTaxon(scientificName)
             ?: return@withContext SpeciesRange(scientificName, emptyList(), hasData = false)
 
         val points = fetchOccurrences(usageKey)

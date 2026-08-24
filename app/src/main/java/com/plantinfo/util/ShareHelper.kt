@@ -5,8 +5,13 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.plantinfo.data.db.IdentificationEntity
+import com.plantinfo.data.prefs.SafetySettingsStore
 import com.plantinfo.data.repo.toResult
+import com.plantinfo.domain.model.careCalendarLines
 import com.plantinfo.domain.model.edibilitySummaryText
+import com.plantinfo.domain.model.maturitySummaryText
+import com.plantinfo.domain.model.toxicConfusionWarningText
+import com.plantinfo.domain.model.usesByDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
@@ -19,6 +24,7 @@ import javax.inject.Singleton
 @Singleton
 class ShareHelper @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val safetySettings: SafetySettingsStore,
 ) {
     private val authority get() = "${context.packageName}.fileprovider"
 
@@ -33,8 +39,24 @@ class ShareHelper @Inject constructor(
             } else {
                 appendLine("Score : ${result.scoreFinal}/100")
             }
+            // Avant la comestibilité : un message partagé ne doit pas afficher « Comestible » sans
+            // la réserve qui l'accompagne à l'écran.
+            result.toxicConfusionWarningText(safetySettings.current())
+                ?.let { appendLine(); appendLine("⚠ $it") }
             result.edibilitySummaryText()?.let { appendLine(); appendLine("Comestibilité : $it") }
+            result.maturitySummaryText()?.let { appendLine(); appendLine("À maturité : $it") }
             result.habitat?.let { appendLine(); appendLine("Habitat : $it") }
+            // Calendrier et usages sont condensés sur une ligne : un message de partage doit rester
+            // lisible d'un coup d'œil, le détail est dans l'app et dans le PDF.
+            result.careCalendarLines().takeIf { it.isNotEmpty() }?.let { tasks ->
+                appendLine()
+                appendLine("Calendrier : " + tasks.joinToString(" · ") { "${it.label} ${it.period}" })
+            }
+            result.usesByDomain().takeIf { it.isNotEmpty() }?.let { grouped ->
+                appendLine()
+                appendLine("Usages : " + grouped.joinToString(" · ") { (domain, _) -> domain.label })
+            }
+            result.symbolism?.let { appendLine(); appendLine("Symbolique : $it") }
             if (entity.latitude != null && entity.longitude != null) {
                 appendLine()
                 appendLine("Lieu : %.5f, %.5f".format(entity.latitude, entity.longitude))
