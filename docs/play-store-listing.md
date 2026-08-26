@@ -49,11 +49,11 @@ AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
-## Notes de version — 0.4.0 (versionCode 4), à coller dans la Console
+## Notes de version — 0.4.0 (versionCode 4), publiée le 2026.08.26
 
 Champ « Notes de version » de la release, **500 caractères maximum** par langue (fr-FR).
-
-**Si la 0.3.0 a bien été téléversée** — notes des seules nouveautés (334 caractères) :
+Notes non cumulatives : la 0.3.0 était bien sortie, ses nouveautés ne sont donc pas reprises.
+(334 caractères.)
 
 ```
 Nouveautés :
@@ -63,20 +63,7 @@ Nouveautés :
 • Paramètres simplifiés.
 ```
 
-**Si la 0.3.0 n'a jamais été téléversée** — notes cumulatives reprenant ses nouveautés
-(409 caractères) :
-
-```
-Nouveautés :
-• Un assistant vous guide au premier lancement : ce que fait l'app, ce qui est envoyé et à qui, puis la création pas à pas de vos clés API. Relançable depuis les Paramètres.
-• Calendrier d'entretien, usages et symbolique de l'espèce.
-• Avertissement si une espèce toxique reste plausible.
-• Taille à maturité, statut UICN.
-• Jetons et coût affichés après chaque appel à l'IA.
-• Fiche PDF paginée.
-```
-
-## Notes de version — 0.3.0 (versionCode 3), à coller dans la Console
+## Notes de version — 0.3.0 (versionCode 3), publiée
 
 Champ « Notes de version » de la release, **500 caractères maximum** par langue (fr-FR).
 Ces notes sont **cumulatives** : le bundle 0.2.0 (versionCode 2) a été construit le 2026.08.14 mais
