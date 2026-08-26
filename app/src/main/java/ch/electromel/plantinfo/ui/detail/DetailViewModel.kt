@@ -4,11 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.electromel.plantinfo.data.db.IdentificationEntity
+import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.repo.HistoryRepository
 import ch.electromel.plantinfo.data.repo.IdentificationRepository
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
+import ch.electromel.plantinfo.ui.result.FicheAdvice
 import ch.electromel.plantinfo.util.PdfExporter
 import ch.electromel.plantinfo.util.ShareHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,6 +28,7 @@ class DetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: HistoryRepository,
     private val identificationRepository: IdentificationRepository,
+    private val keyStore: ApiKeyStore,
     private val pdfExporter: PdfExporter,
     private val shareHelper: ShareHelper,
 ) : ViewModel() {
@@ -33,6 +37,15 @@ class DetailViewModel @Inject constructor(
 
     val entity: StateFlow<IdentificationEntity?> =
         repository.observeById(id).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    /**
+     * Ce qui manque à cette fiche, recalculé à partir de l'état courant des clés : le conseil
+     * disparaît de lui-même dès que la clé manquante est renseignée.
+     */
+    val advice: StateFlow<FicheAdvice?> =
+        combine(entity, keyStore.state) { current, keys ->
+            current?.let { FicheAdvice.of(it, keys) }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val _exporting = MutableStateFlow(false)
     val exporting: StateFlow<Boolean> = _exporting.asStateFlow()

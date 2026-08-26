@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentPaste
@@ -46,24 +45,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ch.electromel.plantinfo.data.keys.ApiKeyGuide
-import ch.electromel.plantinfo.data.keys.ApiKeyGuides
 import ch.electromel.plantinfo.data.keys.ApiProvider
+import ch.electromel.plantinfo.data.keys.KeyTestState
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.ToxicAlertThresholds
 import ch.electromel.plantinfo.ui.components.BannerSeverity
 import ch.electromel.plantinfo.ui.components.SectionCard
 import ch.electromel.plantinfo.ui.components.WarningBanner
+import ch.electromel.plantinfo.ui.setup.SetupFocus
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    onOpenSetup: (String) -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -81,38 +82,33 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 "Clés API",
                 style = MaterialTheme.typography.titleLarge,
             )
-            Text(
-                "Vos clés sont chiffrées et stockées uniquement sur cet appareil. Seule la clé Pl@ntNet " +
-                    "est indispensable ; les clés IA activent le diagnostic et l'enrichissement.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-            )
-
-            // Aide générale, dépliée d'office tant qu'aucune clé n'est enregistrée : c'est
-            // exactement le moment où l'utilisateur ne sait pas ce qu'on lui demande.
-            NoviceHelpCard(expandedByDefault = state.providers.none { it.hasStoredKey })
 
             FreeGeminiCard(
                 enabled = state.freeGeminiOnly,
                 onToggle = viewModel::setFreeGeminiOnly,
             )
 
-            // Seules les clés renseignées (et celle en cours d'ajout) occupent l'écran.
+            // Seules les clés renseignées occupent l'écran.
             state.providers.forEach { p ->
                 ProviderCard(
                     state = p,
                     onInputChange = { viewModel.onInputChange(p.provider, it) },
                     onSaveAndTest = { viewModel.saveAndTest(p.provider) },
                     onClear = { viewModel.clearKey(p.provider) },
-                    onCancelAdd = { viewModel.cancelAdd(p.provider) },
                 )
             }
 
-            AddKeyRow(addable = state.addable, onAdd = viewModel::beginAdd)
+            // Ajouter une clé, c'est repartir dans l'assistant : lui seul porte la marche à suivre.
+            AddKeyRow(
+                addable = state.addable,
+                onAdd = { provider -> onOpenSetup(SetupFocus.provider(provider)) },
+            )
 
-            if (state.providers.any { it.hasStoredKey }) {
+            if (state.providers.isNotEmpty()) {
                 RecheckKeysButton(rechecking = state.rechecking, onRecheck = viewModel::recheckKeys)
             }
+
+            RelaunchSetupButton { onOpenSetup(SetupFocus.ALL) }
 
             FallbackOrderCard(
                 order = state.fallbackOrder,
@@ -132,43 +128,6 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     }
 }
 
-/** Explication de ce qu'est une clé API et du strict minimum à configurer, pour un débutant. */
-@Composable
-private fun NoviceHelpCard(expandedByDefault: Boolean) {
-    var expanded by remember(expandedByDefault) { mutableStateOf(expandedByDefault) }
-    SectionCard(title = "Je n'ai jamais créé de clé API") {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.AutoMirrored.Filled.HelpOutline,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                "Explications pas à pas",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f),
-            )
-            ExpandToggle(expanded) { expanded = !expanded }
-        }
-        if (expanded) {
-            Text(ApiKeyGuides.WHAT_IS_A_KEY, style = MaterialTheme.typography.bodyMedium)
-            Text(
-                ApiKeyGuides.MINIMUM_SETUP,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                "Chaque clé ajoutée ci-dessous propose sa propre marche à suivre, écran par écran.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-            )
-        }
-    }
-}
-
 /** Bouton « + » listant les fournisseurs encore sans clé ; masqué quand elles sont toutes saisies. */
 @Composable
 private fun AddKeyRow(addable: List<ApiProvider>, onAdd: (ApiProvider) -> Unit) {
@@ -182,18 +141,8 @@ private fun AddKeyRow(addable: List<ApiProvider>, onAdd: (ApiProvider) -> Unit) 
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             addable.forEach { provider ->
-                val guide = ApiKeyGuides.forProvider(provider)
                 DropdownMenuItem(
-                    text = {
-                        Column {
-                            Text(provider.label)
-                            Text(
-                                if (guide.required) "Indispensable" else guide.role,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            )
-                        }
-                    },
+                    text = { Text(provider.label) },
                     onClick = {
                         menuOpen = false
                         onAdd(provider)
@@ -323,6 +272,16 @@ private fun ThresholdSlider(
     }
 }
 
+/** Reprise de l'assistant : la seule porte d'entrée vers les explications, depuis cet écran. */
+@Composable
+private fun RelaunchSetupButton(onRelaunch: () -> Unit) {
+    OutlinedButton(onClick = onRelaunch) {
+        Icon(Icons.AutoMirrored.Filled.HelpOutline, contentDescription = null, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text("Relancer l'assistant de configuration")
+    }
+}
+
 /** Carte du mode « Gemini gratuit seul » : n'utilise que Gemini, ignore Claude et GPT (payants). */
 @Composable
 private fun FreeGeminiCard(
@@ -350,26 +309,21 @@ private fun FreeGeminiCard(
     }
 }
 
+/**
+ * État d'une clé enregistrée : ce qu'elle vaut, comment la remplacer, comment l'effacer. La marche
+ * à suivre pour en obtenir une n'est **pas** ici : elle vit dans l'assistant de configuration, seul
+ * endroit à la porter, pour que les deux ne divergent jamais.
+ */
 @Composable
 private fun ProviderCard(
     state: ProviderUiState,
     onInputChange: (String) -> Unit,
     onSaveAndTest: () -> Unit,
     onClear: () -> Unit,
-    onCancelAdd: () -> Unit,
 ) {
     val clipboard = LocalClipboardManager.current
-    val guide = ApiKeyGuides.forProvider(state.provider)
-    // L'aide est ouverte d'office pour une clé qu'on vient d'ajouter : c'est là qu'on en a besoin.
-    var helpExpanded by remember(state.provider) { mutableStateOf(!state.hasStoredKey) }
 
     SectionCard(title = state.provider.label) {
-        Text(
-            guide.role,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-        )
-
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (state.hasStoredKey) {
                 Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
@@ -438,77 +392,8 @@ private fun ProviderCard(
             }
             if (state.hasStoredKey) {
                 OutlinedButton(onClick = onClear) { Text("Effacer") }
-            } else {
-                // Carte ouverte par le « + » : on doit pouvoir la refermer sans rien saisir.
-                OutlinedButton(onClick = onCancelAdd) { Text("Annuler") }
             }
         }
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "Comment obtenir cette clé ?",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f),
-            )
-            ExpandToggle(helpExpanded) { helpExpanded = !helpExpanded }
-        }
-        if (helpExpanded) {
-            KeyGuideBlock(guide = guide, createKeyUrl = state.provider.createKeyUrl, label = state.provider.label)
-        }
-    }
-}
-
-/** Marche à suivre numérotée, coût réel et piège classique d'un fournisseur donné. */
-@Composable
-private fun KeyGuideBlock(guide: ApiKeyGuide, createKeyUrl: String, label: String) {
-    val uriHandler = LocalUriHandler.current
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(
-            guide.cost,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (guide.required) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-            },
-        )
-        guide.steps.forEachIndexed { index, step ->
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-                Text(
-                    "${index + 1}.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(step, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-        guide.pitfall?.let {
-            WarningBanner(
-                text = it,
-                icon = Icons.AutoMirrored.Filled.HelpOutline,
-                severity = BannerSeverity.WARNING,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        TextButton(onClick = { uriHandler.openUri(createKeyUrl) }) {
-            Icon(Icons.AutoMirrored.Filled.OpenInNew, null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Ouvrir la page $label", fontWeight = FontWeight.Medium)
-        }
-    }
-}
-
-/** Chevron d'ouverture/fermeture, avec une description accessible qui dit l'action, pas l'état. */
-@Composable
-private fun ExpandToggle(expanded: Boolean, onToggle: () -> Unit) {
-    IconButton(onClick = onToggle) {
-        Icon(
-            if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-            contentDescription = if (expanded) "Masquer l'aide" else "Afficher l'aide",
-        )
     }
 }
 

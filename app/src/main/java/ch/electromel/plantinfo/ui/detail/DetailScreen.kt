@@ -47,12 +47,14 @@ import ch.electromel.plantinfo.ui.result.IdentificationContent
 fun DetailScreen(
     identificationId: Long,
     onBack: () -> Unit,
+    onOpenSetup: (String) -> Unit,
     viewModel: DetailViewModel = hiltViewModel(),
 ) {
     val entity by viewModel.entity.collectAsStateWithLifecycle()
     val exporting by viewModel.exporting.collectAsStateWithLifecycle()
     val reanalyzing by viewModel.reanalyzing.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val advice by viewModel.advice.collectAsStateWithLifecycle()
     var confirmDelete by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
@@ -120,6 +122,8 @@ fun DetailScreen(
                 onSelectAlternative = viewModel::selectAlternative,
                 onReanalyze = viewModel::reanalyze,
                 reanalyzing = reanalyzing,
+                advice = advice,
+                onOpenSetup = onOpenSetup,
             ) {
                 // En-tête spécifique au détail : notes personnelles éditables.
                 var notes by remember(current.id) { mutableStateOf(current.notes.orEmpty()) }

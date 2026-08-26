@@ -15,19 +15,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Ce que l'application doit dire à l'utilisateur au démarrage : l'accueil du tout premier
- * lancement, puis — les fois suivantes — les clés enregistrées qui ne fonctionnent plus.
+ * Ce que l'application doit dire à l'utilisateur au démarrage : l'assistant de configuration tant
+ * qu'il n'a pas été mené à son terme, puis — les fois suivantes — les clés enregistrées qui ne
+ * fonctionnent plus.
  */
 data class StartupUiState(
-    val showWelcome: Boolean = false,
+    val showSetup: Boolean = false,
     val keyProblems: List<KeyProblem> = emptyList(),
 )
 
 /**
- * Pilote les deux messages d'ouverture (§3.1) :
+ * Pilote les deux interventions d'ouverture (§3.1) :
  *
- * 1. **Premier lancement** : inviter à renseigner les paramètres, personne n'ayant de clé à ce
- *    stade. Aucune vérification de clé n'est lancée — il n'y a rien à vérifier.
+ * 1. **Assistant de configuration** tant qu'il n'a pas été terminé. Aucune vérification de clé n'est
+ *    lancée dans ce cas : l'assistant teste lui-même celles qu'on y saisit.
  * 2. **Lancements suivants** : signaler les clés devenues inutilisables (révoquées, sans crédit,
  *    quota épuisé). Le contrôle réel est limité à une fois par jour par [KeyHealthMonitor] ; ici on
  *    se contente de le déclencher et d'observer son verdict.
@@ -42,28 +43,32 @@ class StartupViewModel @Inject constructor(
     private val keyHealth: KeyHealthMonitor,
 ) : ViewModel() {
 
-    private val showWelcome = MutableStateFlow(!onboarding.hasSeenWelcome())
+    private val showSetup = MutableStateFlow(!onboarding.hasCompletedSetup())
     private val problemsDismissed = MutableStateFlow(false)
 
     val state: StateFlow<StartupUiState> =
-        combine(showWelcome, problemsDismissed, keyHealth.problems) { welcome, dismissed, problems ->
+        combine(showSetup, problemsDismissed, keyHealth.problems) { setup, dismissed, problems ->
             StartupUiState(
-                showWelcome = welcome,
-                // Une seule fenêtre à la fois : l'accueil du premier lancement passe devant.
-                keyProblems = if (welcome || dismissed) emptyList() else problems,
+                showSetup = setup,
+                // Une seule intervention à la fois : l'assistant passe devant.
+                keyProblems = if (setup || dismissed) emptyList() else problems,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StartupUiState())
 
     init {
-        if (onboarding.hasSeenWelcome()) {
+        if (onboarding.hasCompletedSetup()) {
             viewModelScope.launch { keyHealth.refresh() }
         }
     }
 
-    /** L'utilisateur a lu l'accueil : ne plus le montrer, et vérifier les clés dès maintenant. */
-    fun dismissWelcome() {
-        onboarding.markWelcomeSeen()
-        showWelcome.value = false
+    /**
+     * L'assistant vient d'être ouvert : ne pas y renvoyer une seconde fois dans cette session. Le
+     * drapeau « terminé » n'est **pas** posé ici — il appartient à l'assistant, qui ne le pose qu'au
+     * récapitulatif. Quitter l'assistant en cours de route le fera donc revenir au prochain
+     * lancement, comme voulu.
+     */
+    fun onSetupOpened() {
+        showSetup.value = false
         viewModelScope.launch { keyHealth.refresh() }
     }
 

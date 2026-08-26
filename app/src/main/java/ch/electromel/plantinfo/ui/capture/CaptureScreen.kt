@@ -72,6 +72,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.ui.components.FullscreenPhotoViewer
+import ch.electromel.plantinfo.ui.components.SectionCard
+import ch.electromel.plantinfo.ui.setup.SetupFocus
 import java.io.File
 import java.util.concurrent.Executor
 
@@ -79,10 +81,11 @@ import java.util.concurrent.Executor
 @Composable
 fun CaptureScreen(
     onResultReady: (Long) -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenSetup: (String) -> Unit,
     viewModel: CaptureViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val keys by viewModel.keys.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
 
@@ -195,6 +198,12 @@ fun CaptureScreen(
                 )
             }
 
+            // Sans aucune clé, l'identification échouerait après la prise de vue : on le dit avant,
+            // là où la correction est encore gratuite.
+            if (keys.isEmpty) {
+                MissingKeysCard(onOpenSetup = { onOpenSetup(SetupFocus.ALL) })
+            }
+
             CaptureControls(
                 state = state,
                 showThumbnails = cameraActive,
@@ -205,6 +214,24 @@ fun CaptureScreen(
                 onPhotoClick = { fullscreenPhoto = it },
             )
         }
+    }
+}
+
+/** Aucune clé configurée : expliquer, et rouvrir l'assistant plutôt que renvoyer aux Paramètres. */
+@Composable
+private fun MissingKeysCard(onOpenSetup: () -> Unit) {
+    SectionCard(
+        title = "Configuration à terminer",
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(
+            "Aucune clé API n'est enregistrée. PlantInfo interroge des services extérieurs pour " +
+                "reconnaître vos photos : sans clé, l'identification ne peut pas démarrer.",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Button(onClick = onOpenSetup) { Text("Lancer l'assistant de configuration") }
     }
 }
 

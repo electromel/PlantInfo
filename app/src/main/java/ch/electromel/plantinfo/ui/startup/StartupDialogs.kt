@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Key
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,55 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import ch.electromel.plantinfo.data.keys.ApiKeyGuides
+import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.data.keys.KeyProblem
-
-/**
- * Accueil du tout premier lancement (§3.1) : dit à quoi servent les clés API, ce qu'il faut au
- * minimum, et emmène directement dans les Paramètres.
- *
- * Modal et bloquant à dessein : sans clé, la première photo n'aboutirait qu'à un message d'erreur,
- * ce qui est une bien plus mauvaise entrée en matière.
- */
-@Composable
-fun WelcomeDialog(
-    onOpenSettings: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = { Icon(Icons.Filled.Key, contentDescription = null) },
-        title = { Text("Bienvenue dans PlantInfo") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    "Avant la première identification, il faut renseigner au moins une clé API dans " +
-                        "les Paramètres.",
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(ApiKeyGuides.WHAT_IS_A_KEY, style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    ApiKeyGuides.MINIMUM_SETUP,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    "Les Paramètres contiennent une aide pas à pas pour chaque fournisseur si vous " +
-                        "n'avez jamais créé de clé.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onOpenSettings) { Text("Ouvrir les paramètres") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Plus tard") }
-        },
-    )
-}
 
 /**
  * Signale au lancement les clés enregistrées qui ne fonctionnent plus (§3.1). Chaque clé porte sa
@@ -78,6 +30,7 @@ fun WelcomeDialog(
 @Composable
 fun KeyProblemDialog(
     problems: List<KeyProblem>,
+    onFix: (ApiProvider) -> Unit,
     onOpenSettings: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -119,7 +72,14 @@ fun KeyProblemDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onOpenSettings) { Text("Ouvrir les paramètres") }
+            // Une seule clé fautive : on emmène directement dans l'assistant, sur ce fournisseur —
+            // la marche à suivre y est déjà écrite. Plusieurs : les Paramètres les montrent toutes.
+            val single = problems.singleOrNull()
+            if (single != null) {
+                TextButton(onClick = { onFix(single.provider) }) { Text("Corriger cette clé") }
+            } else {
+                TextButton(onClick = onOpenSettings) { Text("Ouvrir les paramètres") }
+            }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Continuer") }

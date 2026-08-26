@@ -131,4 +131,19 @@ data class KeysSnapshot(
     val present: Map<ApiProvider, Boolean>,
     val fallbackOrder: List<AiProviderType>,
     val freeGeminiOnly: Boolean = true,
-)
+) {
+    val hasPlantNet: Boolean get() = present[ApiProvider.PLANTNET] == true
+
+    /**
+     * Au moins un fournisseur IA réellement utilisable. Le mode « Gemini gratuit seul » est pris en
+     * compte : une clé Claude enregistrée mais mise de côté par ce mode ne rend pas l'IA disponible,
+     * et l'écran ne doit donc pas prétendre le contraire.
+     */
+    val hasAi: Boolean get() = ApiProvider.entries.any { provider ->
+        present[provider] == true && provider.aiType != null &&
+            (!freeGeminiOnly || provider == ApiProvider.GEMINI)
+    }
+
+    /** Aucune clé du tout : l'identification ne peut même pas démarrer. */
+    val isEmpty: Boolean get() = !hasPlantNet && !hasAi
+}

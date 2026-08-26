@@ -1,5 +1,7 @@
 package ch.electromel.plantinfo.data.keys
 
+import ch.electromel.plantinfo.domain.model.AiPricing
+
 /**
  * Mode d'emploi d'une clé API, destiné à un utilisateur qui n'en a jamais créé (§3.1).
  *
@@ -36,8 +38,22 @@ object ApiKeyGuides {
     /** Le minimum vital pour démarrer, quand on ne veut lire qu'une seule phrase. */
     const val MINIMUM_SETUP: String =
         "Pour commencer, deux clés suffisent : Pl@ntNet (identification, gratuite) et Gemini " +
-            "(description, santé, champignons — gratuite elle aussi dans les limites du palier " +
-            "gratuit de Google). Claude et GPT sont facultatifs et payants."
+            "(description, santé, champignons). Le palier gratuit de Gemini fonctionne, mais il est " +
+            "lent et limité à quelques dizaines de requêtes par jour ; avec la facturation activée, " +
+            "comptez ${AiPricing.GEMINI_COST_HINT}. Claude et GPT sont des alternatives " +
+            "facultatives, payantes elles aussi."
+
+    /**
+     * Ce que Pl@ntNet et une IA font chacun, et pourquoi les deux clés ne se remplacent pas.
+     * C'est la question que pose systématiquement quelqu'un à qui l'on demande deux inscriptions.
+     */
+    const val PLANTNET_VS_AI: String =
+        "Pl@ntNet est un service spécialisé : il compare la photo à une base d'observations " +
+            "botaniques et propose des espèces, sans rien en dire d'autre. L'IA (Gemini) reprend " +
+            "cette proposition, la confronte à la photo, rédige la description, évalue l'état de " +
+            "santé, traite les champignons — que Pl@ntNet ne couvre pas — et répond à vos " +
+            "questions. Avec Pl@ntNet seul, vous obtenez un nom ; avec l'IA seule, vous perdez la " +
+            "vérification botanique."
 
     fun forProvider(provider: ApiProvider): ApiKeyGuide = when (provider) {
         ApiProvider.PLANTNET -> ApiKeyGuide(
@@ -60,9 +76,10 @@ object ApiKeyGuides {
             role = "Décrit la plante, évalue son état de santé, identifie les champignons et répond " +
                 "à vos questions.",
             required = false,
-            cost = "Gratuit dans les limites du palier gratuit de Google AI Studio (quelques dizaines " +
-                "de requêtes par jour). Au-delà, la clé cesse de répondre jusqu'au lendemain — rien " +
-                "n'est facturé tant que vous n'activez pas la facturation.",
+            cost = "Le palier gratuit de Google AI Studio suffit pour essayer, mais il est lent aux " +
+                "heures chargées et plafonne à quelques dizaines de requêtes par jour ; au-delà, la " +
+                "clé cesse de répondre jusqu'au lendemain. En activant la facturation sur le projet " +
+                "Google, l'attente disparaît et vous payez ${AiPricing.GEMINI_COST_HINT}.",
             steps = listOf(
                 "Ouvrez aistudio.google.com/apikey et connectez-vous avec un compte Google.",
                 "Acceptez les conditions d'utilisation de Google AI Studio si elles s'affichent.",

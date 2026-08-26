@@ -42,8 +42,9 @@ android {
         // versionCode : strictement croissant, un numéro ne peut jamais être réutilisé sur la Console.
         // 1 = première release de test interne (0.1.0, publiée le 2026.07.13).
         // 2 = bundle 0.2.0 construit le 2026.08.14 mais jamais téléversé (numéro consommé localement).
-        versionCode = 3
-        versionName = "0.3.0"
+        // 3 = bundle 0.3.0 construit le 2026.08.24 (jetons, coût, aide aux clés).
+        versionCode = 4
+        versionName = "0.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

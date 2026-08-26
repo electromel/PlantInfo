@@ -82,6 +82,9 @@ fun IdentificationContent(
     onSelectAlternative: ((SpeciesCandidate) -> Unit)? = null,
     onReanalyze: (() -> Unit)? = null,
     reanalyzing: Boolean = false,
+    advice: FicheAdvice? = null,
+    onOpenSetup: ((String) -> Unit)? = null,
+    // Dernier paramètre : l'écran Détail le passe en lambda finale (en-tête « notes »).
     header: (@Composable () -> Unit)? = null,
 ) {
     val result = entity.toResult()
@@ -100,6 +103,10 @@ fun IdentificationContent(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         header?.invoke()
+
+        // Ce qui manque à la fiche, et par quoi le combler : posé avant tout le reste, faute de
+        // quoi on laisse croire que l'espèce n'a rien de plus à dire.
+        advice?.let { AdviceCard(it, onOpenSetup) }
 
         // Photos : une seule → image « héro » pleine largeur ; plusieurs → carrousel à largeur fixe.
         if (entity.photoPaths.size == 1) {
@@ -386,6 +393,23 @@ fun IdentificationContent(
  * Masquée tant qu'aucune des trois mesures n'est renseignée (résultat Pl@ntNet brut, ou IA restée
  * prudente) plutôt que d'afficher des tirets.
  */
+/**
+ * Explique pourquoi la fiche est partielle et emmène, quand c'est le cas, vers l'assistant de
+ * configuration. Le texte et la cible viennent de [FicheAdvice] : ils sont recalculés à l'affichage,
+ * donc justes aussi longtemps que la fiche existe.
+ */
+@Composable
+private fun AdviceCard(advice: FicheAdvice, onOpenSetup: ((String) -> Unit)?) {
+    SectionCard("Fiche incomplète", Modifier.fillMaxWidth()) {
+        Text(advice.message, style = MaterialTheme.typography.bodyMedium)
+        val label = advice.actionLabel
+        val focus = advice.focus
+        if (label != null && focus != null && onOpenSetup != null) {
+            Button(onClick = { onOpenSetup(focus) }) { Text(label) }
+        }
+    }
+}
+
 @Composable
 private fun MaturitySection(result: IdentificationResult) {
     val lines = result.maturityLines()

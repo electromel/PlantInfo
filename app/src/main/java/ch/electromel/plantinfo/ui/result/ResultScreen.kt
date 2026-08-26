@@ -33,11 +33,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun ResultScreen(
     identificationId: Long,
     onBack: () -> Unit,
+    onOpenSetup: (String) -> Unit,
     viewModel: ResultViewModel = hiltViewModel(),
 ) {
     val entity by viewModel.entity.collectAsStateWithLifecycle()
     val reanalyzing by viewModel.reanalyzing.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val advice by viewModel.advice.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(message) {
@@ -84,6 +86,8 @@ fun ResultScreen(
                 onSelectAlternative = viewModel::selectAlternative,
                 onReanalyze = viewModel::reanalyze,
                 reanalyzing = reanalyzing,
+                advice = advice,
+                onOpenSetup = onOpenSetup,
             )
         }
     }

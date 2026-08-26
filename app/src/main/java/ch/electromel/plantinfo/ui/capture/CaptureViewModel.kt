@@ -3,6 +3,8 @@ package ch.electromel.plantinfo.ui.capture
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.electromel.plantinfo.data.keys.ApiKeyStore
+import ch.electromel.plantinfo.data.keys.KeysSnapshot
 import ch.electromel.plantinfo.data.repo.IdentificationRepository
 import ch.electromel.plantinfo.domain.model.GpsLocation
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
@@ -38,10 +40,17 @@ class CaptureViewModel @Inject constructor(
     private val locationProvider: LocationProvider,
     private val repository: IdentificationRepository,
     private val queue: IdentificationQueue,
+    keyStore: ApiKeyStore,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CaptureUiState())
     val state: StateFlow<CaptureUiState> = _state.asStateFlow()
+
+    /**
+     * État des clés, exposé à part de [state] : celui-ci est remis à neuf après chaque
+     * identification, alors que la configuration, elle, ne change pas parce qu'on a pris une photo.
+     */
+    val keys: StateFlow<KeysSnapshot> = keyStore.state
 
     /**
      * Import galerie : la position pertinente est celle inscrite dans la photo (lieu réel de la

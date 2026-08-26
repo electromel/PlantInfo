@@ -64,13 +64,23 @@ uniquement les clés absentes du stockage — une clé saisie manuellement n'est
 
 ### Accompagnement de l'utilisateur (à ne pas contourner)
 
-- **Premier lancement** : `ui/startup/StartupViewModel` + `WelcomeDialog` invitent à renseigner les
-  paramètres. Le drapeau « accueil vu » vit dans `data/prefs/OnboardingStore`.
-- **Aide novice** : `data/keys/ApiKeyGuide.kt` porte, par fournisseur, le rôle, le coût réel et la
-  marche à suivre numérotée. C'est du **contenu**, pas du code : le mettre à jour quand l'interface
-  web d'un fournisseur change, sans toucher à `ApiProvider`.
-- **Écran Paramètres** : n'affiche que les clés **renseignées** ; les autres se choisissent derrière
-  le bouton « + » (`SettingsUiState.addable`).
+- **Assistant de configuration** (`ui/setup/`) : parcours plein écran, seule porte d'entrée vers les
+  explications. Route `setup?focus={all|llm|<ApiProvider.name>}` ; l'étape de saisie est **paramétrée
+  par le fournisseur**, donc réutilisable pour n'importe quelle clé. `StartupViewModel` y envoie tant
+  que `OnboardingStore.hasCompletedSetup()` est faux — le drapeau n'est posé **qu'au récapitulatif**,
+  si bien qu'un abandon fait revenir l'assistant au lancement suivant.
+- **Contenu** : `data/keys/ApiKeyGuide.kt` (rôle, coût, marche à suivre par fournisseur) et
+  `ui/setup/SetupTexts.kt` (ce que fait l'app, ce qui sort de l'appareil et pour qui). C'est du
+  **contenu**, pas du code : à mettre à jour quand l'interface web d'un fournisseur change ou qu'un
+  service externe entre dans le pipeline, sans toucher à `ApiProvider`.
+- **Coût annoncé** : `AiPricing.GEMINI_COST_HINT` vit à côté de `AiPricing.rates` — les deux se
+  corrigent ensemble (le tarif Gemini Flash double au 01.01.2027).
+- **Écran Paramètres** : gère l'**état** des clés seulement (valeur, test, effacement, ordre de
+  repli, seuils). Aucune explication : le « + » (`SettingsUiState.addable`) et le bouton « Relancer
+  l'assistant » renvoient vers `ui/setup`. Ne pas y réintroduire de mode d'emploi : il divergerait.
+- **Fiche incomplète** : `ui/result/FicheAdvice.kt` **déduit** de la fiche (`scorePlantNet`,
+  `aiProvider`) et de l'état courant des clés ce qui manque, et renvoie vers l'assistant. Déduit et
+  non transporté : le conseil reste juste dans l'historique et disparaît dès la clé ajoutée.
 - **Clé devenue invalide** : `data/keys/KeyHealthMonitor` retente les clés stockées **une fois par
   24 h** (`CHECK_INTERVAL_MS`) et persiste le verdict, ce qui permet de le rappeler à chaque
   lancement sans rappeler les API. Deux règles à respecter :

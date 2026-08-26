@@ -11,6 +11,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,10 +19,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import ch.electromel.plantinfo.ui.capture.CaptureScreen
 import ch.electromel.plantinfo.ui.detail.DetailScreen
 import ch.electromel.plantinfo.ui.history.HistoryScreen
@@ -29,9 +32,10 @@ import ch.electromel.plantinfo.ui.navigation.Routes
 import ch.electromel.plantinfo.ui.navigation.TopLevelDestination
 import ch.electromel.plantinfo.ui.result.ResultScreen
 import ch.electromel.plantinfo.ui.settings.SettingsScreen
+import ch.electromel.plantinfo.ui.setup.SetupFocus
+import ch.electromel.plantinfo.ui.setup.SetupScreen
 import ch.electromel.plantinfo.ui.startup.KeyProblemDialog
 import ch.electromel.plantinfo.ui.startup.StartupViewModel
-import ch.electromel.plantinfo.ui.startup.WelcomeDialog
 import ch.electromel.plantinfo.ui.theme.PlantInfoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -56,8 +60,6 @@ private fun PlantInfoRoot(startupViewModel: StartupViewModel = hiltViewModel()) 
     val topLevelRoutes = TopLevelDestination.entries.map { it.route }
     val showBottomBar = currentDestination?.route in topLevelRoutes
 
-    // Messages d'ouverture : accueil du premier lancement, puis alerte sur les clés devenues
-    // inutilisables. Posés au-dessus du NavHost pour rester visibles quel que soit l'onglet ouvert.
     val startup by startupViewModel.state.collectAsStateWithLifecycle()
     val openSettings = {
         navController.navigate(Routes.SETTINGS) {
@@ -66,17 +68,26 @@ private fun PlantInfoRoot(startupViewModel: StartupViewModel = hiltViewModel()) 
             restoreState = true
         }
     }
-    if (startup.showWelcome) {
-        WelcomeDialog(
-            onOpenSettings = {
-                startupViewModel.dismissWelcome()
-                openSettings()
-            },
-            onDismiss = startupViewModel::dismissWelcome,
-        )
-    } else if (startup.keyProblems.isNotEmpty()) {
+    val openSetup = { focus: String -> navController.navigate(Routes.setup(focus)) }
+
+    // Premier lancement (ou assistant abandonné en cours de route) : on y emmène directement.
+    // L'assistant ne se referme pas tout seul — c'est un écran, pas une fenêtre — et il ne marque le
+    // parcours terminé qu'à son récapitulatif.
+    LaunchedEffect(startup.showSetup) {
+        if (startup.showSetup) {
+            startupViewModel.onSetupOpened()
+            openSetup(SetupFocus.ALL)
+        }
+    }
+
+    // Clés devenues inutilisables : signalées au lancement, une fois le parcours d'accueil derrière.
+    if (startup.keyProblems.isNotEmpty()) {
         KeyProblemDialog(
             problems = startup.keyProblems,
+            onFix = { provider ->
+                startupViewModel.dismissKeyProblems()
+                openSetup(SetupFocus.provider(provider))
+            },
             onOpenSettings = {
                 startupViewModel.dismissKeyProblems()
                 openSettings()
@@ -123,7 +134,7 @@ private fun PlantInfoRoot(startupViewModel: StartupViewModel = hiltViewModel()) 
             composable(Routes.CAPTURE) {
                 CaptureScreen(
                     onResultReady = { id -> navController.navigate(Routes.result(id)) },
-                    onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                    onOpenSetup = { focus -> openSetup(focus) },
                 )
             }
             composable(Routes.HISTORY) {
@@ -132,13 +143,33 @@ private fun PlantInfoRoot(startupViewModel: StartupViewModel = hiltViewModel()) 
                 )
             }
             composable(Routes.SETTINGS) {
-                SettingsScreen()
+                SettingsScreen(onOpenSetup = { focus -> openSetup(focus) })
+            }
+            composable(
+                Routes.SETUP,
+                arguments = listOf(
+                    navArgument(SetupFocus.ARG) {
+                        type = NavType.StringType
+                        defaultValue = SetupFocus.ALL
+                    },
+                ),
+            ) {
+                SetupScreen(
+                    onExit = {
+                        // Rien à dépiler si l'assistant est le premier écran atteint : on retombe
+                        // alors sur l'onglet Capture plutôt que de fermer l'application.
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Routes.CAPTURE) { launchSingleTop = true }
+                        }
+                    },
+                )
             }
             composable(Routes.RESULT) { entry ->
                 val id = entry.arguments?.getString("id")?.toLongOrNull() ?: return@composable
                 ResultScreen(
                     identificationId = id,
                     onBack = { navController.popBackStack() },
+                    onOpenSetup = { focus -> openSetup(focus) },
                 )
             }
             composable(Routes.DETAIL) { entry ->
@@ -146,6 +177,7 @@ private fun PlantInfoRoot(startupViewModel: StartupViewModel = hiltViewModel()) 
                 DetailScreen(
                     identificationId = id,
                     onBack = { navController.popBackStack() },
+                    onOpenSetup = { focus -> openSetup(focus) },
                 )
             }
         }

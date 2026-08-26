@@ -62,6 +62,18 @@ object AiPricing {
         "gpt-4o" to Rate(2.50, 10.00),
     )
 
+    /**
+     * Ordre de grandeur du coût d'une identification avec Gemini, pour l'accompagnement de
+     * l'utilisateur (assistant de configuration). Il est calculé à la main sur le tarif ci-dessus et
+     * une identification typique — environ 3 000 jetons d'entrée (deux photos + le prompt) et 2 500
+     * de sortie en comptant les jetons de raisonnement, facturés comme de la sortie — soit ~0,011 $.
+     *
+     * À revoir **en même temps** que [rates] : le tarif de Gemini Flash double au 01.01.2027, ce
+     * qui portera l'ordre de grandeur à deux centimes.
+     */
+    const val GEMINI_COST_HINT: String =
+        "environ 1 centime par identification (tarif Google relevé mi-2026, susceptible d'évoluer)"
+
     /** Coût estimé en USD, ou null si le modèle n'a pas de tarif connu. */
     fun costUsd(usage: TokenUsage): Double? {
         val rate = rates[usage.model] ?: return null

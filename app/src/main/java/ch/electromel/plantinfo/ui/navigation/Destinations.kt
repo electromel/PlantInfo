@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
+import ch.electromel.plantinfo.ui.setup.SetupFocus
 
 /** Routes de navigation de l'application. */
 object Routes {
@@ -17,8 +18,17 @@ object Routes {
     const val RESULT = "result/{id}"
     const val DETAIL = "detail/{id}"
 
+    /**
+     * Assistant de configuration. Une destination à part entière et non une fenêtre : on y entre
+     * depuis le premier lancement, depuis les Paramètres et depuis les messages qui signalent une
+     * clé manquante — et l'utilisateur en sort vers un navigateur pour créer sa clé.
+     */
+    const val SETUP = "setup?focus={focus}"
+
     fun result(id: Long) = "result/$id"
     fun detail(id: Long) = "detail/$id"
+
+    fun setup(focus: String = SetupFocus.ALL) = "setup?focus=$focus"
 }
 
 /** Onglets de la barre de navigation inférieure (icône pleine quand l'onglet est actif). */
