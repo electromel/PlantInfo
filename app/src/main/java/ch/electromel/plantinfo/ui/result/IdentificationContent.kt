@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -57,7 +58,7 @@ import ch.electromel.plantinfo.domain.model.edibilityVerdict
 import ch.electromel.plantinfo.domain.model.iucnStatus
 import ch.electromel.plantinfo.domain.model.labelRes
 import ch.electromel.plantinfo.domain.model.maturityLines
-import ch.electromel.plantinfo.domain.model.tokensText
+import ch.electromel.plantinfo.domain.model.tokensCountText
 import ch.electromel.plantinfo.domain.model.usesByDomain
 import ch.electromel.plantinfo.ui.components.BannerSeverity
 import ch.electromel.plantinfo.ui.components.FullscreenPhotoViewer
@@ -432,14 +433,19 @@ private fun MaturitySection(result: IdentificationResult) {
 
     SectionCard(stringResource(R.string.fiche_maturity_title), Modifier.fillMaxWidth()) {
         lines.forEach { (labelRes, value) ->
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(stringResource(labelRes), style = MaterialTheme.typography.bodyLarge)
-                Text(value, style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium)
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(labelRes),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    value,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.End,
+                )
             }
         }
         Text(
@@ -602,12 +608,9 @@ private fun EdibilitySection(result: IdentificationResult) {
 
 @Composable
 private fun ScoreLine(label: String, score: Int) {
-    Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge)
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(12.dp))
         Text("$score/100", style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold, color = scoreTextColor(score))
     }
@@ -690,7 +693,7 @@ fun AiUsageSection(
 ) {
     SectionCard(title, modifier) {
         UsageLine(stringResource(R.string.usage_provider), "${provider.label} · ${usage.model}")
-        UsageLine(stringResource(R.string.usage_tokens), usage.tokensText(strings))
+        UsageLine(stringResource(R.string.usage_tokens), usage.tokensCountText(strings))
         UsageLine(
             stringResource(R.string.usage_cost),
             usage.costText() ?: stringResource(R.string.usage_cost_unknown),
@@ -703,20 +706,29 @@ fun AiUsageSection(
     }
 }
 
+/**
+ * Une ligne « libellé — valeur » de la carte de consommation.
+ *
+ * Les deux textes portent un poids : sans cela, une valeur longue (les jetons détaillés, un nom de
+ * modèle) prend toute la largeur qu'elle demande et comprime le libellé jusqu'à l'écrire une lettre
+ * par ligne. Avec un poids de part et d'autre, c'est la valeur qui passe à la ligne.
+ */
 @Composable
 private fun UsageLine(label: String, value: String) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         Text(
             label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.42f),
         )
         Spacer(Modifier.width(12.dp))
         Text(
             value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(0.58f),
         )
     }
 }

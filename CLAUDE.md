@@ -69,7 +69,9 @@ Cette variante s'appelle « PlantInfo (debug) », porte une icône au bandeau **
 
 ### Versions de build (compatibilité sensible)
 
-AGP 8.13.2 / **Gradle 9.1.0** / Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / minSdk 29 / targetSdk & compileSdk 35.
+AGP 8.13.2 / **Gradle 9.1.0** / Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / minSdk 29 / targetSdk &
+compileSdk **36**. La Play Console refuse au téléversement un bundle qui cible moins que 36 ;
+ce plancher monte d'un cran chaque année, il faudra le suivre.
 **Ne pas** accepter l'auto-montée vers AGP 9 proposée par Android Studio sans migration dédiée : elle
 casse KSP. Les versions sont centralisées dans `gradle/libs.versions.toml` (version catalog `libs`).
 

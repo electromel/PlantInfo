@@ -35,19 +35,23 @@ val hasReleaseSigning = keystoreProps.getProperty("storeFile")?.isNotBlank() == 
 
 android {
     namespace = "ch.electromel.plantinfo"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "ch.electromel.plantinfo"
         minSdk = 29
-        targetSdk = 35
+        // 36 (Android 16) est le minimum exigé par la Play Console depuis 2026 : un bundle qui cible
+        // 35 y est refusé au téléversement. Voir les changements de comportement associés dans
+        // CLAUDE.md (bord à bord imposé, orientation libre sur grand écran).
+        targetSdk = 36
         // versionCode : strictement croissant, un numéro ne peut jamais être réutilisé sur la Console.
         // 1 = première release de test interne (0.1.0, publiée le 2026.07.13).
         // 2 = bundle 0.2.0 construit le 2026.08.14 mais jamais téléversé (numéro consommé localement).
         // 3 = bundle 0.3.0 construit le 2026.08.24 (jetons, coût, aide aux clés).
         // 4 = bundle 0.4.0 publié le 2026.08.26 (assistant de configuration).
-        // 5 = bundle 0.5.0 construit le 2026.09.21 (multilangue, nouvelle icône).
-        versionCode = 5
+        // 5 = bundle 0.5.0 du 2026.09.21, refusé par la Console : ciblait encore l'API 35.
+        // 6 = bundle 0.5.0 reconstruit le 2026.09.21 en ciblant l'API 36.
+        versionCode = 6
         versionName = "0.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

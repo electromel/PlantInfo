@@ -238,6 +238,7 @@
 
     <!-- Token consumati -->
     <string name="tokens_summary">%1$s token (%2$s in entrata + %3$s in uscita)</string>
+    <string name="tokens_count">%1$s (%2$s in entrata + %3$s in uscita)</string>
 
     <!-- Notifiche -->
     <string name="notif_channel_name">Identificazioni</string>

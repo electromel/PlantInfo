@@ -239,6 +239,7 @@
 
     <!-- Jetons consommés -->
     <string name="tokens_summary">%1$s jetons (%2$s entrée + %3$s sortie)</string>
+    <string name="tokens_count">%1$s (%2$s entrée + %3$s sortie)</string>
 
     <!-- Notifications -->
     <string name="notif_channel_name">Identifications</string>

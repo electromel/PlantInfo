@@ -96,9 +96,16 @@ private fun Int.grouped(): String = toString()
     .joinToString(" ")
     .reversed()
 
-/** « 1 234 jetons (982 entrée + 252 sortie) ». */
+/** « 1 234 jetons (982 entrée + 252 sortie) », pour un texte qui se lit seul. */
 fun TokenUsage.tokensText(strings: StringProvider): String =
     strings.get(R.string.tokens_summary, totalTokens.grouped(), inputTokens.grouped(), outputTokens.grouped())
+
+/**
+ * « 1 234 (982 entrée + 252 sortie) » : la même chose sans le mot « jetons », pour une ligne dont le
+ * libellé le porte déjà. Répété, il allongeait la valeur au point de comprimer ce libellé.
+ */
+fun TokenUsage.tokensCountText(strings: StringProvider): String =
+    strings.get(R.string.tokens_count, totalTokens.grouped(), inputTokens.grouped(), outputTokens.grouped())
 
 /**
  * Coût formaté en dollars, ou null si le modèle n'a pas de tarif connu. Les montants sont minuscules
