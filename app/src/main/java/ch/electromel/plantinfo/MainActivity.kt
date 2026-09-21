@@ -1,9 +1,12 @@
 package ch.electromel.plantinfo
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -26,6 +29,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import ch.electromel.plantinfo.ui.capture.CaptureScreen
+import ch.electromel.plantinfo.ui.components.DebugWatermark
 import ch.electromel.plantinfo.ui.detail.DetailScreen
 import ch.electromel.plantinfo.ui.history.HistoryScreen
 import ch.electromel.plantinfo.ui.navigation.Routes
@@ -37,16 +41,29 @@ import ch.electromel.plantinfo.ui.setup.SetupScreen
 import ch.electromel.plantinfo.ui.startup.KeyProblemDialog
 import ch.electromel.plantinfo.ui.startup.StartupViewModel
 import ch.electromel.plantinfo.ui.theme.PlantInfoTheme
+import ch.electromel.plantinfo.util.AppLocales
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    // Langue choisie dans les Paramètres, appliquée aux ressources de l'activité. Sans effet sur
+    // Android 13+, où le système a déjà localisé le contexte (voir util/AppLocales).
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLocales.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PlantInfoTheme {
-                PlantInfoRoot()
+                // Le filigrane des builds de test se superpose à toute l'application, quel que soit
+                // l'écran affiché ; il ne rend rien en release.
+                Box(Modifier.fillMaxSize()) {
+                    PlantInfoRoot()
+                    DebugWatermark()
+                }
             }
         }
     }

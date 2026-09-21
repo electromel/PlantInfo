@@ -2,6 +2,8 @@ package ch.electromel.plantinfo.data.keys
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.remote.ai.AiFailureReason
 import ch.electromel.plantinfo.data.remote.ai.AiOrchestrator
 import ch.electromel.plantinfo.data.remote.plantnet.PlantNetClient
@@ -22,10 +24,32 @@ import javax.inject.Singleton
  */
 enum class KeyHealth { UNKNOWN, VALID, INVALID, UNVERIFIABLE }
 
-/** Une clé enregistrée qui ne fonctionne plus, avec la raison à montrer telle quelle. */
+/**
+ * Pourquoi une clé ne fonctionne plus.
+ *
+ * Un **code** et non une phrase : le verdict est persisté d'un lancement à l'autre, et une phrase
+ * enregistrée resterait figée dans la langue du jour où le test a eu lieu. Le texte est résolu à
+ * l'affichage, donc toujours dans la langue courante.
+ */
+enum class KeyIssue(@StringRes val labelRes: Int) {
+    INVALID_KEY(R.string.key_issue_invalid),
+    MISSING_KEY(R.string.key_issue_missing),
+    BILLING(R.string.key_issue_billing),
+    QUOTA(R.string.key_issue_quota),
+    PLANTNET_INVALID_KEY(R.string.key_issue_plantnet_invalid),
+    PLANTNET_QUOTA(R.string.key_issue_plantnet_quota),
+    UNUSABLE(R.string.key_issue_unusable);
+
+    companion object {
+        fun fromName(name: String?): KeyIssue? =
+            name?.let { stored -> entries.firstOrNull { it.name == stored } }
+    }
+}
+
+/** Une clé enregistrée qui ne fonctionne plus, avec le motif à montrer. */
 data class KeyProblem(
     val provider: ApiProvider,
-    val reason: String,
+    val issue: KeyIssue,
 )
 
 /**
@@ -90,7 +114,7 @@ class KeyHealthMonitor @Inject constructor(
         if (verdict.health != KeyHealth.UNVERIFIABLE) {
             prefs.edit()
                 .putString(healthKey(provider), verdict.health.name)
-                .putString(reasonKey(provider), verdict.reason)
+                .putString(reasonKey(provider), verdict.issue?.name)
                 .putLong(checkedKey(provider), System.currentTimeMillis())
                 .apply()
         }
@@ -107,8 +131,8 @@ class KeyHealthMonitor @Inject constructor(
         _problems.value = readProblems()
     }
 
-    /** Verdict d'un test de clé : l'état retenu et, s'il est mauvais, la phrase à afficher. */
-    data class Verdict(val health: KeyHealth, val reason: String?)
+    /** Verdict d'un test de clé : l'état retenu et, s'il est mauvais, le motif à afficher. */
+    data class Verdict(val health: KeyHealth, val issue: KeyIssue?)
 
     private suspend fun test(provider: ApiProvider, key: String): Verdict {
         if (provider == ApiProvider.PLANTNET) return verdictFor(plantNetClient.testKey(key))
@@ -120,7 +144,7 @@ class KeyHealthMonitor @Inject constructor(
 
     private fun readProblems(): List<KeyProblem> = ApiProvider.entries
         .filter { keyStore.getKey(it) != null && healthOf(it) == KeyHealth.INVALID }
-        .map { KeyProblem(it, prefs.getString(reasonKey(it), null) ?: "clé inutilisable") }
+        .map { KeyProblem(it, KeyIssue.fromName(prefs.getString(reasonKey(it), null)) ?: KeyIssue.UNUSABLE) }
 
     private fun healthOf(provider: ApiProvider): KeyHealth =
         prefs.getString(healthKey(provider), null)
@@ -144,8 +168,8 @@ class KeyHealthMonitor @Inject constructor(
          */
         fun verdictFor(error: PlantNetError?): Verdict = when (error) {
             null -> Verdict(KeyHealth.VALID, null)
-            PlantNetError.INVALID_KEY -> Verdict(KeyHealth.INVALID, "clé refusée par Pl@ntNet (401/403)")
-            PlantNetError.QUOTA -> Verdict(KeyHealth.INVALID, "quota Pl@ntNet atteint")
+            PlantNetError.INVALID_KEY -> Verdict(KeyHealth.INVALID, KeyIssue.PLANTNET_INVALID_KEY)
+            PlantNetError.QUOTA -> Verdict(KeyHealth.INVALID, KeyIssue.PLANTNET_QUOTA)
             PlantNetError.NETWORK, PlantNetError.SERVER -> Verdict(KeyHealth.UNVERIFIABLE, null)
             else -> Verdict(KeyHealth.UNVERIFIABLE, null)
         }
@@ -153,11 +177,10 @@ class KeyHealthMonitor @Inject constructor(
         /** Même traduction pour les fournisseurs IA. */
         fun verdictFor(reason: AiFailureReason?): Verdict = when (reason) {
             null -> Verdict(KeyHealth.VALID, null)
-            AiFailureReason.INVALID_KEY -> Verdict(KeyHealth.INVALID, "clé refusée (401/403)")
-            AiFailureReason.MISSING_KEY -> Verdict(KeyHealth.INVALID, "aucune clé")
-            AiFailureReason.BILLING ->
-                Verdict(KeyHealth.INVALID, "crédit épuisé sur le compte du fournisseur")
-            AiFailureReason.QUOTA -> Verdict(KeyHealth.INVALID, "quota atteint")
+            AiFailureReason.INVALID_KEY -> Verdict(KeyHealth.INVALID, KeyIssue.INVALID_KEY)
+            AiFailureReason.MISSING_KEY -> Verdict(KeyHealth.INVALID, KeyIssue.MISSING_KEY)
+            AiFailureReason.BILLING -> Verdict(KeyHealth.INVALID, KeyIssue.BILLING)
+            AiFailureReason.QUOTA -> Verdict(KeyHealth.INVALID, KeyIssue.QUOTA)
             AiFailureReason.NETWORK, AiFailureReason.SERVER -> Verdict(KeyHealth.UNVERIFIABLE, null)
             // Réponse illisible ou motif inconnu : le service a répondu, mais rien ne prouve que la
             // clé soit en cause. On ne condamne pas la clé sur un doute.

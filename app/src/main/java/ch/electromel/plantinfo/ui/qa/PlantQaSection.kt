@@ -38,14 +38,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.domain.model.costText
 import ch.electromel.plantinfo.domain.model.tokensText
 import ch.electromel.plantinfo.ui.components.SectionCard
+import ch.electromel.plantinfo.util.AppLocales
+import ch.electromel.plantinfo.util.rememberStringProvider
 
 /**
  * Zone « Poser une question à l'IA » affichée sous la fiche d'identification (§Q&A).
@@ -59,8 +63,11 @@ fun PlantQaSection(
     viewModel: PlantQaViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val strings = rememberStringProvider()
     val context = LocalContext.current
     var question by rememberSaveable(entity.id) { mutableStateOf("") }
+    val speechPrompt = stringResource(R.string.qa_speech_prompt)
+    val speechUnavailable = stringResource(R.string.qa_speech_unavailable)
 
     // Dictée vocale via l'UI système de reconnaissance vocale (aucune permission micro requise ici).
     val speechLauncher = rememberLauncherForActivityResult(
@@ -76,10 +83,9 @@ fun PlantQaSection(
         }
     }
 
-    SectionCard("Poser une question à l'IA", modifier) {
+    SectionCard(stringResource(R.string.qa_title), modifier) {
         Text(
-            "Posez une question sur cette plante (entretien, comestibilité, confusions possibles, " +
-                "floraison…). La réponse tient compte des informations connues et du lieu de la prise de vue.",
+            stringResource(R.string.qa_intro),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
@@ -92,10 +98,10 @@ fun PlantQaSection(
             },
             modifier = Modifier.fillMaxWidth(),
             minLines = 2,
-            placeholder = { Text("Votre question…") },
+            placeholder = { Text(stringResource(R.string.qa_placeholder)) },
             trailingIcon = {
-                IconButton(onClick = { launchSpeech(context, speechLauncher) }) {
-                    Icon(Icons.Filled.Mic, contentDescription = "Dicter la question")
+                IconButton(onClick = { launchSpeech(context, speechLauncher, speechPrompt, speechUnavailable) }) {
+                    Icon(Icons.Filled.Mic, contentDescription = stringResource(R.string.qa_dictate))
                 }
             },
         )
@@ -119,7 +125,7 @@ fun PlantQaSection(
                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null,
                     modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Demander")
+                Text(stringResource(R.string.qa_ask))
             }
         }
 
@@ -160,7 +166,7 @@ fun PlantQaSection(
                                 buildString {
                                     append(exchange.provider.label)
                                     append(" · ")
-                                    append(usage.tokensText())
+                                    append(usage.tokensText(strings))
                                     usage.costText()?.let { append(" · ~").append(it) }
                                 },
                                 style = MaterialTheme.typography.bodySmall,
@@ -178,19 +184,19 @@ fun PlantQaSection(
 private fun launchSpeech(
     context: Context,
     launcher: ActivityResultLauncher<Intent>,
+    prompt: String,
+    unavailableMessage: String,
 ) {
     val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fr-FR")
-        putExtra(RecognizerIntent.EXTRA_PROMPT, "Posez votre question")
+        // La dictée suit la langue de l'application : on ne dicte pas en français dans une
+        // interface en allemand.
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, AppLocales.current(context).tag)
+        putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
     }
     try {
         launcher.launch(intent)
     } catch (e: ActivityNotFoundException) {
-        Toast.makeText(
-            context,
-            "Reconnaissance vocale indisponible sur cet appareil.",
-            Toast.LENGTH_SHORT,
-        ).show()
+        Toast.makeText(context, unavailableMessage, Toast.LENGTH_SHORT).show()
     }
 }

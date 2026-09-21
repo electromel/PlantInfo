@@ -2,12 +2,14 @@ package ch.electromel.plantinfo.ui.qa
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.remote.ai.AiAnswerOutcome
 import ch.electromel.plantinfo.data.remote.ai.summary
 import ch.electromel.plantinfo.data.repo.PlantQaRepository
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.TokenUsage
+import ch.electromel.plantinfo.util.AppStrings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +42,7 @@ data class PlantQaUiState(
 @HiltViewModel
 class PlantQaViewModel @Inject constructor(
     private val repository: PlantQaRepository,
+    private val strings: AppStrings,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlantQaUiState())
@@ -61,13 +64,12 @@ class PlantQaViewModel @Inject constructor(
                 AiAnswerOutcome.NoProvidersConfigured ->
                     _state.value.copy(
                         loading = false,
-                        error = "Aucune clé IA configurée : impossible de répondre. Ajoutez une clé " +
-                            "dans les paramètres.",
+                        error = strings.get(R.string.qa_no_ai_key),
                     )
                 is AiAnswerOutcome.AllFailed ->
                     _state.value.copy(
                         loading = false,
-                        error = "La réponse a échoué — ${outcome.failures.summary()}.",
+                        error = strings.get(R.string.qa_failed, outcome.failures.summary(strings)),
                     )
             }
             _state.value = message

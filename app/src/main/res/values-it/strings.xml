@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Italiano. Lingua d\'origine: francese (values-fr); lingua di ripiego: inglese (values). -->
+<resources>
+    <!-- Navigazione -->
+    <string name="nav_capture">Identifica</string>
+    <string name="nav_history">Cronologia</string>
+    <string name="nav_settings">Impostazioni</string>
+
+    <!-- Avvertenze di sicurezza -->
+    <string name="fungus_safety_warning">Non consumare mai un fungo basandosi solo su questa identificazione automatica. In caso di dubbio, rivolgetevi a un servizio ufficiale di controllo micologico o a un esperto qualificato.</string>
+    <string name="protected_species_warning">Specie potenzialmente protetta in questa regione: la raccolta è sconsigliata e può essere vietata. Informatevi presso le autorità locali.</string>
+    <string name="range_disclaimer">Areale di distribuzione approssimativo, basato sulle osservazioni note (GBIF). Non è un limite scientifico o legale preciso.</string>
+
+    <!-- Messaggi generali -->
+    <string name="no_ai_key_message">Nessuna chiave IA configurata: viene mostrato solo il risultato grezzo di Pl@ntNet (senza valutazione dello stato di salute né informazioni aggiuntive). Aggiungete una chiave nelle impostazioni per l\'analisi completa.</string>
+    <string name="low_confidence_hint">Identificazione poco affidabile. Aggiungete un\'altra foto per affinare il risultato.</string>
+
+    <!-- Azioni comuni -->
+    <string name="action_continue">Continua</string>
+    <string name="action_cancel">Annulla</string>
+    <string name="action_close">Chiudi</string>
+    <string name="action_delete">Elimina</string>
+    <string name="action_back">Indietro</string>
+
+    <!-- Componenti condivisi -->
+    <string name="photo_fullscreen_description">Foto a schermo intero</string>
+
+    <!-- Avviso all\'avvio: chiavi non più valide -->
+    <string name="key_problem_title_one">Una chiave API non funziona più</string>
+    <string name="key_problem_title_many">Alcune chiavi API non funzionano più</string>
+    <string name="key_problem_hint">Correggete la chiave nelle Impostazioni, oppure proseguite: l\'app ripiegherà sui fornitori ancora disponibili.</string>
+    <string name="key_problem_fix">Correggi questa chiave</string>
+    <string name="key_problem_open_settings">Apri le impostazioni</string>
+
+    <!-- Schermata di acquisizione -->
+    <string name="capture_locating">Localizzazione…</string>
+    <string name="capture_gps_ok">GPS ✓</string>
+    <string name="capture_gps_unavailable">GPS non disponibile</string>
+    <string name="capture_setup_incomplete_title">Configurazione da completare</string>
+    <string name="capture_setup_incomplete_body">Nessuna chiave API è registrata. PlantInfo interroga servizi esterni per riconoscere le vostre foto: senza chiave l\'identificazione non può partire.</string>
+    <string name="capture_open_setup">Avvia la procedura guidata</string>
+    <string name="capture_open_camera">Apri la fotocamera</string>
+    <string name="capture_empty_hint">Toccate per fotografare una pianta,\noppure importatela dalla galleria.</string>
+    <string name="capture_photo_tap_to_zoom">Foto — toccare per ingrandire</string>
+    <string name="capture_remove_photo">Rimuovi la foto</string>
+    <string name="capture_close_camera">Chiudi la fotocamera</string>
+    <string name="capture_take_photo">Scatta la foto</string>
+    <string name="capture_camera_permission_body">Autorizzate la fotocamera per fotografare una pianta.</string>
+    <string name="capture_camera_permission_action">Autorizza la fotocamera</string>
+    <string name="capture_gallery">Galleria</string>
+    <string name="capture_analyzing">Analisi…</string>
+    <string name="capture_identify">Identifica</string>
+    <string name="capture_identify_n_photos">Identifica (%1$d foto)</string>
+
+    <!-- Valori di ripiego per una scheda incompleta -->
+    <string name="species_unknown">Specie sconosciuta</string>
+    <string name="health_not_assessed">Stato non valutato</string>
+
+    <!-- Acquisizione — messaggi -->
+    <string name="capture_queued_offline">Offline: l\'identificazione è stata messa in coda. Riceverete una notifica appena sarà pronta.</string>
+
+    <!-- Cronologia — filtri temporali -->
+    <string name="history_range_all">Tutte le date</string>
+    <string name="history_range_7_days">7 giorni</string>
+    <string name="history_range_30_days">30 giorni</string>
+    <string name="history_range_this_year">Quest\'anno</string>
+
+    <!-- Cronologia — messaggi -->
+    <string name="history_reanalyzed">Analisi aggiornata (%1$s).</string>
+
+    <!-- Schermata Cronologia -->
+    <string name="history_title">Cronologia</string>
+    <string name="history_delete_all">Elimina tutto</string>
+    <string name="history_search_label">Cerca una specie</string>
+    <string name="history_filter_favorites">Preferiti</string>
+    <string name="history_filter_located">Con posizione</string>
+    <string name="history_empty_title">Ancora nessuna identificazione</string>
+    <string name="history_empty_body">Fotografate una pianta dalla scheda Identifica: le vostre identificazioni appariranno qui.</string>
+    <string name="history_delete_all_title">Eliminare tutta la cronologia?</string>
+    <string name="history_delete_all_body">L\'operazione è irreversibile ed elimina anche le foto associate.</string>
+    <string name="history_photo_of">Foto di %1$s</string>
+    <string name="history_located">Con posizione</string>
+    <string name="history_reanalyze">Rilancia l\'analisi IA</string>
+
+    <!-- Parti della pianta fotografate -->
+    <string name="organ_leaf">Foglia</string>
+    <string name="organ_flower">Fiore</string>
+    <string name="organ_fruit">Frutto</string>
+    <string name="organ_bark">Corteccia</string>
+    <string name="organ_habit">Portamento / sagoma</string>
+    <string name="organ_cap">Cappello (fungo)</string>
+    <string name="organ_gills">Lamelle / parte inferiore del cappello</string>
+    <string name="organ_other">Altro</string>
+
+    <!-- Stato di conservazione IUCN -->
+    <string name="iucn_ex">Estinta</string>
+    <string name="iucn_ew">Estinta in natura</string>
+    <string name="iucn_cr">In pericolo critico</string>
+    <string name="iucn_en">In pericolo</string>
+    <string name="iucn_vu">Vulnerabile</string>
+    <string name="iucn_nt">Quasi minacciata</string>
+    <string name="iucn_lc">Rischio minimo</string>
+    <string name="iucn_dd">Dati insufficienti</string>
+
+    <!-- Ambiti d\'uso -->
+    <string name="use_domain_medicinal">Salute e medicina</string>
+    <string name="use_domain_food">Alimentazione</string>
+    <string name="use_domain_cosmetic">Cosmetica e profumeria</string>
+    <string name="use_domain_chemical">Chimica e industria</string>
+    <string name="use_domain_craft">Artigianato e materiali</string>
+    <string name="use_domain_ornamental">Ornamento e paesaggio</string>
+    <string name="use_domain_ecological">Ecologia e giardino</string>
+    <string name="use_domain_other">Altri usi</string>
+
+    <!-- Commestibilità e dimensioni -->
+    <string name="edibility_edible">Commestibile</string>
+    <string name="edibility_toxic">Tossica</string>
+    <string name="edibility_inedible">Non commestibile</string>
+    <string name="maturity_height">Altezza</string>
+    <string name="maturity_diameter">Ampiezza</string>
+    <string name="maturity_time">Tempo fino alla maturità</string>
+
+    <!-- Avvertenza di confusione con specie tossiche -->
+    <string name="toxic_warning_one">Identificazione incerta (%1$d/100): tra le altre ipotesi resta plausibile una specie tossica — %2$s. Potrebbe quindi trattarsi di una specie tossica: non mangiate nulla, non portate nulla alla bocca e maneggiatela con cautela finché un esperto non conferma l\'identificazione.</string>
+    <string name="toxic_warning_many">Identificazione incerta (%1$d/100): tra le altre ipotesi restano plausibili specie tossiche — %2$s. Potrebbe quindi trattarsi di una specie tossica: non mangiate nulla, non portate nulla alla bocca e maneggiatela con cautela finché un esperto non conferma l\'identificazione.</string>
+
+    <!-- Consiglio per una scheda incompleta -->
+    <string name="advice_no_ai_key">Nessuna chiave IA è configurata: questa scheda si limita all\'identificazione Pl@ntNet, senza descrizione, senza stato di salute e senza domande.</string>
+    <string name="advice_no_ai_key_action">Aggiungi una chiave IA</string>
+    <string name="advice_ai_unavailable">L\'analisi con l\'IA non è andata a buon fine durante questa identificazione. Rilanciate l\'analisi per completare la scheda.</string>
+    <string name="advice_no_plantnet_key">Questa identificazione proviene dalla sola IA: senza chiave Pl@ntNet il nome della specie non è stato confrontato con la banca dati di osservazioni botaniche.</string>
+    <string name="advice_no_plantnet_key_action">Aggiungi la chiave Pl@ntNet</string>
+
+    <!-- Schermata Risultato -->
+    <string name="result_title">Risultato</string>
+    <string name="result_reanalyze">Rilancia l\'analisi</string>
+
+    <!-- Schermata Dettaglio -->
+    <string name="detail_title">Dettaglio</string>
+    <string name="detail_favorite_add">Aggiungi ai preferiti</string>
+    <string name="detail_favorite_remove">Togli dai preferiti</string>
+    <string name="detail_share">Condividi</string>
+    <string name="detail_export_pdf">Esporta in PDF</string>
+    <string name="detail_notes_title">Note personali</string>
+    <string name="detail_notes_placeholder">Aggiungi una nota…</string>
+    <string name="detail_notes_save">Salva la nota</string>
+    <string name="detail_delete_title">Eliminare questa identificazione?</string>
+    <string name="detail_delete_body">La scheda e le sue foto saranno eliminate definitivamente.</string>
+
+    <!-- Scheda di identificazione (Risultato e Dettaglio) -->
+    <string name="fiche_photo_of">Foto di %1$s — toccare per ingrandire</string>
+    <string name="fiche_score_hint">Toccate il punteggio per vedere il dettaglio e le altre ipotesi.</string>
+    <string name="fiche_user_confirmed">Specie confermata manualmente tra le ipotesi proposte.</string>
+    <string name="fiche_no_ai_banner">Nessuna IA è stata raggiungibile: risultato grezzo di Pl@ntNet, senza descrizione, stato di salute né commestibilità. Verificate le vostre chiavi IA nelle impostazioni oppure rilanciate l\'analisi.</string>
+    <string name="fiche_sources_disagree">Identificazione incerta: Pl@ntNet e l\'IA propongono specie diverse. Vedete le ipotesi alternative qui sotto.</string>
+    <string name="fiche_score_section">Punteggio di attendibilità</string>
+    <string name="fiche_score_final">Punteggio finale</string>
+    <string name="fiche_score_ai">IA (%1$s)</string>
+    <string name="fiche_habitat">Habitat e distribuzione</string>
+    <string name="fiche_health">Stato di salute</string>
+    <string name="fiche_health_recommendations">Raccomandazioni:</string>
+    <string name="fiche_information">Informazioni</string>
+    <string name="fiche_alternatives_selectable">Altre ipotesi — toccate per confermare</string>
+    <string name="fiche_alternatives">Altre ipotesi</string>
+    <string name="fiche_alternative_choose">Scegli questa specie</string>
+    <string name="fiche_location_title">Luogo dello scatto</string>
+    <string name="fiche_range_title">Dove si trova questa specie</string>
+    <string name="fiche_gps_accuracy">Precisione GPS ~%1$d m</string>
+    <string name="fiche_gps_accuracy_low">Precisione GPS ~%1$d m (bassa)</string>
+    <string name="fiche_no_gps_explanation">Foto senza posizione GPS: la mappa è centrata sull\'areale noto della specie (osservazioni GBIF) e non sul luogo dello scatto.</string>
+    <string name="fiche_identification_cost">Costo dell\'identificazione</string>
+    <string name="fiche_incomplete">Scheda incompleta</string>
+    <string name="fiche_maturity_title">Dimensioni a maturità</string>
+    <string name="fiche_maturity_note">Dimensioni della specie adulta, solo a titolo indicativo: variano con il suolo, l\'esposizione e il clima.</string>
+    <string name="fiche_calendar_fungus_title">Periodo di crescita e di raccolta</string>
+    <string name="fiche_calendar_title">Quando piantare e curare</string>
+    <string name="fiche_calendar_note">Periodi indicativi per il clima del luogo dello scatto: spostateli in base ad altitudine, esposizione e andamento meteorologico dell\'anno.</string>
+    <string name="fiche_uses_title">Usi</string>
+    <string name="fiche_uses_medicinal_note">Usi tradizionali o documentati, citati a titolo informativo: non sono consigli terapeutici. Chiedete il parere di un professionista sanitario prima di qualsiasi uso.</string>
+    <string name="fiche_symbolism_title">Simbologia</string>
+    <string name="fiche_conservation_title">Stato di conservazione</string>
+    <string name="fiche_conservation_status">%1$s (%2$s)</string>
+    <string name="fiche_conservation_note">Lista rossa mondiale IUCN, tramite Pl@ntNet. Uno stato di conservazione non equivale a una protezione giuridica: le norme locali possono essere più severe.</string>
+    <string name="fiche_toxic_banner">Specie segnalata come tossica. Non consumare né portare alla bocca.</string>
+    <string name="fiche_edibility_title">Commestibilità</string>
+    <string name="fiche_edible_warning">Non consumate mai una pianta o un fungo selvatico senza la conferma di un esperto: un\'identificazione può essere errata e alcune specie hanno sosia pericolosi.</string>
+    <string name="fiche_confirmed_pill">Confermata</string>
+    <string name="fiche_reanalyzing">Nuova analisi…</string>
+    <string name="fiche_reanalyze_ai">Rilancia l\'analisi IA</string>
+    <string name="fiche_provider_none">Solo risultato Pl@ntNet (nessuna IA)</string>
+    <string name="fiche_provider_analyzed_by">Analizzata da %1$s</string>
+    <string name="usage_provider">Fornitore</string>
+    <string name="usage_tokens">Token</string>
+    <string name="usage_cost">Costo stimato</string>
+    <string name="usage_cost_unknown">tariffa del modello sconosciuta</string>
+    <string name="usage_note">Stima alla tariffa pubblica del modello. Nulla se il vostro account è ancora nella fascia gratuita del fornitore.</string>
+
+    <!-- Domande all\'IA -->
+    <string name="qa_title">Fai una domanda all\'IA</string>
+    <string name="qa_intro">Fate una domanda su questa pianta (cura, commestibilità, possibili confusioni, fioritura…). La risposta tiene conto delle informazioni note e del luogo dello scatto.</string>
+    <string name="qa_placeholder">La vostra domanda…</string>
+    <string name="qa_dictate">Detta la domanda</string>
+    <string name="qa_speech_prompt">Ponete la vostra domanda</string>
+    <string name="qa_speech_unavailable">Riconoscimento vocale non disponibile su questo dispositivo.</string>
+    <string name="qa_ask">Chiedi</string>
+    <string name="qa_no_ai_key">Nessuna chiave IA configurata: impossibile rispondere. Aggiungete una chiave nelle impostazioni.</string>
+    <string name="qa_failed">La risposta non è riuscita — %1$s.</string>
+
+    <!-- Mappa di distribuzione -->
+    <string name="map_no_location_at_all">Nessuna posizione dello scatto e nessun dato di distribuzione GBIF per questa specie: la mappa non può essere mostrata.</string>
+    <string name="map_loading_range">Caricamento dell\'areale…</string>
+    <string name="map_range_legend">Area verde: areale approssimativo (osservazioni GBIF). Un\'approssimazione basata sulle osservazioni note, senza valore legale.</string>
+    <string name="map_no_range_with_point">Nessun dato di distribuzione GBIF per questa specie: è mostrato solo il punto dello scatto.</string>
+    <string name="map_no_range">Nessun dato di distribuzione GBIF per questa specie.</string>
+
+    <!-- Motivi di errore dei fornitori -->
+    <string name="failure_missing_key">nessuna chiave</string>
+    <string name="failure_invalid_key">chiave non valida</string>
+    <string name="failure_quota">quota raggiunta</string>
+    <string name="failure_billing">credito esaurito sull\'account</string>
+    <string name="failure_network">rete non disponibile</string>
+    <string name="failure_server">errore del server</string>
+    <string name="failure_parse">risposta illeggibile</string>
+    <string name="failure_unknown">errore sconosciuto</string>
+
+    <!-- Chiavi inutilizzabili — motivi -->
+    <string name="key_issue_invalid">chiave rifiutata (401/403)</string>
+    <string name="key_issue_missing">nessuna chiave</string>
+    <string name="key_issue_billing">credito esaurito sull\'account del fornitore</string>
+    <string name="key_issue_quota">quota raggiunta</string>
+    <string name="key_issue_plantnet_invalid">chiave rifiutata da Pl@ntNet (401/403)</string>
+    <string name="key_issue_plantnet_quota">quota Pl@ntNet raggiunta</string>
+    <string name="key_issue_unusable">chiave inutilizzabile</string>
+
+    <!-- Test di una chiave -->
+    <string name="key_test_refused">Chiave rifiutata.</string>
+    <string name="key_test_unverifiable">Impossibile verificare la chiave in questo momento (rete o servizio non disponibile). È salvata: riprovate più tardi.</string>
+
+    <!-- Token consumati -->
+    <string name="tokens_summary">%1$s token (%2$s in entrata + %3$s in uscita)</string>
+
+    <!-- Notifiche -->
+    <string name="notif_channel_name">Identificazioni</string>
+    <string name="notif_channel_description">Risultati delle identificazioni differite (modalità offline)</string>
+    <string name="notif_result_ready">Identificazione pronta</string>
+    <string name="notif_failed">Identificazione non riuscita</string>
+
+    <!-- Esportazione PDF -->
+    <string name="pdf_footer">Identificata il %1$s — PlantInfo</string>
+    <string name="pdf_page_number">%1$s  (pagina %2$d)</string>
+    <string name="pdf_confirmed">Identificazione confermata manualmente</string>
+    <string name="pdf_score">Punteggio di attendibilità: %1$d/100</string>
+    <string name="pdf_score_with_provider">Punteggio di attendibilità: %1$d/100 — analizzata da %2$s</string>
+    <string name="pdf_fungus_heading">Avvertenza funghi</string>
+    <string name="pdf_fungus_body">Non consumare mai un fungo basandosi solo su questa identificazione automatica. In caso di dubbio, rivolgetevi a un esperto o a un servizio di controllo micologico.</string>
+    <string name="pdf_protected_heading">Specie protetta</string>
+    <string name="pdf_protected_body">Specie potenzialmente protetta in questa regione: raccolta sconsigliata.</string>
+    <string name="pdf_toxic_heading">Possibile confusione con una specie tossica</string>
+    <string name="pdf_conservation_body">%1$s (%2$s) — lista rossa mondiale IUCN, tramite Pl@ntNet.</string>
+    <string name="pdf_uses_medicinal_note">Usi citati a titolo documentario, senza valore di consiglio terapeutico.</string>
+
+    <!-- Condivisione -->
+    <string name="share_confirmed">Identificazione confermata manualmente</string>
+    <string name="share_score">Punteggio: %1$d/100</string>
+    <string name="share_edibility">Commestibilità: %1$s</string>
+    <string name="share_maturity">A maturità: %1$s</string>
+    <string name="share_habitat">Habitat: %1$s</string>
+    <string name="share_calendar">Calendario: %1$s</string>
+    <string name="share_uses">Usi: %1$s</string>
+    <string name="share_symbolism">Simbologia: %1$s</string>
+    <string name="share_place">Luogo: %1$s</string>
+    <string name="share_signature">— via PlantInfo</string>
+    <string name="share_chooser_identification">Condividi l\'identificazione</string>
+    <string name="share_chooser_pdf">Condividi la scheda PDF</string>
+
+    <!-- Processo di identificazione — messaggi -->
+    <string name="id_no_keys">Nessuna chiave API configurata. Inserite almeno la chiave Pl@ntNet nelle impostazioni.</string>
+    <string name="id_no_ai_key">Nessuna chiave IA configurata: viene mostrato solo il risultato grezzo di Pl@ntNet (senza stato di salute né informazioni aggiuntive). Aggiungete una chiave nelle impostazioni.</string>
+    <string name="id_ai_unavailable">Analisi IA non disponibile (%1$s). Risultato grezzo di Pl@ntNet: senza descrizione, stato di salute né punteggio IA.</string>
+    <string name="id_reanalyze_offline">Nessuna connessione: impossibile rilanciare l\'analisi. Riprovate più tardi.</string>
+    <string name="id_plantnet_invalid_key">Chiave Pl@ntNet non valida. Verificatela nelle impostazioni.</string>
+    <string name="id_plantnet_quota">Quota Pl@ntNet raggiunta. Riprovate più tardi.</string>
+    <string name="id_offline_retry">Nessuna connessione. L\'identificazione sarà ritentata automaticamente.</string>
+    <string name="id_plantnet_server">Il servizio Pl@ntNet è temporaneamente non disponibile.</string>
+    <string name="id_no_result">Non è stato possibile identificare alcuna specie. Aggiungete una foto più nitida o complementare.</string>
+    <string name="id_ai_invalid_key">Chiave/i IA non valida/e (%1$s). Verificatele nelle impostazioni.</string>
+    <string name="id_ai_quota">Analisi IA impossibile: %1$s. Verificate credito e quota dei vostri account presso i fornitori.</string>
+    <string name="id_offline_retry_network">Nessuna connessione. L\'identificazione sarà ritentata automaticamente al ritorno della rete.</string>
+    <string name="id_ai_failed">L\'analisi non è riuscita (%1$s).</string>
+
+    <!-- Cronologia — conferma manuale di una specie -->
+    <string name="selection_note_toxic">Specie segnalata come tossica dall\'elenco di riferimento dell\'applicazione. Le informazioni sulla commestibilità mostrate finora riguardavano la specie identificata in precedenza: sono state cancellate.</string>
+    <string name="selection_note_unknown">Commestibilità non valutata per questa specie: l\'avete confermata manualmente, senza una nuova analisi. Le informazioni mostrate finora riguardavano la specie identificata in precedenza.</string>
+
+    <!-- Schermata Impostazioni -->
+    <string name="settings_title">Impostazioni</string>
+    <string name="settings_api_keys">Chiavi API</string>
+    <string name="settings_security">Sicurezza</string>
+    <string name="settings_add_key">Aggiungi una chiave</string>
+    <string name="settings_recheck_running">Verifica…</string>
+    <string name="settings_recheck">Verifica di nuovo le chiavi</string>
+    <string name="settings_recheck_note">Le chiavi vengono controllate automaticamente una volta al giorno all\'avvio. Ogni verifica consuma una richiesta presso il fornitore.</string>
+    <string name="settings_toxic_alert_title">Avvertenza specie tossica</string>
+    <string name="settings_toxic_alert_intro">Avverte quando un\'identificazione non è sicura mentre una specie tossica resta un\'ipotesi possibile.</string>
+    <string name="settings_toxic_max_score">Avvertire se il punteggio è inferiore a</string>
+    <string name="settings_toxic_max_score_hint">Più alto = avvisi più frequenti. A 100 l\'avvertenza compare non appena esiste un\'ipotesi tossica, anche con un\'identificazione molto sicura.</string>
+    <string name="settings_toxic_min_alt">Considerare solo le ipotesi sopra</string>
+    <string name="settings_toxic_min_alt_hint">Più basso = avvisi più frequenti. A 0 anche un\'ipotesi molto improbabile attiva l\'avvertenza.</string>
+    <string name="settings_toxic_rule">Regola attuale: avvertire quando il punteggio finale è inferiore a %1$d e un\'ipotesi tossica supera %2$d.</string>
+    <string name="settings_toxic_caveat">Questa impostazione cambia solo il momento in cui l\'avvertenza appare: non rende mai una specie più sicura. Non consumate mai una pianta o un fungo selvatico senza la conferma di un esperto.</string>
+    <string name="settings_toxic_reset">Torna ai valori predefiniti (%1$d e %2$d)</string>
+    <string name="settings_relaunch_setup">Riavvia la procedura guidata</string>
+    <string name="settings_free_gemini_title">IA gratuita (solo Gemini)</string>
+    <string name="settings_free_gemini_body">Usa solo Gemini per l\'identificazione e le domande.</string>
+    <string name="settings_free_gemini_note">Claude e GPT vengono ignorati: le loro API sono a pagamento (l\'abbonamento Claude Pro non include crediti API). Disattivate questa opzione solo dopo aver ricaricato un account Anthropic o OpenAI.</string>
+    <string name="settings_key_stored">Chiave salvata</string>
+    <string name="settings_key_absent">Nessuna chiave salvata</string>
+    <string name="settings_key_broken">Questa chiave non funziona più: %1$s.</string>
+    <string name="settings_key_replace">Sostituisci la chiave API</string>
+    <string name="settings_key_paste_label">Incolla la chiave API</string>
+    <string name="settings_key_paste_action">Incolla dagli appunti</string>
+    <string name="settings_key_testing">Test della chiave…</string>
+    <string name="settings_key_valid">Chiave valida</string>
+    <string name="settings_key_save_and_test">Salva e prova</string>
+    <string name="settings_key_clear">Cancella</string>
+    <string name="settings_fallback_title">Ordine di ripiego IA</string>
+    <string name="settings_fallback_body">In caso di errore (chiave non valida, quota, rete), l\'app prova il fornitore successivo.</string>
+    <string name="settings_fallback_disabled">Senza effetto finché «IA gratuita (solo Gemini)» è attiva: viene provato solo Gemini.</string>
+    <string name="settings_fallback_position">%1$d. %2$s</string>
+    <string name="settings_move_up">Sposta su</string>
+    <string name="settings_move_down">Sposta giù</string>
+
+    <!-- Costo dichiarato dei fornitori di IA -->
+    <string name="gemini_cost_hint">circa un centesimo per identificazione (tariffa Google rilevata a metà 2026, soggetta a variazioni)</string>
+
+    <!-- Procedura guidata — testi generali -->
+    <string name="setup_what_app_does">PlantInfo identifica una pianta, un albero o un fungo a partire dalle vostre foto, poi raccoglie in una scheda ciò che occorre sapere: descrizione, stato di salute, habitat, areale di distribuzione, commestibilità e tossicità. Potete poi porre le vostre domande sulla specie identificata.</string>
+    <string name="setup_privacy_caveat">Queste richieste partono dal vostro telefono: ogni servizio vede quindi il vostro indirizzo IP, come per qualsiasi visita a un sito web. Ciò che ne conservano dipende dalle loro condizioni d\'uso.</string>
+    <string name="setup_why_keys_intro">PlantInfo non ospita alcun servizio di identificazione: interroga quelli che esistono già, con i vostri accessi. È questo che permette all\'applicazione di non farvi pagare nulla e di non conservare nulla dalla sua parte.</string>
+    <string name="setup_can_change_later">Nulla è definitivo: potrete aggiungere, sostituire o cancellare una chiave in qualsiasi momento nelle Impostazioni, e riavviare questa procedura dalla stessa schermata.</string>
+    <string name="setup_skip_hint">Potete saltare questo passaggio e tornarci più tardi.</string>
+    <string name="setup_ready_full">Tutto è pronto. Fotografate una pianta e avviate l\'identificazione.</string>
+    <string name="setup_ready_plantnet_only">Potete identificare piante con Pl@ntNet. Senza chiave IA la scheda si limita al nome della specie: niente descrizione, stato di salute, funghi o domande.</string>
+    <string name="setup_ready_ai_only">Potete identificare con la sola IA, funghi compresi. Senza Pl@ntNet manca la verifica botanica che rende affidabile il nome della specie.</string>
+    <string name="setup_ready_nothing">Nessuna chiave è salvata: l\'identificazione non potrà partire. Riavviate questa procedura dalle Impostazioni quando sarete pronti.</string>
+
+    <!-- Procedura guidata — dove restano i dati -->
+    <string-array name="setup_where_data_lives">
+        <item>Le vostre foto, le vostre schede e le vostre note restano su questo telefono, nella memoria privata dell\'applicazione. Nulla viene depositato su un server PlantInfo — non ne esiste alcuno.</item>
+        <item>Non c\'è alcun account da creare, nessuna password, nessun indirizzo e-mail richiesto.</item>
+        <item>Le vostre chiavi API sono cifrate sul dispositivo e vengono inviate solo al servizio a cui appartengono.</item>
+        <item>Disinstallare l\'applicazione cancella tutto: non esiste alcuna copia altrove.</item>
+    </string-array>
+    <string-array name="setup_external_services">
+        <item>Pl@ntNet</item>
+        <item>Il fornitore di IA che scegliete</item>
+        <item>GBIF</item>
+        <item>OpenStreetMap</item>
+    </string-array>
+    <string-array name="setup_external_data_sent">
+        <item>le foto che inviate, per ottenere proposte di specie.</item>
+        <item>le foto, le proposte di Pl@ntNet e, quando sono note, le coordinate GPS dello scatto — oltre al testo delle vostre domande.</item>
+        <item>il nome scientifico della specie, per recuperarne l\'areale (nessuna foto, nessuna vostra posizione).</item>
+        <item>l\'area di mappa visualizzata, solo quando aprite la mappa di una scheda.</item>
+    </string-array>
+
+    <!-- Guide alle chiavi API — comuni -->
+    <string name="guide_what_is_a_key">Una chiave API è una password che create presso un servizio online (Pl@ntNet, Google, Anthropic, OpenAI) e che incollate qui. Autorizza PlantInfo a interrogare quel servizio a vostro nome, dal vostro telefono. Non esiste alcun account PlantInfo: ogni chiave resta cifrata su questo dispositivo e viene inviata solo al servizio interessato.</string>
+    <string name="guide_minimum_setup">Per cominciare bastano due chiavi: Pl@ntNet (identificazione, gratuita) e Gemini (descrizione, salute, funghi). La fascia gratuita di Gemini funziona, ma è lenta e limitata a qualche decina di richieste al giorno; con la fatturazione attiva, contate %1$s. Claude e GPT sono alternative facoltative, anch\'esse a pagamento.</string>
+    <string name="guide_plantnet_vs_ai">Pl@ntNet è un servizio specializzato: confronta la foto con una banca dati di osservazioni botaniche e propone specie, senza dirne altro. L\'IA (Gemini) riprende quella proposta, la confronta con la foto, redige la descrizione, valuta lo stato di salute, tratta i funghi — che Pl@ntNet non copre — e risponde alle vostre domande. Con il solo Pl@ntNet ottenete un nome; con la sola IA perdete la verifica botanica.</string>
+
+    <!-- Guida — Pl@ntNet -->
+    <string name="guide_plantnet_role">Identifica la specie a partire dalla foto. È la base dell\'applicazione.</string>
+    <string name="guide_plantnet_cost">Gratuita: l\'iscrizione dà una quota giornaliera di identificazioni, sufficiente per un uso personale.</string>
+    <string name="guide_plantnet_pitfall">La chiave Pl@ntNet è già creata per voi: non c\'è nulla da generare, basta copiare il valore mostrato nel vostro account.</string>
+
+    <!-- Guida — Gemini -->
+    <string name="guide_gemini_role">Descrive la pianta, ne valuta lo stato di salute, identifica i funghi e risponde alle vostre domande.</string>
+    <string name="guide_gemini_cost">La fascia gratuita di Google AI Studio basta per provare, ma è lenta nelle ore di punta e si ferma a qualche decina di richieste al giorno; oltre quel limite la chiave smette di rispondere fino al giorno dopo. Attivando la fatturazione sul progetto Google l\'attesa sparisce e pagate %1$s.</string>
+    <string name="guide_gemini_pitfall">La chiave è mostrata per intero solo alla creazione: copiatela subito. Se l\'avete persa, createne semplicemente una nuova.</string>
+
+    <!-- Guida — Claude -->
+    <string name="guide_claude_role">Alternativa a Gemini per descrizione, stato di salute e domande. Spesso la più precisa sulle specie difficili.</string>
+    <string name="guide_claude_cost">A pagamento in base all\'uso, fatturata al numero di token (qualche centesimo per identificazione). Occorre accreditare l\'account prima del primo utilizzo.</string>
+    <string name="guide_claude_pitfall">Un abbonamento Claude Pro o Max non include alcun credito API: senza credito sull\'account per sviluppatori la chiave viene accettata, ma ogni chiamata fallisce.</string>
+
+    <!-- Guida — OpenAI -->
+    <string name="guide_openai_role">Seconda alternativa per descrizione, stato di salute e domande.</string>
+    <string name="guide_openai_cost">A pagamento in base all\'uso, fatturata al numero di token. Occorre accreditare l\'account prima del primo utilizzo.</string>
+    <string name="guide_openai_pitfall">Un abbonamento ChatGPT Plus non include alcun credito API: l\'account per sviluppatori si accredita separatamente.</string>
+
+    <!-- Guide alle chiavi API — procedure -->
+    <string-array name="guide_plantnet_steps">
+        <item>Aprite my.plantnet.org e create un account (indirizzo e-mail + password).</item>
+        <item>Confermate l\'e-mail di verifica ricevuta nella vostra casella.</item>
+        <item>Riconnettetevi, poi aprite le «Impostazioni» («Settings») del vostro account.</item>
+        <item>Individuate la riga «API key» e copiate il valore mostrato.</item>
+        <item>Tornate qui e incollatelo con il pulsante «incolla» del campo qui sotto.</item>
+    </string-array>
+    <string-array name="guide_gemini_steps">
+        <item>Aprite aistudio.google.com/apikey e accedete con un account Google.</item>
+        <item>Accettate le condizioni d\'uso di Google AI Studio se compaiono.</item>
+        <item>Fate clic su «Create API key».</item>
+        <item>Scegliete un progetto Google Cloud quando vi viene chiesto — quello proposto per impostazione predefinita va bene.</item>
+        <item>Copiate la chiave mostrata (comincia con «AIza») e incollatela qui sotto.</item>
+    </string-array>
+    <string-array name="guide_claude_steps">
+        <item>Aprite console.anthropic.com e create un account.</item>
+        <item>In «Billing» / «Plans», aggiungete credito (un importo minimo basta per centinaia di identificazioni).</item>
+        <item>Aprite «Settings» e poi «API keys».</item>
+        <item>Fate clic su «Create key» e dategli un nome (per esempio «PlantInfo»).</item>
+        <item>Copiate la chiave mostrata (comincia con «sk-ant-») e incollatela qui sotto.</item>
+    </string-array>
+    <string-array name="guide_openai_steps">
+        <item>Aprite platform.openai.com e create un account.</item>
+        <item>In «Billing», aggiungete credito sull\'account.</item>
+        <item>Aprite «API keys» dal menu dell\'account.</item>
+        <item>Fate clic su «Create new secret key» e confermate.</item>
+        <item>Copiate la chiave mostrata (comincia con «sk-») e incollatela qui sotto.</item>
+    </string-array>
+
+    <!-- Schermata Procedura guidata -->
+    <string name="setup_step_welcome">Benvenuti</string>
+    <string name="setup_step_why_keys">Perché una chiave API</string>
+    <string name="setup_step_key">Chiave %1$s</string>
+    <string name="setup_step_recap">Siete pronti</string>
+    <string name="setup_previous_step">Passaggio precedente</string>
+    <string name="setup_progress">%1$d / %2$d</string>
+    <string name="setup_skip">Salta</string>
+    <string name="setup_finish">Fine</string>
+    <string name="setup_data_stays_title">I vostri dati restano su questo dispositivo</string>
+    <string name="setup_data_leaves_title">Ciò che esce dal dispositivo, e a chi</string>
+    <string name="setup_what_is_a_key_title">Che cos\'è una chiave API?</string>
+    <string name="setup_plantnet_vs_ai_title">Pl@ntNet e l\'IA non fanno la stessa cosa</string>
+    <string name="setup_cost_title">Quanto costa</string>
+    <string name="setup_steps_title">Procedura</string>
+    <string name="setup_paste_title">Incollare la chiave</string>
+    <string name="setup_key_already_stored">Una chiave è già salvata.</string>
+    <string name="setup_replace_key">Sostituisci la chiave</string>
+    <string name="setup_key_label">Chiave %1$s</string>
+    <string name="setup_open_provider_page">Apri la pagina %1$s</string>
+    <string name="setup_recap_title">Le vostre chiavi</string>
+    <string name="setup_recap_plantnet">Pl@ntNet — identificazione delle piante</string>
+    <string name="setup_recap_ai">IA — descrizione, salute, funghi, domande</string>
+    <string name="setup_configured">Configurata</string>
+    <string name="setup_not_configured">Non configurata</string>
+
+    <!-- Impostazioni — lingua -->
+    <string name="settings_language_title">Lingua</string>
+    <string name="settings_language_body">L\'applicazione segue la lingua del telefono. Sceglietene un\'altra se preferite leggere PlantInfo in una lingua diversa.</string>
+    <string name="settings_language_system">Lingua del telefono</string>
+    <string name="settings_language_note">Le schede già salvate mantengono la lingua in cui sono state redatte: cambiare lingua qui non le traduce, ma le prossime identificazioni seguiranno la vostra scelta.</string>
+
+    <!-- Richiesta di una foto complementare -->
+    <string name="complementary_fungus">Fotografate la parte inferiore del cappello (lamelle/pori) e il gambo per precisare l\'identificazione.</string>
+    <string name="complementary_plant">Aggiungete un primo piano nitido di una foglia (e di un fiore o di un frutto, se presenti).</string>
+</resources>

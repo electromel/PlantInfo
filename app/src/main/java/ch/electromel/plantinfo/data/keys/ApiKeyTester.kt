@@ -1,7 +1,9 @@
 package ch.electromel.plantinfo.data.keys
 
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.remote.ai.AiOrchestrator
 import ch.electromel.plantinfo.data.remote.plantnet.PlantNetClient
+import ch.electromel.plantinfo.util.StringProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,6 +29,7 @@ class ApiKeyTester @Inject constructor(
     private val aiOrchestrator: AiOrchestrator,
     private val plantNetClient: PlantNetClient,
     private val keyHealth: KeyHealthMonitor,
+    private val strings: StringProvider,
 ) {
     /**
      * Enregistre la clé (elle doit l'être avant le test : c'est elle que le pipeline utilisera) puis
@@ -61,11 +64,11 @@ class ApiKeyTester @Inject constructor(
     private fun KeyHealthMonitor.Verdict.toTestState(): KeyTestState = when (health) {
         KeyHealth.VALID -> KeyTestState.Valid
         KeyHealth.INVALID -> KeyTestState.Invalid(
-            reason?.replaceFirstChar { it.uppercase() } ?: "Clé refusée.",
+            issue?.let { strings.get(it.labelRes).replaceFirstChar { c -> c.uppercase() } }
+                ?: strings.get(R.string.key_test_refused),
         )
         KeyHealth.UNVERIFIABLE, KeyHealth.UNKNOWN -> KeyTestState.Invalid(
-            "Impossible de vérifier la clé pour l'instant (réseau ou service indisponible). " +
-                "Elle est enregistrée : réessayez plus tard.",
+            strings.get(R.string.key_test_unverifiable),
         )
     }
 }

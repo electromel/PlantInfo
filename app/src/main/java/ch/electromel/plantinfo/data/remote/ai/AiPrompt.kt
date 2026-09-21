@@ -35,9 +35,17 @@ object AiPrompt {
             }
         } ?: "Position GPS non disponible."
 
+        val language = input.language
+
         return """
 Tu es un expert en botanique et mycologie. Analyse la ou les photo(s) fournie(s) d'une plante,
 d'un arbre ou d'un champignon et produis une identification.
+
+LANGUE DE RÉPONSE : rédige TOUTES les valeurs textuelles du JSON en ${language.aiName}
+(${language.endonym}) — noms communs, état de santé, recommandations, habitat, description,
+comestibilité, libellés et périodes du calendrier, usages, symbolique, raison de la photo
+complémentaire. Les CLÉS du JSON et les valeurs codées (domain, organ) restent telles quelles, en
+anglais. Les noms scientifiques restent en latin.
 
 Contexte :
 - Résultats de l'API Pl@ntNet (peu fiable ou absent pour les champignons) :
@@ -83,7 +91,7 @@ Consignes :
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exact suivant :
 {
-  "commonName": "nom commun en français",
+  "commonName": "nom commun dans la langue de réponse",
   "scientificName": "Nom latin",
   "confidence": 0-100,
   "isFungus": true|false,
@@ -98,7 +106,7 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
   "edible": true|false|null,
   "toxic": true|false|null,
   "edibilityNote": "précisions sur comestibilité/toxicité, parties concernées, dangers et confusions",
-  "careCalendar": [{"label":"Plantation|Semis|Taille|Arrosage|Fertilisation|Division|Protection hivernale|Récolte|Cueillette","period":"période, ex. mars à avril","note":"précision courte" | null}],
+  "careCalendar": [{"label":"opération (plantation, semis, taille, arrosage, fertilisation, division, protection hivernale, récolte, cueillette…), traduite dans la langue de réponse","period":"période, ex. mars à avril","note":"précision courte" | null}],
   "uses": [{"domain":"medicinal|food|cosmetic|chemical|craft|ornamental|ecological|other","detail":"usage en une phrase"}],
   "symbolism": "signification symbolique/culturelle et culture concernée" | null,
   "complementaryPhoto": {"organ":"leaf|flower|fruit|bark|habit|cap|gills|other","reason":"..."} | null
@@ -153,8 +161,10 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
     }
 
     private fun AiResponseDto.toDomain(): AiAnalysis = AiAnalysis(
-        commonName = commonName?.takeIf { it.isNotBlank() } ?: scientificName ?: "Inconnu",
-        scientificName = scientificName?.takeIf { it.isNotBlank() } ?: "Inconnu",
+        // Repli vide et non traduit : la couche data ne connaît pas la langue d'affichage. C'est
+        // l'interface qui substitue « Espèce inconnue » / « État non évalué » à un champ vide.
+        commonName = commonName?.takeIf { it.isNotBlank() } ?: scientificName.orEmpty(),
+        scientificName = scientificName?.takeIf { it.isNotBlank() }.orEmpty(),
         confidence = confidence?.coerceIn(0, 100) ?: 0,
         isFungus = isFungus ?: false,
         isProtected = isProtected ?: false,
@@ -162,7 +172,7 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
             val sci = it.scientificName ?: return@mapNotNull null
             SpeciesCandidate(sci, it.commonName, (it.score ?: 0).coerceIn(0, 100), toxic = it.toxic)
         },
-        healthStatus = health?.status ?: "État non évalué",
+        healthStatus = health?.status?.takeIf { it.isNotBlank() }.orEmpty(),
         isHealthy = health?.isHealthy ?: true,
         recommendations = health?.recommendations.orEmpty().filter { it.isNotBlank() },
         habitat = habitat?.takeIf { it.isNotBlank() },

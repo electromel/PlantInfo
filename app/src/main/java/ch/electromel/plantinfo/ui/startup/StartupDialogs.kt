@@ -17,8 +17,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.data.keys.KeyProblem
 
@@ -40,7 +42,12 @@ fun KeyProblemDialog(
             Icon(Icons.Filled.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error)
         },
         title = {
-            Text(if (problems.size == 1) "Une clé API ne fonctionne plus" else "Des clés API ne fonctionnent plus")
+            Text(
+                stringResource(
+                    if (problems.size == 1) R.string.key_problem_title_one
+                    else R.string.key_problem_title_many,
+                ),
+            )
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -59,13 +66,15 @@ fun KeyProblemDialog(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold,
                             )
-                            Text(problem.reason, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                stringResource(problem.issue.labelRes),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
                         }
                     }
                 }
                 Text(
-                    "Corrigez la clé concernée dans les Paramètres, ou continuez : l'application se " +
-                        "rabattra sur les fournisseurs encore disponibles.",
+                    stringResource(R.string.key_problem_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 )
@@ -76,13 +85,13 @@ fun KeyProblemDialog(
             // la marche à suivre y est déjà écrite. Plusieurs : les Paramètres les montrent toutes.
             val single = problems.singleOrNull()
             if (single != null) {
-                TextButton(onClick = { onFix(single.provider) }) { Text("Corriger cette clé") }
+                TextButton(onClick = { onFix(single.provider) }) { Text(stringResource(R.string.key_problem_fix)) }
             } else {
-                TextButton(onClick = onOpenSettings) { Text("Ouvrir les paramètres") }
+                TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.key_problem_open_settings)) }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Continuer") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_continue)) }
         },
     )
 }

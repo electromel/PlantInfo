@@ -1,5 +1,6 @@
 package ch.electromel.plantinfo.domain
 
+import ch.electromel.plantinfo.TestStrings
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.IdentificationResult
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
@@ -18,6 +19,8 @@ import org.junit.Test
  * Avertissement de confusion toxique : score final < 70 ET hypothèse toxique plausible (> 10).
  */
 class ToxicAlternativeWarningTest {
+
+    private val strings = TestStrings()
 
     private fun result(
         scoreFinal: Int,
@@ -56,7 +59,7 @@ class ToxicAlternativeWarningTest {
         val r = result(58, listOf(SpeciesCandidate("Colchicum autumnale", "Colchique d'automne", 35)))
 
         assertEquals(listOf("Colchicum autumnale"), r.plausibleToxicAlternatives().map { it.scientificName })
-        val warning = r.toxicConfusionWarningText()
+        val warning = r.toxicConfusionWarningText(strings)
         assertNotNull(warning)
         assertTrue(warning!!.contains("Colchique d'automne (Colchicum autumnale)"))
         assertTrue(warning.contains("58/100"))
@@ -66,24 +69,24 @@ class ToxicAlternativeWarningTest {
     fun `un score assure n'affiche pas l'avertissement`() {
         // 80 est la borne haute exclue : au-delà, l'hypothèse concurrente est considérée écartée.
         val toxic = listOf(SpeciesCandidate("Colchicum autumnale", "Colchique", 35))
-        assertNull(result(80, toxic).toxicConfusionWarningText())
-        assertNotNull(result(79, toxic).toxicConfusionWarningText())
+        assertNull(result(80, toxic).toxicConfusionWarningText(strings))
+        assertNotNull(result(79, toxic).toxicConfusionWarningText(strings))
     }
 
     @Test
     fun `une hypothese toxique trop faible est ignoree`() {
         // 10 est la borne basse exclue : en dessous, l'hypothèse n'est plus plausible.
         assertNull(result(50, listOf(SpeciesCandidate("Conium maculatum", "Grande ciguë", 10)))
-            .toxicConfusionWarningText())
+            .toxicConfusionWarningText(strings))
         assertNotNull(result(50, listOf(SpeciesCandidate("Conium maculatum", "Grande ciguë", 11)))
-            .toxicConfusionWarningText())
+            .toxicConfusionWarningText(strings))
     }
 
     @Test
     fun `une hypothese inoffensive ne declenche rien`() {
         val r = result(45, listOf(SpeciesCandidate("Bellis perennis", "Pâquerette", 40)))
         assertTrue(r.plausibleToxicAlternatives().isEmpty())
-        assertNull(r.toxicConfusionWarningText())
+        assertNull(r.toxicConfusionWarningText(strings))
     }
 
     @Test
@@ -92,7 +95,7 @@ class ToxicAlternativeWarningTest {
         // l'hypothèse concurrente promue en cas de désaccord.
         val plantNet = SpeciesCandidate("Amanita phalloides", "Amanite phalloïde", 30, toxic = null)
         assertTrue(plantNet.isToxic)
-        assertNotNull(result(55, listOf(plantNet)).toxicConfusionWarningText())
+        assertNotNull(result(55, listOf(plantNet)).toxicConfusionWarningText(strings))
     }
 
     @Test
@@ -114,12 +117,12 @@ class ToxicAlternativeWarningTest {
 
         // Score 85 : au-dessus du défaut (80), donc silencieux ; un utilisateur prudent qui monte
         // le seuil à 100 doit être averti.
-        assertNull(result(85, toxic).toxicConfusionWarningText())
-        assertNotNull(result(85, toxic).toxicConfusionWarningText(ToxicAlertThresholds(maxScore = 100)))
+        assertNull(result(85, toxic).toxicConfusionWarningText(strings))
+        assertNotNull(result(85, toxic).toxicConfusionWarningText(strings, ToxicAlertThresholds(maxScore = 100)))
 
         // À l'inverse, remonter la plausibilité minimale au-dessus de 15 fait taire l'alerte.
         assertNull(
-            result(50, toxic).toxicConfusionWarningText(ToxicAlertThresholds(minAlternativeScore = 20)),
+            result(50, toxic).toxicConfusionWarningText(strings, ToxicAlertThresholds(minAlternativeScore = 20)),
         )
     }
 
@@ -142,7 +145,7 @@ class ToxicAlternativeWarningTest {
         ))
 
         assertEquals(2, r.plausibleToxicAlternatives().size)
-        val warning = r.toxicConfusionWarningText()!!
+        val warning = r.toxicConfusionWarningText(strings)!!
         assertTrue(warning.contains("restent plausibles"))
         assertTrue(warning.contains("Colchique"))
         assertTrue(warning.contains("Muguet"))

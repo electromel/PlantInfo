@@ -1,5 +1,7 @@
 package ch.electromel.plantinfo.data.repo
 
+import android.content.Context
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationDao
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.keys.ApiKeyStore
@@ -22,7 +24,10 @@ import ch.electromel.plantinfo.domain.model.IdentificationResult
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.iucnStatus
+import ch.electromel.plantinfo.util.AppLocales
+import ch.electromel.plantinfo.util.StringProvider
 import ch.electromel.plantinfo.util.ImageStorage
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,6 +51,8 @@ class IdentificationRepository @Inject constructor(
     private val aiOrchestrator: AiOrchestrator,
     private val imageStorage: ImageStorage,
     private val dao: IdentificationDao,
+    private val strings: StringProvider,
+    @ApplicationContext private val context: Context,
 ) {
     suspend fun identifyAndSave(request: IdentificationRequest): IdentificationOutcome =
         when (val pipeline = runPipeline(request)) {
@@ -90,7 +97,7 @@ class IdentificationRepository @Inject constructor(
                 val f = pipeline.failure
                 if (f.queuedForRetry) {
                     f.copy(
-                        message = "Pas de connexion : impossible de relancer l'analyse. Réessayez plus tard.",
+                        message = strings.get(R.string.id_reanalyze_offline),
                         queuedForRetry = false,
                     )
                 } else {
@@ -118,7 +125,7 @@ class IdentificationRepository @Inject constructor(
             return Pipeline.Ko(
                 IdentificationOutcome.Failure(
                     FailureKind.NO_KEYS,
-                    "Aucune clé API configurée. Renseignez au minimum la clé Pl@ntNet dans les paramètres.",
+                    strings.get(R.string.id_no_keys),
                 ),
             )
         }
@@ -130,20 +137,29 @@ class IdentificationRepository @Inject constructor(
         val candidates: List<SpeciesCandidate> = plantNetResult?.candidates ?: emptyList()
 
         // --- Étape 2 : IA générative (avec repli) ---
+        // La fiche est rédigée dans la langue de l'application au moment de l'identification.
         val aiOutcome = aiOrchestrator.analyze(
-            AiAnalysisInput(images = images, plantNetCandidates = candidates, gps = request.gps),
+            AiAnalysisInput(
+                images = images,
+                plantNetCandidates = candidates,
+                gps = request.gps,
+                language = AppLocales.current(context),
+            ),
         )
 
         return when (aiOutcome) {
             is AiOutcome.Success -> {
-                val result = ConfidenceEngine.combineWithAi(aiOutcome.analysis, candidates)
+                val result = ConfidenceEngine.combineWithAi(strings, aiOutcome.analysis, candidates)
                     .copy(aiProvider = aiOutcome.provider)
                 Pipeline.Ok(result, infoMessage = null)
             }
 
             AiOutcome.NoProvidersConfigured -> {
                 if (candidates.isNotEmpty()) {
-                    Pipeline.Ok(ConfidenceEngine.plantNetOnly(candidates), infoMessage = NO_AI_MESSAGE)
+                    Pipeline.Ok(
+                        ConfidenceEngine.plantNetOnly(strings, candidates),
+                        infoMessage = strings.get(R.string.id_no_ai_key),
+                    )
                 } else {
                     Pipeline.Ko(plantNetOnlyFailure(plantNetResult?.error))
                 }
@@ -152,9 +168,11 @@ class IdentificationRepository @Inject constructor(
             is AiOutcome.AllFailed -> {
                 if (candidates.isNotEmpty()) {
                     Pipeline.Ok(
-                        ConfidenceEngine.plantNetOnly(candidates),
-                        infoMessage = "Analyse IA indisponible (${aiOutcome.failures.summary()}). " +
-                            "Résultat Pl@ntNet brut : sans description, diagnostic de santé ni score IA.",
+                        ConfidenceEngine.plantNetOnly(strings, candidates),
+                        infoMessage = strings.get(
+                            R.string.id_ai_unavailable,
+                            aiOutcome.failures.summary(strings),
+                        ),
                     )
                 } else {
                     Pipeline.Ko(aiFailure(aiOutcome))
@@ -192,50 +210,45 @@ class IdentificationRepository @Inject constructor(
 
     private fun plantNetOnlyFailure(error: PlantNetError?): IdentificationOutcome.Failure = when (error) {
         PlantNetError.INVALID_KEY -> IdentificationOutcome.Failure(
-            FailureKind.INVALID_KEY, "Clé Pl@ntNet invalide. Vérifiez-la dans les paramètres.",
+            FailureKind.INVALID_KEY, strings.get(R.string.id_plantnet_invalid_key),
         )
         PlantNetError.QUOTA -> IdentificationOutcome.Failure(
-            FailureKind.QUOTA, "Quota Pl@ntNet atteint. Réessayez plus tard.",
+            FailureKind.QUOTA, strings.get(R.string.id_plantnet_quota),
         )
         PlantNetError.NETWORK -> IdentificationOutcome.Failure(
-            FailureKind.NETWORK, "Pas de connexion. L'identification sera réessayée automatiquement.",
+            FailureKind.NETWORK, strings.get(R.string.id_offline_retry),
             queuedForRetry = true,
         )
         PlantNetError.SERVER -> IdentificationOutcome.Failure(
-            FailureKind.SERVER, "Service Pl@ntNet momentanément indisponible.",
+            FailureKind.SERVER, strings.get(R.string.id_plantnet_server),
         )
         else -> IdentificationOutcome.Failure(
             FailureKind.NO_RESULT,
-            "Aucune espèce n'a pu être identifiée. Ajoutez une photo plus nette ou complémentaire.",
+            strings.get(R.string.id_no_result),
         )
     }
 
     private fun aiFailure(outcome: AiOutcome.AllFailed): IdentificationOutcome.Failure {
-        val detail = outcome.failures.summary()
+        val detail = outcome.failures.summary(strings)
         return when (outcome.lastReason) {
             AiFailureReason.INVALID_KEY -> IdentificationOutcome.Failure(
-                FailureKind.INVALID_KEY, "Clé(s) IA invalide(s) ($detail). Vérifiez-les dans les paramètres.",
+                FailureKind.INVALID_KEY, strings.get(R.string.id_ai_invalid_key, detail),
             )
             AiFailureReason.QUOTA, AiFailureReason.BILLING -> IdentificationOutcome.Failure(
                 FailureKind.QUOTA,
-                "Analyse IA impossible : $detail. Vérifiez le crédit/quota de vos comptes fournisseurs.",
+                strings.get(R.string.id_ai_quota, detail),
             )
             AiFailureReason.NETWORK -> IdentificationOutcome.Failure(
                 FailureKind.NETWORK,
-                "Pas de connexion. L'identification sera réessayée automatiquement dès le retour du réseau.",
+                strings.get(R.string.id_offline_retry_network),
                 queuedForRetry = true,
             )
             else -> IdentificationOutcome.Failure(
                 if (outcome.allNetwork) FailureKind.NETWORK else FailureKind.SERVER,
-                "L'analyse a échoué ($detail).",
+                strings.get(R.string.id_ai_failed, detail),
                 queuedForRetry = outcome.allNetwork,
             )
         }
     }
 
-    private companion object {
-        const val NO_AI_MESSAGE =
-            "Aucune clé IA configurée : seul le résultat brut de Pl@ntNet est affiché (sans diagnostic " +
-                "de santé ni informations complémentaires). Ajoutez une clé dans les paramètres."
-    }
 }

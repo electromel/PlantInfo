@@ -48,6 +48,25 @@ Si `gradlew.bat`/`gradle-wrapper.jar` manquent, les régénérer avec une distri
 Il n'y a **pas de lint configuré** au-delà des warnings du compilateur Kotlin et d'AGP. Les tests
 sont des tests JVM (`src/test`, JUnit4 + MockK) — pas de tests instrumentés significatifs.
 
+### Installer sur un appareil
+
+Le téléphone de développement porte la version **du Play Store**, signée par Google (Play App
+Signing) : aucun build local ne s'installe par-dessus, et désinstaller effacerait l'historique. Le
+build debug a donc son propre identifiant (`applicationIdSuffix = ".debug"`) et cohabite avec elle :
+
+```powershell
+adb install -r C:\DEV\PlantInfo\app\build\outputs\apk\debug\app-debug.apk
+adb shell am start -n ch.electromel.plantinfo.debug/ch.electromel.plantinfo.MainActivity
+# Langue de l'app (Android 13+), même chemin que le sélecteur interne :
+adb shell cmd locale set-app-locales ch.electromel.plantinfo.debug --locales de
+adb shell cmd locale set-app-locales ch.electromel.plantinfo.debug --locales ""   # retour au système
+```
+
+Cette variante s'appelle « PlantInfo (debug) », porte une icône au bandeau **DEV**
+(`src/debug/res/`) et affiche en surimpression un filigrane version + horodatage de build
+(`ui/components/DebugWatermark`, `BuildConfig.BUILD_STAMP`). Tout cela est gardé par
+`BuildConfig.DEBUG` ou vit dans `src/debug` : **rien n'atteint l'application publiée**.
+
 ### Versions de build (compatibilité sensible)
 
 AGP 8.13.2 / **Gradle 9.1.0** / Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / minSdk 29 / targetSdk & compileSdk 35.
@@ -195,6 +214,44 @@ trois clients.
 `util/LocationProvider` fournit le GPS courant ; `util/ImageStorage.readExifLocation()` lit le géotag
 d'une photo importée **avant compression** (la compression supprime l'EXIF). Pour une photo importée,
 le lieu du fichier prime sur la position courante (voir `ui/capture/CaptureViewModel`).
+
+## Multilangue (fr, en, de, it, es)
+
+**Aucune chaîne visible par l'utilisateur ne vit dans le code.** Tout passe par `res/values*/strings.xml` :
+
+- `values/` porte l'**anglais**, langue de repli servie sur un téléphone dans une langue non traduite.
+  Une clé absente d'ici fait planter l'app sur un tel appareil — `values/` doit donc rester complet.
+- `values-fr/` porte le **français**, langue d'origine dans laquelle les textes sont pensés ;
+  `values-de/`, `values-it/`, `values-es/` les traductions. Les langues embarquées sont listées
+  **trois fois** et se corrigent ensemble : `androidResources.localeFilters` (`app/build.gradle.kts`),
+  `res/xml/locales_config.xml` et l'enum `util/AppLanguage`.
+- `python tools/check_translations.py` compare les cinq fichiers : clés manquantes ou en trop,
+  paramètres de format (`%1$s`) divergents, tableaux de longueurs différentes, valeurs restées en
+  français. À lancer après toute retouche de texte.
+
+**Comment lire une chaîne selon la couche :**
+
+- Composable → `stringResource(R.string.x)` (le contexte de l'activité est déjà dans la bonne langue) ;
+- ViewModel, dépôt, worker, PDF, partage, notification → `AppStrings` injecté par Hilt. Ne **jamais**
+  lire une chaîne depuis le contexte applicatif : sur Android 12 et moins il reste sur la langue du
+  téléphone, pas sur celle choisie dans l'app ;
+- code de domaine (`domain/`) → paramètre `StringProvider`, pour rester testable en JVM
+  (`TestStrings` sert les vraies chaînes françaises aux tests).
+
+**Choix de la langue** (`util/AppLocales`) : par défaut celle du téléphone, sinon celle choisie dans
+les Paramètres. Android 13+ passe par `LocaleManager` (le système persiste et recrée l'activité, et
+l'app apparaît dans « Paramètres > Langues de l'app ») ; en deçà, `LanguageStore` mémorise le choix,
+`MainActivity.attachBaseContext` l'applique et l'écran se recrée lui-même. Volontairement sans
+AppCompat : son delegate n'agit que sur les `AppCompatActivity`, que l'app n'utilise pas.
+
+**Contenu produit par l'IA** : `AiAnalysisInput.language` porte la langue **au moment de
+l'identification** ; le prompt (`AiPrompt`) et celui du Q&A imposent cette langue pour toutes les
+valeurs textuelles. Une fiche est donc rédigée une fois et **n'est pas retraduite** si la langue
+change ensuite — l'historique reste tel qu'il a été écrit, ce que dit le réglage de langue.
+
+**Textes persistés** : ne jamais enregistrer une phrase traduite qui sera réaffichée plus tard. Le
+motif d'une clé invalide est ainsi stocké comme code (`KeyIssue`) et traduit à l'affichage, sans quoi
+il resterait figé dans la langue du jour du test.
 
 ## Journal de développement
 

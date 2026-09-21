@@ -9,9 +9,11 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.prefs.SafetySettingsStore
 import ch.electromel.plantinfo.data.repo.toResult
+import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.UseDomain
 import ch.electromel.plantinfo.domain.model.careCalendarSummaryText
 import ch.electromel.plantinfo.domain.model.edibilitySummaryText
@@ -26,6 +28,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.DateFormat
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,6 +44,7 @@ import javax.inject.Singleton
 class PdfExporter @Inject constructor(
     @ApplicationContext private val context: Context,
     private val safetySettings: SafetySettingsStore,
+    private val strings: AppStrings,
 ) {
     suspend fun export(entity: IdentificationEntity): File = withContext(Dispatchers.IO) {
         val result = entity.toResult()
@@ -61,18 +65,30 @@ class PdfExporter @Inject constructor(
         val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.BLACK; textSize = 12f }
         val footerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.GRAY; textSize = 10f }
 
-        val date = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT)
+        // La date est mise en forme dans la langue de l'application, pas dans celle du téléphone.
+        val date = DateFormat
+            .getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT, Locale.forLanguageTag(strings.language.tag))
             .format(Date(entity.dateTime))
-        val writer = PageWriter(doc, "Identifié le $date — PlantInfo", footerPaint)
+        val writer = PageWriter(
+            doc,
+            strings.get(R.string.pdf_footer, date),
+            strings.get(R.string.pdf_page_number),
+            footerPaint,
+        )
 
         // En-tête
-        writer.line(result.commonName, titlePaint, advance = 30f, baselineOffset = 18f)
+        writer.line(
+            result.commonName.ifBlank { strings.get(R.string.species_unknown) },
+            titlePaint,
+            advance = 30f,
+            baselineOffset = 18f,
+        )
         writer.line(result.scientificName, sciPaint, advance = 18f)
-        val scoreText = if (entity.userConfirmed) {
-            "Identification confirmée manuellement"
-        } else {
-            "Score d'exactitude : ${result.scoreFinal}/100" +
-                (if (result.aiProvider.name != "NONE") " — analysé par ${result.aiProvider.label}" else "")
+        val scoreText = when {
+            entity.userConfirmed -> strings.get(R.string.pdf_confirmed)
+            result.aiProvider != AiProviderType.NONE ->
+                strings.get(R.string.pdf_score_with_provider, result.scoreFinal, result.aiProvider.label)
+            else -> strings.get(R.string.pdf_score, result.scoreFinal)
         }
         writer.line(scoreText, bodyPaint, advance = 24f)
 
@@ -82,63 +98,72 @@ class PdfExporter @Inject constructor(
         }
 
         if (entity.isFungus) {
-            writer.section("Avertissement champignon", headingPaint,
-                "Ne jamais consommer un champignon sur la seule base de cette identification " +
-                    "automatique. En cas de doute, consultez un expert ou un contrôle mycologique.",
-                bodyPaint)
+            writer.section(
+                strings.get(R.string.pdf_fungus_heading), headingPaint,
+                strings.get(R.string.pdf_fungus_body), bodyPaint,
+            )
         }
         if (result.isProtected) {
-            writer.section("Espèce protégée", headingPaint,
-                "Espèce potentiellement protégée dans cette région : cueillette déconseillée.",
-                bodyPaint)
+            writer.section(
+                strings.get(R.string.pdf_protected_heading), headingPaint,
+                strings.get(R.string.pdf_protected_body), bodyPaint,
+            )
         }
-        result.toxicConfusionWarningText(safetySettings.current())?.let {
-            writer.section("Confusion possible avec une espèce toxique", headingPaint, it, bodyPaint)
+        result.toxicConfusionWarningText(strings, safetySettings.current())?.let {
+            writer.section(strings.get(R.string.pdf_toxic_heading), headingPaint, it, bodyPaint)
         }
-        result.habitat?.let { writer.section("Habitat et répartition", headingPaint, it, bodyPaint) }
+        result.habitat?.let {
+            writer.section(strings.get(R.string.fiche_habitat), headingPaint, it, bodyPaint)
+        }
         result.iucnStatus?.let {
-            writer.section("Statut de conservation", headingPaint,
-                "${it.label} (${it.code}) — liste rouge UICN mondiale, via Pl@ntNet.", bodyPaint)
+            writer.section(
+                strings.get(R.string.fiche_conservation_title), headingPaint,
+                strings.get(R.string.pdf_conservation_body, strings.get(it.labelRes), it.code), bodyPaint,
+            )
         }
         result.health?.let { h ->
             val text = buildString {
-                append(h.status)
+                append(h.status.ifBlank { strings.get(R.string.health_not_assessed) })
                 if (h.recommendations.isNotEmpty()) {
-                    append("\nRecommandations :")
+                    append("\n").append(strings.get(R.string.fiche_health_recommendations))
                     h.recommendations.forEach { append("\n• $it") }
                 }
             }
-            writer.section("État de santé", headingPaint, text, bodyPaint)
+            writer.section(strings.get(R.string.fiche_health), headingPaint, text, bodyPaint)
         }
-        result.edibilitySummaryText()?.let { writer.section("Comestibilité", headingPaint, it, bodyPaint) }
-        result.description?.let { writer.section("Informations", headingPaint, it, bodyPaint) }
-        result.maturitySummaryText()?.let {
-            writer.section("Dimensions à maturité", headingPaint, it, bodyPaint)
+        result.edibilitySummaryText(strings)?.let {
+            writer.section(strings.get(R.string.fiche_edibility_title), headingPaint, it, bodyPaint)
+        }
+        result.description?.let {
+            writer.section(strings.get(R.string.fiche_information), headingPaint, it, bodyPaint)
+        }
+        result.maturitySummaryText(strings)?.let {
+            writer.section(strings.get(R.string.fiche_maturity_title), headingPaint, it, bodyPaint)
         }
         result.careCalendarSummaryText()?.let {
-            val heading = if (result.isFungus) {
-                "Période de pousse et de cueillette"
-            } else {
-                "Quand planter et entretenir"
-            }
+            val heading = strings.get(
+                if (result.isFungus) R.string.fiche_calendar_fungus_title else R.string.fiche_calendar_title,
+            )
             writer.section(heading, headingPaint, it, bodyPaint)
         }
-        result.usesSummaryText()?.let {
+        result.usesSummaryText(strings)?.let {
             val text = if (result.uses.any { use -> use.domain == UseDomain.MEDICINAL }) {
-                "$it\nUsages cités à titre documentaire, sans valeur de conseil thérapeutique."
+                it + "\n" + strings.get(R.string.pdf_uses_medicinal_note)
             } else {
                 it
             }
-            writer.section("Usages", headingPaint, text, bodyPaint)
+            writer.section(strings.get(R.string.fiche_uses_title), headingPaint, text, bodyPaint)
         }
-        result.symbolism?.let { writer.section("Symbolique", headingPaint, it, bodyPaint) }
+        result.symbolism?.let {
+            writer.section(strings.get(R.string.fiche_symbolism_title), headingPaint, it, bodyPaint)
+        }
 
         if (entity.latitude != null && entity.longitude != null) {
             val loc = buildString {
                 append("%.5f, %.5f".format(entity.latitude, entity.longitude))
                 entity.altitude?.let { append(" • %.0f m".format(it)) }
             }
-            writer.section("Lieu de la prise de vue", headingPaint, loc, bodyPaint)
+            writer.section(strings.get(R.string.fiche_location_title), headingPaint, loc, bodyPaint)
         }
 
         writer.close()
@@ -159,6 +184,8 @@ class PdfExporter @Inject constructor(
     private class PageWriter(
         private val doc: PdfDocument,
         private val footerText: String,
+        /** Gabarit « pied de page (page N) », déjà traduit : le writer ne connaît pas les ressources. */
+        private val pageNumberFormat: String,
         private val footerPaint: Paint,
     ) {
         private var pageNumber = 0
@@ -177,7 +204,7 @@ class PdfExporter @Inject constructor(
         }
 
         private fun finishPage() {
-            val label = if (pageNumber > 1) "$footerText  (page $pageNumber)" else footerText
+            val label = if (pageNumber > 1) pageNumberFormat.format(footerText, pageNumber) else footerText
             canvas.drawText(label, MARGIN.toFloat(), (PAGE_H - MARGIN).toFloat(), footerPaint)
             doc.finishPage(page)
         }

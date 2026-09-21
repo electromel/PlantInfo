@@ -14,6 +14,7 @@ import ch.electromel.plantinfo.domain.model.ToxicAlertThresholds
 import ch.electromel.plantinfo.domain.model.toxicConfusionWarningText
 import ch.electromel.plantinfo.ui.components.BannerSeverity
 import ch.electromel.plantinfo.ui.components.WarningBanner
+import ch.electromel.plantinfo.util.AppStrings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -22,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ToxicAlertViewModel @Inject constructor(
     store: SafetySettingsStore,
+    val strings: AppStrings,
 ) : ViewModel() {
     val thresholds: StateFlow<ToxicAlertThresholds> = store.thresholds
 }
@@ -40,7 +42,7 @@ fun ToxicConfusionBanner(
     viewModel: ToxicAlertViewModel = hiltViewModel(),
 ) {
     val thresholds by viewModel.thresholds.collectAsStateWithLifecycle()
-    val warning = result.toxicConfusionWarningText(thresholds) ?: return
+    val warning = result.toxicConfusionWarningText(viewModel.strings, thresholds) ?: return
 
     WarningBanner(
         text = warning,

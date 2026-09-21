@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Langues proposées par « Paramètres > Langues de l'app » (Android 13+).
+     À garder aligné avec l'enum AppLanguage et androidResources.localeFilters (build.gradle.kts). -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="fr" />
+    <locale android:name="de" />
+    <locale android:name="it" />
+    <locale android:name="es" />
+</locale-config>

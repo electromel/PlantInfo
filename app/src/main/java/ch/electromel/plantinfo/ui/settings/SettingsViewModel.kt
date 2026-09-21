@@ -6,6 +6,7 @@ import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.keys.ApiKeyTester
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.data.keys.KeyHealthMonitor
+import ch.electromel.plantinfo.data.keys.KeyIssue
 import ch.electromel.plantinfo.data.keys.KeyTestState
 import ch.electromel.plantinfo.data.prefs.SafetySettingsStore
 import ch.electromel.plantinfo.domain.model.AiProviderType
@@ -24,7 +25,7 @@ data class ProviderUiState(
     val input: String = "",
     val test: KeyTestState = KeyTestState.Idle,
     /** Motif du dernier verdict « inutilisable », ou null si la clé est saine ou non vérifiée. */
-    val problem: String? = null,
+    val problem: KeyIssue? = null,
 )
 
 data class SettingsUiState(
@@ -97,7 +98,7 @@ class SettingsViewModel @Inject constructor(
 
     /** Reporte sur chaque carte le motif d'inutilisabilité connu du moniteur de santé. */
     private fun SettingsUiState.withProblems(): SettingsUiState {
-        val byProvider = keyHealth.problems.value.associate { it.provider to it.reason }
+        val byProvider = keyHealth.problems.value.associate { it.provider to it.issue }
         return copy(providers = providers.map { it.copy(problem = byProvider[it.provider]) })
     }
 

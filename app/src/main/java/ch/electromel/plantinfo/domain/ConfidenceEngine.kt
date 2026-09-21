@@ -1,11 +1,13 @@
 package ch.electromel.plantinfo.domain
 
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.remote.ai.AiAnalysis
 import ch.electromel.plantinfo.domain.model.ComplementaryPhotoRequest
 import ch.electromel.plantinfo.domain.model.HealthAssessment
 import ch.electromel.plantinfo.domain.model.IdentificationResult
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
+import ch.electromel.plantinfo.util.StringProvider
 import kotlin.math.roundToInt
 
 /**
@@ -25,6 +27,7 @@ object ConfidenceEngine {
 
     /** Combine une analyse IA (prioritaire) avec les candidats Pl@ntNet. */
     fun combineWithAi(
+        strings: StringProvider,
         ai: AiAnalysis,
         plantNetCandidates: List<SpeciesCandidate>,
     ): IdentificationResult {
@@ -61,7 +64,7 @@ object ConfidenceEngine {
 
         val complementary = ai.complementary?.let {
             ComplementaryPhotoRequest(it.organ, it.reason)
-        } ?: complementaryFallback(scoreFinal, ai.isFungus)
+        } ?: complementaryFallback(strings, scoreFinal, ai.isFungus)
 
         // Clé GBIF et statut UICN appartiennent au taxon reconnu par Pl@ntNet. L'espèce finalement
         // retenue est celle de l'IA, qui a pu corriger Pl@ntNet : on ne reprend ces métadonnées que
@@ -99,7 +102,10 @@ object ConfidenceEngine {
     }
 
     /** Résultat Pl@ntNet brut, sans IA (§3.1 : aucune clé IA configurée ou toutes en échec). */
-    fun plantNetOnly(plantNetCandidates: List<SpeciesCandidate>): IdentificationResult {
+    fun plantNetOnly(
+        strings: StringProvider,
+        plantNetCandidates: List<SpeciesCandidate>,
+    ): IdentificationResult {
         val top = plantNetCandidates.first()
         val alternatives = plantNetCandidates.drop(1).take(3)
         return IdentificationResult(
@@ -129,7 +135,7 @@ object ConfidenceEngine {
             gbifKey = top.gbifKey,
             iucnCategory = top.iucnCategory,
             sourcesDisagree = false,
-            complementaryPhotoRequest = complementaryFallback(top.score, isFungus = false),
+            complementaryPhotoRequest = complementaryFallback(strings, top.score, isFungus = false),
             // Aucune IA interrogée : aucun jeton consommé, donc rien à facturer ni à afficher.
             usage = null,
         )
@@ -152,18 +158,16 @@ object ConfidenceEngine {
             .take(3)
     }
 
-    private fun complementaryFallback(scoreFinal: Int, isFungus: Boolean): ComplementaryPhotoRequest? {
+    private fun complementaryFallback(
+        strings: StringProvider,
+        scoreFinal: Int,
+        isFungus: Boolean,
+    ): ComplementaryPhotoRequest? {
         if (scoreFinal >= IdentificationResult.LOW_CONFIDENCE_THRESHOLD) return null
         return if (isFungus) {
-            ComplementaryPhotoRequest(
-                PhotoOrgan.GILLS,
-                "Photographiez le dessous du chapeau (lamelles/pores) et le pied pour préciser l'identification.",
-            )
+            ComplementaryPhotoRequest(PhotoOrgan.GILLS, strings.get(R.string.complementary_fungus))
         } else {
-            ComplementaryPhotoRequest(
-                PhotoOrgan.LEAF,
-                "Ajoutez un gros plan net d'une feuille (et d'une fleur ou d'un fruit si présents).",
-            )
+            ComplementaryPhotoRequest(PhotoOrgan.LEAF, strings.get(R.string.complementary_plant))
         }
     }
 

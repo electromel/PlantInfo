@@ -36,9 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.ui.components.SectionCard
 import ch.electromel.plantinfo.ui.result.IdentificationContent
 
@@ -69,10 +71,10 @@ fun DetailScreen(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
-                title = { Text("Détail") },
+                title = { Text(stringResource(R.string.detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 actions = {
@@ -80,28 +82,30 @@ fun DetailScreen(
                         if (reanalyzing) {
                             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                         } else {
-                            Icon(Icons.Filled.Refresh, contentDescription = "Relancer l'analyse")
+                            Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.result_reanalyze))
                         }
                     }
                     val fav = entity?.isFavorite == true
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
                         Icon(
                             if (fav) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                            contentDescription = if (fav) "Retirer des favoris" else "Ajouter aux favoris",
+                            contentDescription = stringResource(
+                                if (fav) R.string.detail_favorite_remove else R.string.detail_favorite_add,
+                            ),
                         )
                     }
                     IconButton(onClick = { viewModel.shareSummary() }) {
-                        Icon(Icons.Filled.Share, contentDescription = "Partager")
+                        Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.detail_share))
                     }
                     IconButton(onClick = { viewModel.exportPdf() }, enabled = !exporting) {
                         if (exporting) {
                             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
                         } else {
-                            Icon(Icons.Filled.PictureAsPdf, contentDescription = "Exporter en PDF")
+                            Icon(Icons.Filled.PictureAsPdf, contentDescription = stringResource(R.string.detail_export_pdf))
                         }
                     }
                     IconButton(onClick = { confirmDelete = true }) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Supprimer")
+                        Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.action_delete))
                     }
                 },
             )
@@ -127,14 +131,14 @@ fun DetailScreen(
             ) {
                 // En-tête spécifique au détail : notes personnelles éditables.
                 var notes by remember(current.id) { mutableStateOf(current.notes.orEmpty()) }
-                SectionCard("Notes personnelles", Modifier.fillMaxWidth()) {
+                SectionCard(stringResource(R.string.detail_notes_title), Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = notes,
                         onValueChange = { notes = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Ajouter une note…") },
+                        placeholder = { Text(stringResource(R.string.detail_notes_placeholder)) },
                     )
-                    TextButton(onClick = { viewModel.setNotes(notes) }) { Text("Enregistrer la note") }
+                    TextButton(onClick = { viewModel.setNotes(notes) }) { Text(stringResource(R.string.detail_notes_save)) }
                 }
             }
         }
@@ -143,15 +147,17 @@ fun DetailScreen(
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Supprimer cette identification ?") },
-            text = { Text("La fiche et ses photos seront supprimées définitivement.") },
+            title = { Text(stringResource(R.string.detail_delete_title)) },
+            text = { Text(stringResource(R.string.detail_delete_body)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
                     viewModel.delete(onBack)
-                }) { Text("Supprimer", color = MaterialTheme.colorScheme.error) }
+                }) { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Annuler") } },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
         )
     }
 }

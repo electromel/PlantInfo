@@ -49,11 +49,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.R
 import coil.compose.AsyncImage
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.domain.model.AiProviderType
@@ -86,10 +88,10 @@ fun HistoryScreen(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
-                title = { Text("Historique") },
+                title = { Text(stringResource(R.string.history_title)) },
                 actions = {
                     IconButton(onClick = { confirmDeleteAll = true }, enabled = items.isNotEmpty()) {
-                        Icon(Icons.Filled.DeleteSweep, contentDescription = "Tout supprimer")
+                        Icon(Icons.Filled.DeleteSweep, contentDescription = stringResource(R.string.history_delete_all))
                     }
                 },
             )
@@ -99,7 +101,7 @@ fun HistoryScreen(
             OutlinedTextField(
                 value = filters.query,
                 onValueChange = viewModel::setQuery,
-                label = { Text("Rechercher une espèce") },
+                label = { Text(stringResource(R.string.history_search_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             )
@@ -113,7 +115,7 @@ fun HistoryScreen(
                 FilterChip(
                     selected = filters.favoritesOnly,
                     onClick = viewModel::toggleFavoritesOnly,
-                    label = { Text("Favoris") },
+                    label = { Text(stringResource(R.string.history_filter_favorites)) },
                     leadingIcon = {
                         Icon(
                             if (filters.favoritesOnly) Icons.Filled.Star else Icons.Outlined.StarBorder,
@@ -125,7 +127,7 @@ fun HistoryScreen(
                 FilterChip(
                     selected = filters.withLocationOnly,
                     onClick = viewModel::toggleWithLocationOnly,
-                    label = { Text("Localisés") },
+                    label = { Text(stringResource(R.string.history_filter_located)) },
                     leadingIcon = {
                         Icon(Icons.Filled.Place, contentDescription = null, modifier = Modifier.size(18.dp))
                     },
@@ -134,7 +136,7 @@ fun HistoryScreen(
                     FilterChip(
                         selected = filters.dateRange == range,
                         onClick = { viewModel.setDateRange(range) },
-                        label = { Text(range.label) },
+                        label = { Text(stringResource(range.labelRes)) },
                     )
                 }
             }
@@ -153,13 +155,13 @@ fun HistoryScreen(
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Aucune identification pour l'instant",
+                        stringResource(R.string.history_empty_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "Photographiez une plante depuis l'onglet Capture : vos identifications apparaîtront ici.",
+                        stringResource(R.string.history_empty_body),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                         textAlign = TextAlign.Center,
@@ -186,15 +188,15 @@ fun HistoryScreen(
     if (confirmDeleteAll) {
         AlertDialog(
             onDismissRequest = { confirmDeleteAll = false },
-            title = { Text("Supprimer tout l'historique ?") },
-            text = { Text("Cette action est irréversible et supprimera aussi les photos associées.") },
+            title = { Text(stringResource(R.string.history_delete_all_title)) },
+            text = { Text(stringResource(R.string.history_delete_all_body)) },
             confirmButton = {
                 TextButton(onClick = { viewModel.deleteAll(); confirmDeleteAll = false }) {
-                    Text("Tout supprimer", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.history_delete_all), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { confirmDeleteAll = false }) { Text("Annuler") }
+                TextButton(onClick = { confirmDeleteAll = false }) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }
@@ -213,7 +215,7 @@ private fun HistoryCard(
             if (path != null) {
                 AsyncImage(
                     model = File(path),
-                    contentDescription = "Photo de ${entity.commonName}",
+                    contentDescription = stringResource(R.string.history_photo_of, entity.commonName),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(64.dp)
@@ -242,7 +244,10 @@ private fun HistoryCard(
                         Icon(Icons.Filled.Star, null, tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp).padding(end = 4.dp))
                     }
-                    Text(entity.commonName, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        entity.commonName.ifBlank { stringResource(R.string.species_unknown) },
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                 }
                 Text(entity.scientificName, fontStyle = FontStyle.Italic,
                     style = MaterialTheme.typography.bodyMedium,
@@ -257,7 +262,7 @@ private fun HistoryCard(
                     if (entity.latitude != null && entity.longitude != null) {
                         Icon(
                             Icons.Filled.Place,
-                            contentDescription = "Localisée",
+                            contentDescription = stringResource(R.string.history_located),
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                             modifier = Modifier.padding(start = 4.dp).size(14.dp),
                         )
@@ -273,7 +278,7 @@ private fun HistoryCard(
                     } else {
                         Icon(
                             Icons.Filled.Refresh,
-                            contentDescription = "Relancer l'analyse IA",
+                            contentDescription = stringResource(R.string.history_reanalyze),
                             tint = MaterialTheme.colorScheme.primary,
                         )
                     }

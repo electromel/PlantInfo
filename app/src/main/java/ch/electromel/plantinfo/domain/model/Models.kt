@@ -1,6 +1,9 @@
 package ch.electromel.plantinfo.domain.model
 
+import androidx.annotation.StringRes
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.domain.ToxicSpeciesChecker
+import ch.electromel.plantinfo.util.StringProvider
 import kotlinx.serialization.Serializable
 
 /**
@@ -8,11 +11,13 @@ import kotlinx.serialization.Serializable
  * résultat Pl@ntNet brut). L'ordre des constantes n'a pas de sens métier : l'ordre de repli
  * réel est stocké dans les paramètres (voir data.keys.ApiKeyStore).
  */
+// [label] n'est pas traduit : ce sont des noms de produits, identiques dans toutes les langues.
+// NONE n'est jamais affiché tel quel (les appelants le filtrent avant), d'où le tiret.
 enum class AiProviderType(val label: String) {
     CLAUDE("Claude"),
     GEMINI("Gemini"),
     GPT("GPT"),
-    NONE("Aucun");
+    NONE("—");
 
     companion object {
         /** Ordre de priorité de repli par défaut (§3.1) : Claude → Gemini → GPT. */
@@ -24,15 +29,15 @@ enum class AiProviderType(val label: String) {
  * Type d'organe photographié, transmis à Pl@ntNet comme indice et utilisé pour formuler
  * les demandes de photos complémentaires (§2.1).
  */
-enum class PhotoOrgan(val plantnetValue: String, val label: String) {
-    LEAF("leaf", "Feuille"),
-    FLOWER("flower", "Fleur"),
-    FRUIT("fruit", "Fruit"),
-    BARK("bark", "Écorce"),
-    HABIT("habit", "Port / silhouette"),
-    CAP("auto", "Chapeau (champignon)"),
-    GILLS("auto", "Lamelles / dessous du chapeau"),
-    OTHER("auto", "Autre");
+enum class PhotoOrgan(val plantnetValue: String, @StringRes val labelRes: Int) {
+    LEAF("leaf", R.string.organ_leaf),
+    FLOWER("flower", R.string.organ_flower),
+    FRUIT("fruit", R.string.organ_fruit),
+    BARK("bark", R.string.organ_bark),
+    HABIT("habit", R.string.organ_habit),
+    CAP("auto", R.string.organ_cap),
+    GILLS("auto", R.string.organ_gills),
+    OTHER("auto", R.string.organ_other);
 }
 
 /** Coordonnées de la prise de vue, avec précision rapportée par le capteur (§2.2). */
@@ -76,15 +81,15 @@ data class SpeciesCandidate(
  * s'agit d'un statut de conservation **mondial**, pas d'une protection juridique locale — les deux
  * sont affichés séparément.
  */
-enum class IucnStatus(val code: String, val label: String, val threatened: Boolean) {
-    EX("EX", "Éteinte", true),
-    EW("EW", "Éteinte à l'état sauvage", true),
-    CR("CR", "En danger critique d'extinction", true),
-    EN("EN", "En danger", true),
-    VU("VU", "Vulnérable", true),
-    NT("NT", "Quasi menacée", false),
-    LC("LC", "Préoccupation mineure", false),
-    DD("DD", "Données insuffisantes", false);
+enum class IucnStatus(val code: String, @StringRes val labelRes: Int, val threatened: Boolean) {
+    EX("EX", R.string.iucn_ex, true),
+    EW("EW", R.string.iucn_ew, true),
+    CR("CR", R.string.iucn_cr, true),
+    EN("EN", R.string.iucn_en, true),
+    VU("VU", R.string.iucn_vu, true),
+    NT("NT", R.string.iucn_nt, false),
+    LC("LC", R.string.iucn_lc, false),
+    DD("DD", R.string.iucn_dd, false);
 
     companion object {
         fun fromCode(code: String?): IucnStatus? {
@@ -122,15 +127,15 @@ data class CareTask(
  * renvoyés par l'IA et retombe sur [OTHER] plutôt que d'échouer.
  */
 @Serializable
-enum class UseDomain(val label: String) {
-    MEDICINAL("Santé et médecine"),
-    FOOD("Alimentation"),
-    COSMETIC("Cosmétique et parfumerie"),
-    CHEMICAL("Chimie et industrie"),
-    CRAFT("Artisanat et matériaux"),
-    ORNAMENTAL("Ornement et paysage"),
-    ECOLOGICAL("Écologie et jardin"),
-    OTHER("Autres usages");
+enum class UseDomain(@StringRes val labelRes: Int) {
+    MEDICINAL(R.string.use_domain_medicinal),
+    FOOD(R.string.use_domain_food),
+    COSMETIC(R.string.use_domain_cosmetic),
+    CHEMICAL(R.string.use_domain_chemical),
+    CRAFT(R.string.use_domain_craft),
+    ORNAMENTAL(R.string.use_domain_ornamental),
+    ECOLOGICAL(R.string.use_domain_ecological),
+    OTHER(R.string.use_domain_other);
 
     companion object {
         fun fromCode(code: String?): UseDomain {
@@ -244,11 +249,12 @@ val IdentificationResult.edibilityVerdict: EdibilityVerdict
     }
 
 /** Libellé court du verdict, ou null si inconnu (rien à afficher comme verdict). */
-val EdibilityVerdict.label: String?
+@get:StringRes
+val EdibilityVerdict.labelRes: Int?
     get() = when (this) {
-        EdibilityVerdict.EDIBLE -> "Comestible"
-        EdibilityVerdict.TOXIC -> "Toxique"
-        EdibilityVerdict.INEDIBLE -> "Non comestible"
+        EdibilityVerdict.EDIBLE -> R.string.edibility_edible
+        EdibilityVerdict.TOXIC -> R.string.edibility_toxic
+        EdibilityVerdict.INEDIBLE -> R.string.edibility_inedible
         EdibilityVerdict.UNKNOWN -> null
     }
 
@@ -286,18 +292,15 @@ fun SpeciesCandidate.displayName(): String =
  * doit pas être plus rassurante que la fiche à l'écran.
  */
 fun IdentificationResult.toxicConfusionWarningText(
+    strings: StringProvider,
     thresholds: ToxicAlertThresholds = ToxicAlertThresholds(),
 ): String? {
     val toxic = plausibleToxicAlternatives(thresholds).takeIf { it.isNotEmpty() } ?: return null
     val names = toxic.joinToString(" · ") { it.displayName() }
-    val intro = if (toxic.size == 1) {
-        "une espèce toxique reste plausible"
-    } else {
-        "des espèces toxiques restent plausibles"
-    }
-    return "Identification incertaine ($scoreFinal/100) : $intro parmi les autres hypothèses — " +
-        "$names. Il pourrait donc s'agir d'une espèce toxique : ne consommez rien, ne portez rien " +
-        "à la bouche et manipulez avec précaution sans confirmation par un expert."
+    // Singulier et pluriel sont deux phrases entières : l'accord ne se place pas au même endroit
+    // d'une langue à l'autre, et un assemblage de fragments serait intraduisible.
+    val template = if (toxic.size == 1) R.string.toxic_warning_one else R.string.toxic_warning_many
+    return strings.get(template, scoreFinal, names)
 }
 
 /** Statut de conservation UICN de l'espèce retenue, ou null si Pl@ntNet n'en rapporte aucun. */
@@ -305,15 +308,16 @@ val IdentificationResult.iucnStatus: IucnStatus?
     get() = IucnStatus.fromCode(iucnCategory)
 
 /** Les trois mesures de maturité, libellées, dans l'ordre d'affichage ; vide si aucune renseignée. */
-fun IdentificationResult.maturityLines(): List<Pair<String, String>> = listOfNotNull(
-    matureHeight?.takeIf { it.isNotBlank() }?.let { "Hauteur" to it },
-    matureDiameter?.takeIf { it.isNotBlank() }?.let { "Diamètre" to it },
-    timeToMaturity?.takeIf { it.isNotBlank() }?.let { "Temps jusqu'à maturité" to it },
+fun IdentificationResult.maturityLines(): List<Pair<Int, String>> = listOfNotNull(
+    matureHeight?.takeIf { it.isNotBlank() }?.let { R.string.maturity_height to it },
+    matureDiameter?.takeIf { it.isNotBlank() }?.let { R.string.maturity_diameter to it },
+    timeToMaturity?.takeIf { it.isNotBlank() }?.let { R.string.maturity_time to it },
 )
 
 /** Résumé textuel des dimensions à maturité pour PDF/partage. null si aucune information. */
-fun IdentificationResult.maturitySummaryText(): String? =
-    maturityLines().takeIf { it.isNotEmpty() }?.joinToString(" · ") { (label, value) -> "$label : $value" }
+fun IdentificationResult.maturitySummaryText(strings: StringProvider): String? =
+    maturityLines().takeIf { it.isNotEmpty() }
+        ?.joinToString(" · ") { (labelRes, value) -> "${strings.get(labelRes)} : $value" }
 
 /** Usages regroupés par domaine, dans l'ordre de déclaration de [UseDomain] ; vide si aucun usage. */
 fun IdentificationResult.usesByDomain(): List<Pair<UseDomain, List<String>>> =
@@ -334,14 +338,14 @@ fun IdentificationResult.careCalendarSummaryText(): String? =
     }
 
 /** Résumé textuel des usages pour PDF/partage, un domaine par ligne. null si aucun usage. */
-fun IdentificationResult.usesSummaryText(): String? =
+fun IdentificationResult.usesSummaryText(strings: StringProvider): String? =
     usesByDomain().takeIf { it.isNotEmpty() }?.joinToString("\n") { (domain, details) ->
-        "• ${domain.label} : ${details.joinToString(" ; ")}"
+        "• ${strings.get(domain.labelRes)} : ${details.joinToString(" ; ")}"
     }
 
 /** Résumé textuel (verdict + précisions) pour PDF/partage. null si aucune information. */
-fun IdentificationResult.edibilitySummaryText(): String? {
-    val verdict = edibilityVerdict.label
+fun IdentificationResult.edibilitySummaryText(strings: StringProvider): String? {
+    val verdict = edibilityVerdict.labelRes?.let { strings.get(it) }
     val note = edibilityNote?.takeIf { it.isNotBlank() }
     return when {
         verdict != null && note != null -> "$verdict — $note"

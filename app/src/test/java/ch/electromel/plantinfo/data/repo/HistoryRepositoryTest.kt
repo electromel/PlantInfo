@@ -1,5 +1,6 @@
 package ch.electromel.plantinfo.data.repo
 
+import ch.electromel.plantinfo.TestStrings
 import ch.electromel.plantinfo.data.db.IdentificationDao
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.domain.model.EdibilityVerdict
@@ -29,7 +30,8 @@ class HistoryRepositoryTest {
 
     private val dao = mockk<IdentificationDao>()
     private val imageStorage = mockk<ImageStorage>(relaxed = true)
-    private val repository = HistoryRepository(dao, imageStorage)
+    private val strings = TestStrings()
+    private val repository = HistoryRepository(dao, imageStorage, strings)
 
     /** Fiche « riche » : tous les champs d'espèce renseignés par l'IA. */
     private fun entity(
@@ -195,7 +197,7 @@ class HistoryRepositoryTest {
         assertEquals("Colchicum autumnale", alternatives.first().scientificName)
         assertEquals(true, alternatives.first().toxic)
         // Score faible + hypothèse toxique plausible : l'avertissement de confusion reste affiché.
-        assertNotNull(updated.toResult().toxicConfusionWarningText())
+        assertNotNull(updated.toResult().toxicConfusionWarningText(strings))
     }
 
     @Test

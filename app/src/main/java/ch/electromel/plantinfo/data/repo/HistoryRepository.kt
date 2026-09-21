@@ -1,11 +1,13 @@
 package ch.electromel.plantinfo.data.repo
 
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationDao
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.domain.FungusChecker
 import ch.electromel.plantinfo.domain.ProtectedSpeciesChecker
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.isToxic
+import ch.electromel.plantinfo.util.StringProvider
 import ch.electromel.plantinfo.util.ImageStorage
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -16,6 +18,7 @@ import javax.inject.Singleton
 class HistoryRepository @Inject constructor(
     private val dao: IdentificationDao,
     private val imageStorage: ImageStorage,
+    private val strings: StringProvider,
 ) {
     fun observeFiltered(
         query: String,
@@ -110,7 +113,7 @@ class HistoryRepository @Inject constructor(
                 // --- Informations propres à l'espèce : périmées dès que l'espèce change ---
                 edible = null,
                 toxic = toxic,
-                edibilityNote = edibilityNoteAfterSelection(toxic == true),
+                edibilityNote = edibilityNoteAfterSelection(strings, toxic == true),
                 habitat = null,
                 description = null,
                 matureHeight = null,
@@ -140,11 +143,5 @@ class HistoryRepository @Inject constructor(
  * verdict devenu faux : sans elle, la section disparaîtrait sans que l'utilisateur comprenne
  * pourquoi le « Comestible » qu'il venait de lire s'est volatilisé.
  */
-private fun edibilityNoteAfterSelection(toxic: Boolean): String = if (toxic) {
-    "Espèce signalée comme toxique par la liste de référence de l'application. Les informations de " +
-        "comestibilité affichées jusqu'ici décrivaient l'espèce précédemment identifiée : elles ont " +
-        "été effacées."
-} else {
-    "Comestibilité non évaluée pour cette espèce : vous l'avez validée manuellement, sans nouvelle " +
-        "analyse. Les informations affichées jusqu'ici décrivaient l'espèce précédemment identifiée."
-}
+private fun edibilityNoteAfterSelection(strings: StringProvider, toxic: Boolean): String =
+    strings.get(if (toxic) R.string.selection_note_toxic else R.string.selection_note_unknown)

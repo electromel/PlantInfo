@@ -1,5 +1,9 @@
 package ch.electromel.plantinfo.domain.model
 
+import androidx.annotation.StringRes
+import ch.electromel.plantinfo.R
+import ch.electromel.plantinfo.util.StringProvider
+import java.util.Locale
 import kotlinx.serialization.Serializable
 
 /**
@@ -71,8 +75,8 @@ object AiPricing {
      * À revoir **en même temps** que [rates] : le tarif de Gemini Flash double au 01.01.2027, ce
      * qui portera l'ordre de grandeur à deux centimes.
      */
-    const val GEMINI_COST_HINT: String =
-        "environ 1 centime par identification (tarif Google relevé mi-2026, susceptible d'évoluer)"
+    @StringRes
+    val GEMINI_COST_HINT: Int = R.string.gemini_cost_hint
 
     /** Coût estimé en USD, ou null si le modèle n'a pas de tarif connu. */
     fun costUsd(usage: TokenUsage): Double? {
@@ -93,8 +97,8 @@ private fun Int.grouped(): String = toString()
     .reversed()
 
 /** « 1 234 jetons (982 entrée + 252 sortie) ». */
-fun TokenUsage.tokensText(): String =
-    "${totalTokens.grouped()} jetons (${inputTokens.grouped()} entrée + ${outputTokens.grouped()} sortie)"
+fun TokenUsage.tokensText(strings: StringProvider): String =
+    strings.get(R.string.tokens_summary, totalTokens.grouped(), inputTokens.grouped(), outputTokens.grouped())
 
 /**
  * Coût formaté en dollars, ou null si le modèle n'a pas de tarif connu. Les montants sont minuscules
@@ -103,7 +107,10 @@ fun TokenUsage.tokensText(): String =
  */
 fun TokenUsage.costText(): String? {
     val cost = AiPricing.costUsd(this) ?: return null
+    // Le séparateur décimal suit la langue de l'application (virgule en français, point en
+    // anglais) : Locale.getDefault() est aligné dessus par AppLocales.wrap.
+    val locale = Locale.getDefault()
     if (cost <= 0.0) return "0 \$"
-    if (cost < 0.0001) return "< 0,0001 \$"
-    return "%.4f \$".format(cost).replace('.', ',')
+    if (cost < 0.0001) return "< %s \$".format(locale, "%.4f".format(locale, 0.0001))
+    return "%.4f \$".format(locale, cost)
 }

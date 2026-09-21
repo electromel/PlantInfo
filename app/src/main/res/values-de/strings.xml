@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deutsch. Ausgangssprache ist Französisch (values-fr), Rückfallsprache Englisch (values). -->
+<resources>
+    <!-- Navigation -->
+    <string name="nav_capture">Bestimmen</string>
+    <string name="nav_history">Verlauf</string>
+    <string name="nav_settings">Einstellungen</string>
+
+    <!-- Sicherheitshinweise -->
+    <string name="fungus_safety_warning">Essen Sie niemals einen Pilz allein aufgrund dieser automatischen Bestimmung. Lassen Sie ihn im Zweifelsfall von einer offiziellen Pilzkontrollstelle oder einer fachkundigen Person prüfen.</string>
+    <string name="protected_species_warning">Diese Art ist in dieser Region möglicherweise geschützt: Vom Sammeln wird abgeraten, es kann sogar verboten sein. Erkundigen Sie sich bei den örtlichen Behörden.</string>
+    <string name="range_disclaimer">Ungefähres Verbreitungsgebiet auf Basis bekannter Beobachtungen (GBIF). Es ist keine exakte wissenschaftliche oder rechtliche Grenze.</string>
+
+    <!-- Allgemeine Meldungen -->
+    <string name="no_ai_key_message">Kein KI-Schlüssel eingerichtet: Es wird nur das rohe Pl@ntNet-Ergebnis angezeigt (ohne Zustandsbeurteilung und ohne weitere Angaben). Fügen Sie in den Einstellungen einen Schlüssel hinzu, um die vollständige Analyse zu erhalten.</string>
+    <string name="low_confidence_hint">Die Bestimmung ist wenig verlässlich. Fügen Sie ein weiteres Foto hinzu, um das Ergebnis zu verbessern.</string>
+
+    <!-- Allgemeine Aktionen -->
+    <string name="action_continue">Weiter</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_close">Schliessen</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_back">Zurück</string>
+
+    <!-- Gemeinsame Elemente -->
+    <string name="photo_fullscreen_description">Foto im Vollbild</string>
+
+    <!-- Hinweis beim Start: Schlüssel funktionieren nicht mehr -->
+    <string name="key_problem_title_one">Ein API-Schlüssel funktioniert nicht mehr</string>
+    <string name="key_problem_title_many">Mehrere API-Schlüssel funktionieren nicht mehr</string>
+    <string name="key_problem_hint">Korrigieren Sie den betroffenen Schlüssel in den Einstellungen, oder fahren Sie fort: Die App weicht auf die noch verfügbaren Anbieter aus.</string>
+    <string name="key_problem_fix">Diesen Schlüssel korrigieren</string>
+    <string name="key_problem_open_settings">Einstellungen öffnen</string>
+
+    <!-- Aufnahme -->
+    <string name="capture_locating">Standortsuche…</string>
+    <string name="capture_gps_ok">GPS ✓</string>
+    <string name="capture_gps_unavailable">Kein GPS</string>
+    <string name="capture_setup_incomplete_title">Einrichtung unvollständig</string>
+    <string name="capture_setup_incomplete_body">Es ist kein API-Schlüssel gespeichert. PlantInfo fragt externe Dienste an, um Ihre Fotos zu erkennen: Ohne Schlüssel kann die Bestimmung nicht starten.</string>
+    <string name="capture_open_setup">Einrichtungsassistenten starten</string>
+    <string name="capture_open_camera">Kamera öffnen</string>
+    <string name="capture_empty_hint">Tippen, um eine Pflanze zu fotografieren,\noder aus der Galerie importieren.</string>
+    <string name="capture_photo_tap_to_zoom">Foto — zum Vergrössern tippen</string>
+    <string name="capture_remove_photo">Foto entfernen</string>
+    <string name="capture_close_camera">Kamera schliessen</string>
+    <string name="capture_take_photo">Foto aufnehmen</string>
+    <string name="capture_camera_permission_body">Erlauben Sie den Zugriff auf die Kamera, um eine Pflanze zu fotografieren.</string>
+    <string name="capture_camera_permission_action">Kamera erlauben</string>
+    <string name="capture_gallery">Galerie</string>
+    <string name="capture_analyzing">Analyse…</string>
+    <string name="capture_identify">Bestimmen</string>
+    <string name="capture_identify_n_photos">Bestimmen (%1$d Fotos)</string>
+
+    <!-- Ersatzwerte bei unvollständigem Eintrag -->
+    <string name="species_unknown">Unbekannte Art</string>
+    <string name="health_not_assessed">Zustand nicht beurteilt</string>
+
+    <!-- Aufnahme — Meldungen -->
+    <string name="capture_queued_offline">Offline: Die Bestimmung wurde in die Warteschlange gestellt. Sie werden benachrichtigt, sobald sie bereit ist.</string>
+
+    <!-- Verlauf — Zeitfilter -->
+    <string name="history_range_all">Alle Daten</string>
+    <string name="history_range_7_days">7 Tage</string>
+    <string name="history_range_30_days">30 Tage</string>
+    <string name="history_range_this_year">Dieses Jahr</string>
+
+    <!-- Verlauf — Meldungen -->
+    <string name="history_reanalyzed">Analyse aktualisiert (%1$s).</string>
+
+    <!-- Verlauf -->
+    <string name="history_title">Verlauf</string>
+    <string name="history_delete_all">Alles löschen</string>
+    <string name="history_search_label">Art suchen</string>
+    <string name="history_filter_favorites">Favoriten</string>
+    <string name="history_filter_located">Mit Standort</string>
+    <string name="history_empty_title">Noch keine Bestimmungen</string>
+    <string name="history_empty_body">Fotografieren Sie eine Pflanze im Tab „Bestimmen“: Ihre Bestimmungen erscheinen hier.</string>
+    <string name="history_delete_all_title">Gesamten Verlauf löschen?</string>
+    <string name="history_delete_all_body">Dieser Schritt lässt sich nicht rückgängig machen und löscht auch die zugehörigen Fotos.</string>
+    <string name="history_photo_of">Foto von %1$s</string>
+    <string name="history_located">Mit Standort</string>
+    <string name="history_reanalyze">KI-Analyse erneut starten</string>
+
+    <!-- Fotografierte Pflanzenteile -->
+    <string name="organ_leaf">Blatt</string>
+    <string name="organ_flower">Blüte</string>
+    <string name="organ_fruit">Frucht</string>
+    <string name="organ_bark">Rinde</string>
+    <string name="organ_habit">Wuchsform / Gesamtbild</string>
+    <string name="organ_cap">Hut (Pilz)</string>
+    <string name="organ_gills">Lamellen / Hutunterseite</string>
+    <string name="organ_other">Anderes</string>
+
+    <!-- IUCN-Schutzstatus -->
+    <string name="iucn_ex">Ausgestorben</string>
+    <string name="iucn_ew">In der Natur ausgestorben</string>
+    <string name="iucn_cr">Vom Aussterben bedroht</string>
+    <string name="iucn_en">Stark gefährdet</string>
+    <string name="iucn_vu">Gefährdet</string>
+    <string name="iucn_nt">Potenziell gefährdet</string>
+    <string name="iucn_lc">Nicht gefährdet</string>
+    <string name="iucn_dd">Ungenügende Datenlage</string>
+
+    <!-- Nutzungsbereiche -->
+    <string name="use_domain_medicinal">Gesundheit und Medizin</string>
+    <string name="use_domain_food">Ernährung</string>
+    <string name="use_domain_cosmetic">Kosmetik und Parfümerie</string>
+    <string name="use_domain_chemical">Chemie und Industrie</string>
+    <string name="use_domain_craft">Handwerk und Werkstoffe</string>
+    <string name="use_domain_ornamental">Zierpflanze und Landschaft</string>
+    <string name="use_domain_ecological">Ökologie und Garten</string>
+    <string name="use_domain_other">Weitere Verwendungen</string>
+
+    <!-- Essbarkeit und Grösse -->
+    <string name="edibility_edible">Essbar</string>
+    <string name="edibility_toxic">Giftig</string>
+    <string name="edibility_inedible">Nicht essbar</string>
+    <string name="maturity_height">Höhe</string>
+    <string name="maturity_diameter">Breite</string>
+    <string name="maturity_time">Zeit bis zur Reife</string>
+
+    <!-- Warnung vor giftigen Verwechslungen -->
+    <string name="toxic_warning_one">Unsichere Bestimmung (%1$d/100): Unter den übrigen Möglichkeiten bleibt eine giftige Art plausibel — %2$s. Es könnte sich also um eine giftige Art handeln: Essen Sie nichts davon, nehmen Sie nichts in den Mund und gehen Sie vorsichtig damit um, solange keine fachkundige Bestätigung vorliegt.</string>
+    <string name="toxic_warning_many">Unsichere Bestimmung (%1$d/100): Unter den übrigen Möglichkeiten bleiben giftige Arten plausibel — %2$s. Es könnte sich also um eine giftige Art handeln: Essen Sie nichts davon, nehmen Sie nichts in den Mund und gehen Sie vorsichtig damit um, solange keine fachkundige Bestätigung vorliegt.</string>
+
+    <!-- Hinweis bei unvollständigem Eintrag -->
+    <string name="advice_no_ai_key">Es ist kein KI-Schlüssel eingerichtet: Dieser Eintrag beschränkt sich auf die Pl@ntNet-Bestimmung, ohne Beschreibung, ohne Zustand und ohne Fragen.</string>
+    <string name="advice_no_ai_key_action">KI-Schlüssel hinzufügen</string>
+    <string name="advice_ai_unavailable">Die KI-Analyse kam bei dieser Bestimmung nicht zustande. Starten Sie die Analyse erneut, um den Eintrag zu vervollständigen.</string>
+    <string name="advice_no_plantnet_key">Diese Bestimmung stammt allein von der KI: Ohne Pl@ntNet-Schlüssel wurde der Artname nicht mit der botanischen Beobachtungsdatenbank abgeglichen.</string>
+    <string name="advice_no_plantnet_key_action">Pl@ntNet-Schlüssel hinzufügen</string>
+
+    <!-- Ergebnis -->
+    <string name="result_title">Ergebnis</string>
+    <string name="result_reanalyze">Analyse erneut starten</string>
+
+    <!-- Detailansicht -->
+    <string name="detail_title">Details</string>
+    <string name="detail_favorite_add">Zu Favoriten hinzufügen</string>
+    <string name="detail_favorite_remove">Aus Favoriten entfernen</string>
+    <string name="detail_share">Teilen</string>
+    <string name="detail_export_pdf">Als PDF exportieren</string>
+    <string name="detail_notes_title">Persönliche Notizen</string>
+    <string name="detail_notes_placeholder">Notiz hinzufügen…</string>
+    <string name="detail_notes_save">Notiz speichern</string>
+    <string name="detail_delete_title">Diese Bestimmung löschen?</string>
+    <string name="detail_delete_body">Der Eintrag und seine Fotos werden endgültig gelöscht.</string>
+
+    <!-- Eintrag (Ergebnis und Details) -->
+    <string name="fiche_photo_of">Foto von %1$s — zum Vergrössern tippen</string>
+    <string name="fiche_score_hint">Tippen Sie auf den Wert, um die Aufschlüsselung und die übrigen Möglichkeiten zu sehen.</string>
+    <string name="fiche_user_confirmed">Art von Hand aus den vorgeschlagenen Möglichkeiten bestätigt.</string>
+    <string name="fiche_no_ai_banner">Es war keine KI erreichbar: rohes Pl@ntNet-Ergebnis, ohne Beschreibung, Zustandsbeurteilung und Essbarkeit. Prüfen Sie Ihre KI-Schlüssel in den Einstellungen oder starten Sie die Analyse erneut.</string>
+    <string name="fiche_sources_disagree">Unsichere Bestimmung: Pl@ntNet und die KI schlagen verschiedene Arten vor. Siehe die alternativen Möglichkeiten unten.</string>
+    <string name="fiche_score_section">Trefferwert</string>
+    <string name="fiche_score_final">Gesamtwert</string>
+    <string name="fiche_score_ai">KI (%1$s)</string>
+    <string name="fiche_habitat">Lebensraum und Verbreitung</string>
+    <string name="fiche_health">Zustand</string>
+    <string name="fiche_health_recommendations">Empfehlungen:</string>
+    <string name="fiche_information">Informationen</string>
+    <string name="fiche_alternatives_selectable">Weitere Möglichkeiten — zum Bestätigen tippen</string>
+    <string name="fiche_alternatives">Weitere Möglichkeiten</string>
+    <string name="fiche_alternative_choose">Diese Art wählen</string>
+    <string name="fiche_location_title">Aufnahmeort</string>
+    <string name="fiche_range_title">Wo diese Art vorkommt</string>
+    <string name="fiche_gps_accuracy">GPS-Genauigkeit ~%1$d m</string>
+    <string name="fiche_gps_accuracy_low">GPS-Genauigkeit ~%1$d m (gering)</string>
+    <string name="fiche_no_gps_explanation">Foto ohne GPS-Position: Die Karte ist auf das bekannte Verbreitungsgebiet der Art zentriert (GBIF-Fundmeldungen), nicht auf den Aufnahmeort.</string>
+    <string name="fiche_identification_cost">Kosten dieser Bestimmung</string>
+    <string name="fiche_incomplete">Unvollständiger Eintrag</string>
+    <string name="fiche_maturity_title">Grösse bei Reife</string>
+    <string name="fiche_maturity_note">Grösse der ausgewachsenen Art, nur als Anhaltspunkt: Sie hängt von Boden, Lage und Klima ab.</string>
+    <string name="fiche_calendar_fungus_title">Wachstums- und Sammelzeit</string>
+    <string name="fiche_calendar_title">Pflanzen und pflegen</string>
+    <string name="fiche_calendar_note">Richtwerte für das Klima am Aufnahmeort: Verschieben Sie die Zeiten je nach Höhenlage, Exposition und Witterung des Jahres.</string>
+    <string name="fiche_uses_title">Verwendung</string>
+    <string name="fiche_uses_medicinal_note">Überlieferte oder belegte Verwendungen, nur zur Information: Sie sind keine medizinische Empfehlung. Fragen Sie vor jeder Anwendung eine Fachperson.</string>
+    <string name="fiche_symbolism_title">Symbolik</string>
+    <string name="fiche_conservation_title">Schutzstatus</string>
+    <string name="fiche_conservation_status">%1$s (%2$s)</string>
+    <string name="fiche_conservation_note">Weltweite Rote Liste der IUCN, über Pl@ntNet. Ein Schutzstatus ist kein rechtlicher Schutz: Die örtlichen Vorschriften können strenger sein.</string>
+    <string name="fiche_toxic_banner">Diese Art gilt als giftig. Nicht essen und nicht in den Mund nehmen.</string>
+    <string name="fiche_edibility_title">Essbarkeit</string>
+    <string name="fiche_edible_warning">Essen Sie nie eine wilde Pflanze oder einen Pilz ohne fachkundige Bestätigung: Eine Bestimmung kann falsch sein, und manche Arten haben gefährliche Doppelgänger.</string>
+    <string name="fiche_confirmed_pill">Bestätigt</string>
+    <string name="fiche_reanalyzing">Neue Analyse…</string>
+    <string name="fiche_reanalyze_ai">KI-Analyse erneut starten</string>
+    <string name="fiche_provider_none">Nur Pl@ntNet-Ergebnis (keine KI)</string>
+    <string name="fiche_provider_analyzed_by">Analysiert von %1$s</string>
+    <string name="usage_provider">Anbieter</string>
+    <string name="usage_tokens">Tokens</string>
+    <string name="usage_cost">Geschätzte Kosten</string>
+    <string name="usage_cost_unknown">Preis des Modells unbekannt</string>
+    <string name="usage_note">Schätzung zum öffentlichen Preis des Modells. Null, wenn Ihr Konto beim Anbieter noch im kostenlosen Kontingent liegt.</string>
+
+    <!-- Fragen an die KI -->
+    <string name="qa_title">Der KI eine Frage stellen</string>
+    <string name="qa_intro">Stellen Sie eine Frage zu dieser Pflanze (Pflege, Essbarkeit, mögliche Verwechslungen, Blütezeit…). Die Antwort berücksichtigt die bekannten Angaben und den Aufnahmeort.</string>
+    <string name="qa_placeholder">Ihre Frage…</string>
+    <string name="qa_dictate">Frage diktieren</string>
+    <string name="qa_speech_prompt">Stellen Sie Ihre Frage</string>
+    <string name="qa_speech_unavailable">Spracherkennung ist auf diesem Gerät nicht verfügbar.</string>
+    <string name="qa_ask">Fragen</string>
+    <string name="qa_no_ai_key">Kein KI-Schlüssel eingerichtet: Es ist keine Antwort möglich. Fügen Sie in den Einstellungen einen Schlüssel hinzu.</string>
+    <string name="qa_failed">Die Antwort ist fehlgeschlagen — %1$s.</string>
+
+    <!-- Verbreitungskarte -->
+    <string name="map_no_location_at_all">Weder ein Aufnahmeort noch GBIF-Verbreitungsdaten für diese Art: Die Karte kann nicht angezeigt werden.</string>
+    <string name="map_loading_range">Verbreitungsgebiet wird geladen…</string>
+    <string name="map_range_legend">Grüne Fläche: ungefähres Verbreitungsgebiet (GBIF-Fundmeldungen). Eine Näherung auf Basis bekannter Beobachtungen, ohne rechtliche Bedeutung.</string>
+    <string name="map_no_range_with_point">Keine GBIF-Verbreitungsdaten für diese Art: Es wird nur der Aufnahmeort angezeigt.</string>
+    <string name="map_no_range">Keine GBIF-Verbreitungsdaten für diese Art.</string>
+
+    <!-- Fehlergründe der Anbieter -->
+    <string name="failure_missing_key">kein Schlüssel</string>
+    <string name="failure_invalid_key">ungültiger Schlüssel</string>
+    <string name="failure_quota">Kontingent erreicht</string>
+    <string name="failure_billing">kein Guthaben auf dem Konto</string>
+    <string name="failure_network">Netzwerk nicht verfügbar</string>
+    <string name="failure_server">Serverfehler</string>
+    <string name="failure_parse">unlesbare Antwort</string>
+    <string name="failure_unknown">unbekannter Fehler</string>
+
+    <!-- Unbrauchbare Schlüssel — Gründe -->
+    <string name="key_issue_invalid">Schlüssel abgelehnt (401/403)</string>
+    <string name="key_issue_missing">kein Schlüssel</string>
+    <string name="key_issue_billing">kein Guthaben auf dem Anbieterkonto</string>
+    <string name="key_issue_quota">Kontingent erreicht</string>
+    <string name="key_issue_plantnet_invalid">Schlüssel von Pl@ntNet abgelehnt (401/403)</string>
+    <string name="key_issue_plantnet_quota">Pl@ntNet-Kontingent erreicht</string>
+    <string name="key_issue_unusable">Schlüssel unbrauchbar</string>
+
+    <!-- Schlüssel testen -->
+    <string name="key_test_refused">Schlüssel abgelehnt.</string>
+    <string name="key_test_unverifiable">Der Schlüssel kann derzeit nicht geprüft werden (Netzwerk oder Dienst nicht verfügbar). Er ist gespeichert: Versuchen Sie es später erneut.</string>
+
+    <!-- Verbrauchte Tokens -->
+    <string name="tokens_summary">%1$s Tokens (%2$s Eingabe + %3$s Ausgabe)</string>
+
+    <!-- Benachrichtigungen -->
+    <string name="notif_channel_name">Bestimmungen</string>
+    <string name="notif_channel_description">Ergebnisse verzögerter Bestimmungen (Offline-Modus)</string>
+    <string name="notif_result_ready">Bestimmung bereit</string>
+    <string name="notif_failed">Bestimmung fehlgeschlagen</string>
+
+    <!-- PDF-Export -->
+    <string name="pdf_footer">Bestimmt am %1$s — PlantInfo</string>
+    <string name="pdf_page_number">%1$s  (Seite %2$d)</string>
+    <string name="pdf_confirmed">Bestimmung von Hand bestätigt</string>
+    <string name="pdf_score">Trefferwert: %1$d/100</string>
+    <string name="pdf_score_with_provider">Trefferwert: %1$d/100 — analysiert von %2$s</string>
+    <string name="pdf_fungus_heading">Pilzwarnung</string>
+    <string name="pdf_fungus_body">Essen Sie niemals einen Pilz allein aufgrund dieser automatischen Bestimmung. Ziehen Sie im Zweifelsfall eine Fachperson oder eine Pilzkontrollstelle bei.</string>
+    <string name="pdf_protected_heading">Geschützte Art</string>
+    <string name="pdf_protected_body">Diese Art ist in dieser Region möglicherweise geschützt: Vom Sammeln wird abgeraten.</string>
+    <string name="pdf_toxic_heading">Mögliche Verwechslung mit einer giftigen Art</string>
+    <string name="pdf_conservation_body">%1$s (%2$s) — weltweite Rote Liste der IUCN, über Pl@ntNet.</string>
+    <string name="pdf_uses_medicinal_note">Verwendungen nur zur Dokumentation, ohne medizinischen Empfehlungswert.</string>
+
+    <!-- Teilen -->
+    <string name="share_confirmed">Bestimmung von Hand bestätigt</string>
+    <string name="share_score">Wert: %1$d/100</string>
+    <string name="share_edibility">Essbarkeit: %1$s</string>
+    <string name="share_maturity">Bei Reife: %1$s</string>
+    <string name="share_habitat">Lebensraum: %1$s</string>
+    <string name="share_calendar">Kalender: %1$s</string>
+    <string name="share_uses">Verwendung: %1$s</string>
+    <string name="share_symbolism">Symbolik: %1$s</string>
+    <string name="share_place">Ort: %1$s</string>
+    <string name="share_signature">— via PlantInfo</string>
+    <string name="share_chooser_identification">Bestimmung teilen</string>
+    <string name="share_chooser_pdf">PDF-Eintrag teilen</string>
+
+    <!-- Bestimmungsablauf — Meldungen -->
+    <string name="id_no_keys">Kein API-Schlüssel eingerichtet. Hinterlegen Sie in den Einstellungen mindestens den Pl@ntNet-Schlüssel.</string>
+    <string name="id_no_ai_key">Kein KI-Schlüssel eingerichtet: Es wird nur das rohe Pl@ntNet-Ergebnis angezeigt (ohne Zustandsbeurteilung und ohne weitere Angaben). Fügen Sie in den Einstellungen einen Schlüssel hinzu.</string>
+    <string name="id_ai_unavailable">KI-Analyse nicht verfügbar (%1$s). Rohes Pl@ntNet-Ergebnis: ohne Beschreibung, Zustandsbeurteilung und KI-Wert.</string>
+    <string name="id_reanalyze_offline">Keine Verbindung: Die Analyse kann nicht erneut gestartet werden. Versuchen Sie es später.</string>
+    <string name="id_plantnet_invalid_key">Ungültiger Pl@ntNet-Schlüssel. Prüfen Sie ihn in den Einstellungen.</string>
+    <string name="id_plantnet_quota">Pl@ntNet-Kontingent erreicht. Versuchen Sie es später erneut.</string>
+    <string name="id_offline_retry">Keine Verbindung. Die Bestimmung wird automatisch wiederholt.</string>
+    <string name="id_plantnet_server">Der Pl@ntNet-Dienst ist vorübergehend nicht verfügbar.</string>
+    <string name="id_no_result">Es konnte keine Art bestimmt werden. Fügen Sie ein schärferes oder ein zusätzliches Foto hinzu.</string>
+    <string name="id_ai_invalid_key">Ungültige KI-Schlüssel (%1$s). Prüfen Sie sie in den Einstellungen.</string>
+    <string name="id_ai_quota">KI-Analyse nicht möglich: %1$s. Prüfen Sie Guthaben und Kontingent Ihrer Anbieterkonten.</string>
+    <string name="id_offline_retry_network">Keine Verbindung. Die Bestimmung wird automatisch wiederholt, sobald das Netz zurück ist.</string>
+    <string name="id_ai_failed">Die Analyse ist fehlgeschlagen (%1$s).</string>
+
+    <!-- Verlauf — Art von Hand bestätigen -->
+    <string name="selection_note_toxic">Diese Art ist in der Referenzliste der App als giftig vermerkt. Die bisher angezeigten Angaben zur Essbarkeit betrafen die zuvor bestimmte Art: Sie wurden gelöscht.</string>
+    <string name="selection_note_unknown">Essbarkeit für diese Art nicht beurteilt: Sie haben sie von Hand bestätigt, ohne neue Analyse. Die bisher angezeigten Angaben betrafen die zuvor bestimmte Art.</string>
+
+    <!-- Einstellungen -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_api_keys">API-Schlüssel</string>
+    <string name="settings_security">Sicherheit</string>
+    <string name="settings_add_key">Schlüssel hinzufügen</string>
+    <string name="settings_recheck_running">Prüfung…</string>
+    <string name="settings_recheck">Schlüssel erneut prüfen</string>
+    <string name="settings_recheck_note">Die Schlüssel werden beim Start automatisch einmal täglich geprüft. Jede Prüfung verbraucht eine Anfrage beim Anbieter.</string>
+    <string name="settings_toxic_alert_title">Warnung vor giftigen Arten</string>
+    <string name="settings_toxic_alert_intro">Warnt, wenn eine Bestimmung nicht gesichert ist und zugleich eine giftige Art möglich bleibt.</string>
+    <string name="settings_toxic_max_score">Warnen, wenn der Wert kleiner ist als</string>
+    <string name="settings_toxic_max_score_hint">Höher = häufiger warnen. Bei 100 erscheint die Warnung, sobald eine giftige Möglichkeit besteht, selbst bei einer sehr sicheren Bestimmung.</string>
+    <string name="settings_toxic_min_alt">Nur Möglichkeiten berücksichtigen über</string>
+    <string name="settings_toxic_min_alt_hint">Tiefer = häufiger warnen. Bei 0 löst selbst eine sehr unwahrscheinliche Möglichkeit die Warnung aus.</string>
+    <string name="settings_toxic_rule">Aktuelle Regel: warnen, wenn der Gesamtwert unter %1$d liegt und eine giftige Möglichkeit über %2$d liegt.</string>
+    <string name="settings_toxic_caveat">Diese Einstellung ändert nur, wann die Warnung erscheint: Sie macht eine Art nie sicherer. Essen Sie nie eine wilde Pflanze oder einen Pilz ohne fachkundige Bestätigung.</string>
+    <string name="settings_toxic_reset">Zurück zu den Standardwerten (%1$d und %2$d)</string>
+    <string name="settings_relaunch_setup">Einrichtungsassistenten erneut starten</string>
+    <string name="settings_free_gemini_title">Kostenlose KI (nur Gemini)</string>
+    <string name="settings_free_gemini_body">Verwendet für Bestimmung und Fragen ausschliesslich Gemini.</string>
+    <string name="settings_free_gemini_note">Claude und GPT werden übergangen: Ihre APIs sind kostenpflichtig (ein Claude-Pro-Abo enthält kein API-Guthaben). Schalten Sie diese Option erst aus, wenn Sie ein Anthropic- oder OpenAI-Konto aufgeladen haben.</string>
+    <string name="settings_key_stored">Schlüssel gespeichert</string>
+    <string name="settings_key_absent">Kein Schlüssel gespeichert</string>
+    <string name="settings_key_broken">Dieser Schlüssel funktioniert nicht mehr: %1$s.</string>
+    <string name="settings_key_replace">API-Schlüssel ersetzen</string>
+    <string name="settings_key_paste_label">API-Schlüssel einfügen</string>
+    <string name="settings_key_paste_action">Aus der Zwischenablage einfügen</string>
+    <string name="settings_key_testing">Schlüssel wird getestet…</string>
+    <string name="settings_key_valid">Schlüssel gültig</string>
+    <string name="settings_key_save_and_test">Speichern und testen</string>
+    <string name="settings_key_clear">Löschen</string>
+    <string name="settings_fallback_title">KI-Ausweichreihenfolge</string>
+    <string name="settings_fallback_body">Bei einem Fehlschlag (ungültiger Schlüssel, Kontingent, Netz) versucht die App den nächsten Anbieter.</string>
+    <string name="settings_fallback_disabled">Ohne Wirkung, solange „Kostenlose KI (nur Gemini)“ aktiv ist: Es wird nur Gemini versucht.</string>
+    <string name="settings_fallback_position">%1$d. %2$s</string>
+    <string name="settings_move_up">Nach oben</string>
+    <string name="settings_move_down">Nach unten</string>
+
+    <!-- Angegebene Kosten der KI-Anbieter -->
+    <string name="gemini_cost_hint">etwa ein Rappen pro Bestimmung (Google-Preis Mitte 2026 erhoben, Änderungen vorbehalten)</string>
+
+    <!-- Assistent — allgemeine Texte -->
+    <string name="setup_what_app_does">PlantInfo bestimmt eine Pflanze, einen Baum oder einen Pilz anhand Ihrer Fotos und trägt anschliessend in einem Eintrag zusammen, was man dazu wissen muss: Beschreibung, Zustand, Lebensraum, Verbreitungsgebiet, Essbarkeit und Giftigkeit. Danach können Sie eigene Fragen zur bestimmten Art stellen.</string>
+    <string name="setup_privacy_caveat">Diese Anfragen gehen von Ihrem Telefon aus: Jeder Dienst sieht daher Ihre IP-Adresse, wie bei jedem Besuch einer Website. Was davon gespeichert wird, richtet sich nach deren eigenen Nutzungsbedingungen.</string>
+    <string name="setup_why_keys_intro">PlantInfo betreibt keinen eigenen Bestimmungsdienst: Es fragt die bestehenden Dienste mit Ihren eigenen Zugängen an. Nur so kann die App Ihnen nichts verrechnen und ihrerseits nichts aufbewahren.</string>
+    <string name="setup_can_change_later">Nichts ist endgültig: Sie können einen Schlüssel jederzeit in den Einstellungen hinzufügen, ersetzen oder löschen und diesen Assistenten vom selben Bildschirm aus erneut starten.</string>
+    <string name="setup_skip_hint">Sie können diesen Schritt überspringen und später darauf zurückkommen.</string>
+    <string name="setup_ready_full">Alles ist bereit. Fotografieren Sie eine Pflanze und starten Sie die Bestimmung.</string>
+    <string name="setup_ready_plantnet_only">Sie können Pflanzen mit Pl@ntNet bestimmen. Ohne KI-Schlüssel beschränkt sich der Eintrag auf den Artnamen: keine Beschreibung, kein Zustand, keine Pilze, keine Fragen.</string>
+    <string name="setup_ready_ai_only">Sie können allein mit der KI bestimmen, Pilze eingeschlossen. Ohne Pl@ntNet fehlt die botanische Prüfung, die den Artnamen verlässlich macht.</string>
+    <string name="setup_ready_nothing">Es ist kein Schlüssel gespeichert: Die Bestimmung kann nicht starten. Starten Sie diesen Assistenten aus den Einstellungen erneut, sobald Sie bereit sind.</string>
+
+    <!-- Assistent — wo die Daten bleiben -->
+    <string-array name="setup_where_data_lives">
+        <item>Ihre Fotos, Ihre Einträge und Ihre Notizen bleiben auf diesem Telefon, im privaten Speicher der App. Nichts wird auf einen PlantInfo-Server gelegt — einen solchen gibt es nicht.</item>
+        <item>Es ist kein Konto anzulegen, kein Passwort und keine E-Mail-Adresse nötig.</item>
+        <item>Ihre API-Schlüssel sind auf dem Gerät verschlüsselt und werden nur an den Dienst gesendet, zu dem sie gehören.</item>
+        <item>Wird die App deinstalliert, ist alles gelöscht: Es gibt keine Kopie anderswo.</item>
+    </string-array>
+    <string-array name="setup_external_services">
+        <item>Pl@ntNet</item>
+        <item>Der von Ihnen gewählte KI-Anbieter</item>
+        <item>GBIF</item>
+        <item>OpenStreetMap</item>
+    </string-array>
+    <string-array name="setup_external_data_sent">
+        <item>die Fotos, die Sie einreichen, um Artvorschläge zu erhalten.</item>
+        <item>die Fotos, die Vorschläge von Pl@ntNet und, sofern bekannt, die GPS-Koordinaten der Aufnahme — sowie den Text Ihrer Fragen.</item>
+        <item>den wissenschaftlichen Namen der Art, um ihr Verbreitungsgebiet abzurufen (kein Foto, keine Ihrer Positionen).</item>
+        <item>den angezeigten Kartenausschnitt, und zwar nur, wenn Sie die Karte eines Eintrags öffnen.</item>
+    </string-array>
+
+    <!-- Schlüssel-Anleitungen — allgemein -->
+    <string name="guide_what_is_a_key">Ein API-Schlüssel ist ein Passwort, das Sie bei einem Online-Dienst (Pl@ntNet, Google, Anthropic, OpenAI) erstellen und hier einfügen. Er erlaubt PlantInfo, diesen Dienst in Ihrem Namen von Ihrem Telefon aus anzufragen. Es gibt kein PlantInfo-Konto: Jeder Schlüssel bleibt auf diesem Gerät verschlüsselt und wird nur an den betreffenden Dienst gesendet.</string>
+    <string name="guide_minimum_setup">Für den Anfang genügen zwei Schlüssel: Pl@ntNet (Bestimmung, kostenlos) und Gemini (Beschreibung, Zustand, Pilze). Das kostenlose Kontingent von Gemini funktioniert, ist aber langsam und auf einige Dutzend Anfragen pro Tag begrenzt; mit aktivierter Abrechnung rechnen Sie mit %1$s. Claude und GPT sind freiwillige Alternativen, ebenfalls kostenpflichtig.</string>
+    <string name="guide_plantnet_vs_ai">Pl@ntNet ist ein spezialisierter Dienst: Er vergleicht das Foto mit einer Datenbank botanischer Beobachtungen und schlägt Arten vor, ohne sonst etwas dazu zu sagen. Die KI (Gemini) greift diesen Vorschlag auf, prüft ihn am Foto, verfasst die Beschreibung, beurteilt den Zustand, behandelt Pilze — die Pl@ntNet nicht abdeckt — und beantwortet Ihre Fragen. Mit Pl@ntNet allein erhalten Sie einen Namen; mit der KI allein fehlt die botanische Prüfung.</string>
+
+    <!-- Anleitung — Pl@ntNet -->
+    <string name="guide_plantnet_role">Bestimmt die Art anhand des Fotos. Das ist die Grundlage der App.</string>
+    <string name="guide_plantnet_cost">Kostenlos: Die Anmeldung gibt Ihnen ein tägliches Bestimmungskontingent, das für den persönlichen Gebrauch ausreicht.</string>
+    <string name="guide_plantnet_pitfall">Der Pl@ntNet-Schlüssel ist bereits für Sie angelegt: Es ist nichts zu erzeugen, Sie kopieren nur den in Ihrem Konto angezeigten Wert.</string>
+
+    <!-- Anleitung — Gemini -->
+    <string name="guide_gemini_role">Beschreibt die Pflanze, beurteilt ihren Zustand, bestimmt Pilze und beantwortet Ihre Fragen.</string>
+    <string name="guide_gemini_cost">Das kostenlose Kontingent von Google AI Studio reicht zum Ausprobieren, ist aber zu Stosszeiten langsam und auf einige Dutzend Anfragen pro Tag begrenzt; darüber hinaus antwortet der Schlüssel bis zum nächsten Tag nicht mehr. Mit aktivierter Abrechnung im Google-Projekt entfällt die Wartezeit, und Sie zahlen %1$s.</string>
+    <string name="guide_gemini_pitfall">Der Schlüssel wird nur bei seiner Erstellung vollständig angezeigt: Kopieren Sie ihn sofort. Ist er verloren, erstellen Sie einfach einen neuen.</string>
+
+    <!-- Anleitung — Claude -->
+    <string name="guide_claude_role">Alternative zu Gemini für Beschreibung, Zustand und Fragen. Oft am treffsichersten bei heiklen Arten.</string>
+    <string name="guide_claude_cost">Nutzungsabhängig kostenpflichtig, nach Tokens abgerechnet (einige Rappen pro Bestimmung). Das Konto muss vor der ersten Nutzung aufgeladen werden.</string>
+    <string name="guide_claude_pitfall">Ein Claude-Pro- oder -Max-Abo enthält kein API-Guthaben: Ohne Guthaben auf dem Entwicklerkonto wird der Schlüssel zwar angenommen, jeder Aufruf schlägt aber fehl.</string>
+
+    <!-- Anleitung — OpenAI -->
+    <string name="guide_openai_role">Zweite Alternative für Beschreibung, Zustand und Fragen.</string>
+    <string name="guide_openai_cost">Nutzungsabhängig kostenpflichtig, nach Tokens abgerechnet. Das Konto muss vor der ersten Nutzung aufgeladen werden.</string>
+    <string name="guide_openai_pitfall">Ein ChatGPT-Plus-Abo enthält kein API-Guthaben: Das Entwicklerkonto wird getrennt aufgeladen.</string>
+
+    <!-- Schlüssel-Anleitungen — Schritt für Schritt -->
+    <string-array name="guide_plantnet_steps">
+        <item>Öffnen Sie my.plantnet.org und erstellen Sie ein Konto (E-Mail-Adresse + Passwort).</item>
+        <item>Bestätigen Sie die Bestätigungsmail in Ihrem Posteingang.</item>
+        <item>Melden Sie sich erneut an und öffnen Sie die „Einstellungen“ („Settings“) Ihres Kontos.</item>
+        <item>Suchen Sie die Zeile „API key“ und kopieren Sie den angezeigten Wert.</item>
+        <item>Kommen Sie hierher zurück und fügen Sie ihn mit der Schaltfläche „Einfügen“ des Feldes unten ein.</item>
+    </string-array>
+    <string-array name="guide_gemini_steps">
+        <item>Öffnen Sie aistudio.google.com/apikey und melden Sie sich mit einem Google-Konto an.</item>
+        <item>Nehmen Sie die Nutzungsbedingungen von Google AI Studio an, falls sie erscheinen.</item>
+        <item>Klicken Sie auf „Create API key“.</item>
+        <item>Wählen Sie ein Google-Cloud-Projekt, wenn Sie danach gefragt werden — das vorgeschlagene Projekt genügt.</item>
+        <item>Kopieren Sie den angezeigten Schlüssel (er beginnt mit „AIza“) und fügen Sie ihn unten ein.</item>
+    </string-array>
+    <string-array name="guide_claude_steps">
+        <item>Öffnen Sie console.anthropic.com und erstellen Sie ein Konto.</item>
+        <item>Laden Sie unter „Billing“ / „Plans“ Guthaben auf (ein kleiner Betrag genügt für Hunderte von Bestimmungen).</item>
+        <item>Öffnen Sie „Settings“ und dann „API keys“.</item>
+        <item>Klicken Sie auf „Create key“ und geben Sie ihm einen Namen (zum Beispiel „PlantInfo“).</item>
+        <item>Kopieren Sie den angezeigten Schlüssel (er beginnt mit „sk-ant-“) und fügen Sie ihn unten ein.</item>
+    </string-array>
+    <string-array name="guide_openai_steps">
+        <item>Öffnen Sie platform.openai.com und erstellen Sie ein Konto.</item>
+        <item>Laden Sie unter „Billing“ Guthaben auf das Konto.</item>
+        <item>Öffnen Sie „API keys“ im Kontomenü.</item>
+        <item>Klicken Sie auf „Create new secret key“ und bestätigen Sie.</item>
+        <item>Kopieren Sie den angezeigten Schlüssel (er beginnt mit „sk-“) und fügen Sie ihn unten ein.</item>
+    </string-array>
+
+    <!-- Assistent -->
+    <string name="setup_step_welcome">Willkommen</string>
+    <string name="setup_step_why_keys">Warum ein API-Schlüssel</string>
+    <string name="setup_step_key">Schlüssel %1$s</string>
+    <string name="setup_step_recap">Sie sind bereit</string>
+    <string name="setup_previous_step">Vorheriger Schritt</string>
+    <string name="setup_progress">%1$d / %2$d</string>
+    <string name="setup_skip">Überspringen</string>
+    <string name="setup_finish">Fertig</string>
+    <string name="setup_data_stays_title">Ihre Daten bleiben auf diesem Gerät</string>
+    <string name="setup_data_leaves_title">Was das Gerät verlässt, und an wen</string>
+    <string name="setup_what_is_a_key_title">Was ist ein API-Schlüssel?</string>
+    <string name="setup_plantnet_vs_ai_title">Pl@ntNet und die KI tun Verschiedenes</string>
+    <string name="setup_cost_title">Was das kostet</string>
+    <string name="setup_steps_title">Vorgehen</string>
+    <string name="setup_paste_title">Schlüssel einfügen</string>
+    <string name="setup_key_already_stored">Es ist bereits ein Schlüssel gespeichert.</string>
+    <string name="setup_replace_key">Schlüssel ersetzen</string>
+    <string name="setup_key_label">Schlüssel %1$s</string>
+    <string name="setup_open_provider_page">Seite %1$s öffnen</string>
+    <string name="setup_recap_title">Ihre Schlüssel</string>
+    <string name="setup_recap_plantnet">Pl@ntNet — Pflanzenbestimmung</string>
+    <string name="setup_recap_ai">KI — Beschreibung, Zustand, Pilze, Fragen</string>
+    <string name="setup_configured">Eingerichtet</string>
+    <string name="setup_not_configured">Nicht eingerichtet</string>
+
+    <!-- Einstellungen — Sprache -->
+    <string name="settings_language_title">Sprache</string>
+    <string name="settings_language_body">Die App folgt der Sprache des Telefons. Wählen Sie eine andere, wenn Sie PlantInfo lieber in einer anderen Sprache lesen.</string>
+    <string name="settings_language_system">Sprache des Telefons</string>
+    <string name="settings_language_note">Bereits gespeicherte Einträge behalten die Sprache, in der sie verfasst wurden: Ein Sprachwechsel hier übersetzt sie nicht, aber die nächsten Bestimmungen folgen Ihrer Wahl.</string>
+
+    <!-- Aufforderung zu einem zusätzlichen Foto -->
+    <string name="complementary_fungus">Fotografieren Sie die Hutunterseite (Lamellen/Poren) und den Stiel, um die Bestimmung einzugrenzen.</string>
+    <string name="complementary_plant">Fügen Sie eine scharfe Nahaufnahme eines Blattes hinzu (und einer Blüte oder Frucht, falls vorhanden).</string>
+</resources>

@@ -61,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -69,6 +70,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.R
 import coil.compose.AsyncImage
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.ui.components.FullscreenPhotoViewer
@@ -190,9 +192,9 @@ fun CaptureScreen(
                 // Bandeau d'état GPS en surimpression.
                 LocationChip(
                     text = when {
-                        state.locating -> "Localisation…"
-                        state.gps != null -> "GPS ✓"
-                        else -> "GPS indisponible"
+                        state.locating -> stringResource(R.string.capture_locating)
+                        state.gps != null -> stringResource(R.string.capture_gps_ok)
+                        else -> stringResource(R.string.capture_gps_unavailable)
                     },
                     modifier = Modifier.align(Alignment.TopEnd).padding(12.dp),
                 )
@@ -221,17 +223,16 @@ fun CaptureScreen(
 @Composable
 private fun MissingKeysCard(onOpenSetup: () -> Unit) {
     SectionCard(
-        title = "Configuration à terminer",
+        title = stringResource(R.string.capture_setup_incomplete_title),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
         Text(
-            "Aucune clé API n'est enregistrée. PlantInfo interroge des services extérieurs pour " +
-                "reconnaître vos photos : sans clé, l'identification ne peut pas démarrer.",
+            stringResource(R.string.capture_setup_incomplete_body),
             style = MaterialTheme.typography.bodyMedium,
         )
-        Button(onClick = onOpenSetup) { Text("Lancer l'assistant de configuration") }
+        Button(onClick = onOpenSetup) { Text(stringResource(R.string.capture_open_setup)) }
     }
 }
 
@@ -257,19 +258,19 @@ private fun PhotoBoard(
                 Modifier
                     .size(112.dp)
                     .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-                    .clickable(onClickLabel = "Ouvrir la caméra") { onOpenCamera() },
+                    .clickable(onClickLabel = stringResource(R.string.capture_open_camera)) { onOpenCamera() },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     Icons.Filled.PhotoCamera,
-                    contentDescription = "Ouvrir la caméra",
+                    contentDescription = stringResource(R.string.capture_open_camera),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(56.dp),
                 )
             }
             Spacer(Modifier.height(16.dp))
             Text(
-                "Appuyez pour photographier une plante,\nou importez depuis la galerie.",
+                stringResource(R.string.capture_empty_hint),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -297,7 +298,7 @@ private fun PhotoBoard(
                 onClick = onOpenCamera,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
             ) {
-                Icon(Icons.Filled.PhotoCamera, contentDescription = "Ouvrir la caméra")
+                Icon(Icons.Filled.PhotoCamera, contentDescription = stringResource(R.string.capture_open_camera))
             }
         }
     }
@@ -317,7 +318,7 @@ private fun LargePhotoCard(
         Box(Modifier.weight(1f).width(280.dp)) {
             AsyncImage(
                 model = File(path),
-                contentDescription = "Photo — appuyer pour agrandir",
+                contentDescription = stringResource(R.string.capture_photo_tap_to_zoom),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
@@ -328,7 +329,7 @@ private fun LargePhotoCard(
             )
             Icon(
                 Icons.Filled.Cancel,
-                contentDescription = "Retirer la photo",
+                contentDescription = stringResource(R.string.capture_remove_photo),
                 tint = Color.White,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -358,6 +359,7 @@ private fun CameraPreview(
         onDispose { controller.unbind() }
     }
     val executor: Executor = remember { ContextCompat.getMainExecutor(context) }
+    val takePhotoLabel = stringResource(R.string.capture_take_photo)
 
     Box(modifier) {
         AndroidView(
@@ -372,7 +374,7 @@ private fun CameraPreview(
         // Fermer la caméra sans prendre de photo.
         Icon(
             Icons.Filled.Close,
-            contentDescription = "Fermer la caméra",
+            contentDescription = stringResource(R.string.capture_close_camera),
             tint = Color.White,
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -391,7 +393,7 @@ private fun CameraPreview(
                 .border(4.dp, Color.White, CircleShape)
                 .padding(7.dp)
                 .background(Color.White, CircleShape)
-                .clickable(onClickLabel = "Prendre la photo") {
+                .clickable(onClickLabel = takePhotoLabel) {
                     val file = File(context.cacheDir, "cap_${System.currentTimeMillis()}.jpg")
                     val options = androidx.camera.core.ImageCapture.OutputFileOptions.Builder(file).build()
                     controller.takePicture(
@@ -419,10 +421,12 @@ private fun CameraPermissionPlaceholder(onGrant: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("Autorisez la caméra pour photographier une plante.",
-            style = MaterialTheme.typography.bodyLarge)
+        Text(
+            stringResource(R.string.capture_camera_permission_body),
+            style = MaterialTheme.typography.bodyLarge,
+        )
         Spacer(Modifier.height(12.dp))
-        Button(onClick = onGrant) { Text("Autoriser la caméra") }
+        Button(onClick = onGrant) { Text(stringResource(R.string.capture_camera_permission_action)) }
     }
 }
 
@@ -478,7 +482,7 @@ private fun CaptureControls(
             TextButton(onClick = onGallery) {
                 Icon(Icons.Filled.PhotoLibrary, null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Galerie")
+                Text(stringResource(R.string.capture_gallery))
             }
             Spacer(Modifier.weight(1f))
             Button(
@@ -492,9 +496,15 @@ private fun CaptureControls(
                         color = LocalContentColor.current,
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("Analyse…")
+                    Text(stringResource(R.string.capture_analyzing))
                 } else {
-                    Text(if (state.photos.size > 1) "Identifier (${state.photos.size} photos)" else "Identifier")
+                    Text(
+                        if (state.photos.size > 1) {
+                            stringResource(R.string.capture_identify_n_photos, state.photos.size)
+                        } else {
+                            stringResource(R.string.capture_identify)
+                        },
+                    )
                 }
             }
         }
@@ -513,7 +523,7 @@ private fun PhotoThumb(
         Box {
             AsyncImage(
                 model = File(path),
-                contentDescription = "Photo — appuyer pour agrandir",
+                contentDescription = stringResource(R.string.capture_photo_tap_to_zoom),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(84.dp)
@@ -524,7 +534,7 @@ private fun PhotoThumb(
             )
             Icon(
                 Icons.Filled.Cancel,
-                contentDescription = "Retirer la photo",
+                contentDescription = stringResource(R.string.capture_remove_photo),
                 tint = Color.White,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -543,12 +553,12 @@ private fun OrganSelector(organ: PhotoOrgan, onOrganChange: (PhotoOrgan) -> Unit
     var menuOpen by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { menuOpen = true }, contentPadding = PaddingValues(4.dp)) {
-            Text(organ.label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+            Text(stringResource(organ.labelRes), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
             Icon(Icons.Filled.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             PhotoOrgan.entries.forEach { o ->
-                DropdownMenuItem(text = { Text(o.label) }, onClick = {
+                DropdownMenuItem(text = { Text(stringResource(o.labelRes)) }, onClick = {
                     onOrganChange(o); menuOpen = false
                 })
             }

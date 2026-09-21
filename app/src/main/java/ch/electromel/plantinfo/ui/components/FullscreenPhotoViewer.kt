@@ -19,9 +19,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import ch.electromel.plantinfo.R
 import coil.compose.AsyncImage
 import java.io.File
 
@@ -83,7 +85,7 @@ fun FullscreenPhotoViewer(path: String, onDismiss: () -> Unit) {
         ) {
             AsyncImage(
                 model = File(path),
-                contentDescription = "Photo en plein écran",
+                contentDescription = stringResource(R.string.photo_fullscreen_description),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxSize()

@@ -41,10 +41,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.keys.ApiKeyGuide
 import ch.electromel.plantinfo.data.keys.ApiKeyGuides
 import ch.electromel.plantinfo.data.keys.ApiProvider
@@ -86,13 +89,15 @@ fun SetupScreen(
                         IconButton(onClick = { if (state.canGoBack) viewModel.back() else onExit() }) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = if (state.canGoBack) "Étape précédente" else "Fermer",
+                                contentDescription = stringResource(
+                                if (state.canGoBack) R.string.setup_previous_step else R.string.action_close,
+                            ),
                             )
                         }
                     },
                     actions = {
                         Text(
-                            "${state.index + 1} / ${state.total}",
+                            stringResource(R.string.setup_progress, state.index + 1, state.total),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                             modifier = Modifier.padding(end = 16.dp),
@@ -140,11 +145,12 @@ fun SetupScreen(
     }
 }
 
+@Composable
 private fun SetupStep.title(): String = when (this) {
-    SetupStep.Welcome -> "Bienvenue"
-    SetupStep.WhyKeys -> "Pourquoi une clé API"
-    is SetupStep.Key -> "Clé ${provider.label}"
-    SetupStep.Recap -> "Vous êtes prêt"
+    SetupStep.Welcome -> stringResource(R.string.setup_step_welcome)
+    SetupStep.WhyKeys -> stringResource(R.string.setup_step_why_keys)
+    is SetupStep.Key -> stringResource(R.string.setup_step_key, provider.label)
+    SetupStep.Recap -> stringResource(R.string.setup_step_recap)
 }
 
 /** Barre d'action du bas. Le bouton « Passer » n'apparaît que là où il y a quelque chose à faire. */
@@ -164,13 +170,13 @@ private fun SetupBottomBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (state.step is SetupStep.Key) {
-                TextButton(onClick = onSkip) { Text("Passer") }
+                TextButton(onClick = onSkip) { Text(stringResource(R.string.setup_skip)) }
                 Spacer(Modifier.width(8.dp))
             }
             if (state.isLast) {
-                Button(onClick = onFinish) { Text("Terminer") }
+                Button(onClick = onFinish) { Text(stringResource(R.string.setup_finish)) }
             } else {
-                Button(onClick = onContinue) { Text("Continuer") }
+                Button(onClick = onContinue) { Text(stringResource(R.string.action_continue)) }
             }
         }
     }
@@ -178,14 +184,16 @@ private fun SetupBottomBar(
 
 @Composable
 private fun WelcomeStep() {
-    Text(SetupTexts.WHAT_APP_DOES, style = MaterialTheme.typography.bodyLarge)
+    Text(stringResource(SetupTexts.WHAT_APP_DOES), style = MaterialTheme.typography.bodyLarge)
 
-    SectionCard("Vos données restent sur cet appareil", Modifier.fillMaxWidth()) {
-        SetupTexts.WHERE_DATA_LIVES.forEach { Bullet(it) }
+    SectionCard(stringResource(R.string.setup_data_stays_title), Modifier.fillMaxWidth()) {
+        stringArrayResource(SetupTexts.WHERE_DATA_LIVES).forEach { Bullet(it) }
     }
 
-    SectionCard("Ce qui sort de l'appareil, et pour qui", Modifier.fillMaxWidth()) {
-        SetupTexts.WHAT_LEAVES_THE_DEVICE.forEach { (service, sent) ->
+    SectionCard(stringResource(R.string.setup_data_leaves_title), Modifier.fillMaxWidth()) {
+        val services = stringArrayResource(SetupTexts.EXTERNAL_SERVICES)
+        val dataSent = stringArrayResource(SetupTexts.EXTERNAL_DATA_SENT)
+        services.zip(dataSent).forEach { (service, sent) ->
             Column {
                 Text(
                     service,
@@ -197,7 +205,7 @@ private fun WelcomeStep() {
             }
         }
         Text(
-            SetupTexts.PRIVACY_CAVEAT,
+            stringResource(SetupTexts.PRIVACY_CAVEAT),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
@@ -206,25 +214,25 @@ private fun WelcomeStep() {
 
 @Composable
 private fun WhyKeysStep() {
-    Text(SetupTexts.WHY_KEYS_INTRO, style = MaterialTheme.typography.bodyLarge)
+    Text(stringResource(SetupTexts.WHY_KEYS_INTRO), style = MaterialTheme.typography.bodyLarge)
 
-    SectionCard("Qu'est-ce qu'une clé API ?", Modifier.fillMaxWidth()) {
-        Text(ApiKeyGuides.WHAT_IS_A_KEY, style = MaterialTheme.typography.bodyMedium)
+    SectionCard(stringResource(R.string.setup_what_is_a_key_title), Modifier.fillMaxWidth()) {
+        Text(stringResource(ApiKeyGuides.WHAT_IS_A_KEY), style = MaterialTheme.typography.bodyMedium)
     }
 
-    SectionCard("Pl@ntNet et l'IA ne font pas la même chose", Modifier.fillMaxWidth()) {
-        Text(ApiKeyGuides.PLANTNET_VS_AI, style = MaterialTheme.typography.bodyMedium)
+    SectionCard(stringResource(R.string.setup_plantnet_vs_ai_title), Modifier.fillMaxWidth()) {
+        Text(stringResource(ApiKeyGuides.PLANTNET_VS_AI), style = MaterialTheme.typography.bodyMedium)
     }
 
-    SectionCard("Ce que cela coûte", Modifier.fillMaxWidth()) {
+    SectionCard(stringResource(R.string.setup_cost_title), Modifier.fillMaxWidth()) {
         Text(
-            ApiKeyGuides.MINIMUM_SETUP,
+            stringResource(ApiKeyGuides.MINIMUM_SETUP, stringResource(R.string.gemini_cost_hint)),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
-            SetupTexts.CAN_CHANGE_LATER,
+            stringResource(SetupTexts.CAN_CHANGE_LATER),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
@@ -249,32 +257,46 @@ private fun KeyStep(
     val clipboard = LocalClipboardManager.current
     val guide = ApiKeyGuides.forProvider(provider)
 
-    Text(guide.role, style = MaterialTheme.typography.bodyLarge)
+    Text(stringResource(guide.roleRes), style = MaterialTheme.typography.bodyLarge)
 
-    SectionCard("Marche à suivre", Modifier.fillMaxWidth()) {
+    SectionCard(stringResource(R.string.setup_steps_title), Modifier.fillMaxWidth()) {
         KeyGuideBlock(guide = guide, createKeyUrl = provider.createKeyUrl, label = provider.label)
     }
 
-    SectionCard("Coller la clé", Modifier.fillMaxWidth()) {
+    SectionCard(stringResource(R.string.setup_paste_title), Modifier.fillMaxWidth()) {
         if (hasStoredKey) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
-                Text("Une clé est déjà enregistrée.", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.setup_key_already_stored),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         }
 
         OutlinedTextField(
             value = input,
             onValueChange = onInputChange,
-            label = { Text(if (hasStoredKey) "Remplacer la clé" else "Clé ${provider.label}") },
+            label = {
+                Text(
+                    if (hasStoredKey) {
+                        stringResource(R.string.setup_replace_key)
+                    } else {
+                        stringResource(R.string.setup_key_label, provider.label)
+                    },
+                )
+            },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 IconButton(onClick = { clipboard.getText()?.text?.let { onInputChange(it.trim()) } }) {
-                    Icon(Icons.Filled.ContentPaste, contentDescription = "Coller depuis le presse-papier")
+                    Icon(
+                        Icons.Filled.ContentPaste,
+                        contentDescription = stringResource(R.string.settings_key_paste_action),
+                    )
                 }
             },
         )
@@ -286,15 +308,15 @@ private fun KeyStep(
                 onClick = onSaveAndTest,
                 enabled = input.isNotBlank() && test !is KeyTestState.Testing,
             ) {
-                Text("Enregistrer et tester")
+                Text(stringResource(R.string.settings_key_save_and_test))
             }
             if (hasStoredKey) {
-                OutlinedButton(onClick = onClear) { Text("Effacer") }
+                OutlinedButton(onClick = onClear) { Text(stringResource(R.string.settings_key_clear)) }
             }
         }
 
         Text(
-            SetupTexts.SKIP_HINT,
+            stringResource(SetupTexts.SKIP_HINT),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
@@ -311,14 +333,14 @@ private fun KeyTestFeedback(test: KeyTestState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-            Text("Test de la clé…", style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.settings_key_testing), style = MaterialTheme.typography.bodySmall)
         }
         KeyTestState.Valid -> Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
-            Text("Clé valide", color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.settings_key_valid), color = MaterialTheme.colorScheme.primary)
         }
         is KeyTestState.Invalid -> Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -340,7 +362,7 @@ private fun KeyGuideBlock(guide: ApiKeyGuide, createKeyUrl: String, label: Strin
     val uriHandler = LocalUriHandler.current
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
-            guide.cost,
+            stringResource(guide.costRes, stringResource(R.string.gemini_cost_hint)),
             style = MaterialTheme.typography.bodyMedium,
             color = if (guide.required) {
                 MaterialTheme.colorScheme.primary
@@ -348,7 +370,7 @@ private fun KeyGuideBlock(guide: ApiKeyGuide, createKeyUrl: String, label: Strin
                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             },
         )
-        guide.steps.forEachIndexed { index, step ->
+        stringArrayResource(guide.stepsRes).forEachIndexed { index, step ->
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Text(
                     "${index + 1}.",
@@ -360,9 +382,9 @@ private fun KeyGuideBlock(guide: ApiKeyGuide, createKeyUrl: String, label: Strin
                 Text(step, style = MaterialTheme.typography.bodyMedium)
             }
         }
-        guide.pitfall?.let {
+        guide.pitfallRes?.let {
             WarningBanner(
-                text = it,
+                text = stringResource(it),
                 icon = Icons.AutoMirrored.Filled.HelpOutline,
                 severity = BannerSeverity.WARNING,
                 modifier = Modifier.fillMaxWidth(),
@@ -371,7 +393,7 @@ private fun KeyGuideBlock(guide: ApiKeyGuide, createKeyUrl: String, label: Strin
         TextButton(onClick = { uriHandler.openUri(createKeyUrl) }) {
             Icon(Icons.AutoMirrored.Filled.OpenInNew, null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Ouvrir la page $label", fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.setup_open_provider_page, label), fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -390,15 +412,15 @@ private fun RecapStep(keys: KeysSnapshot) {
         else -> SetupTexts.READY_NOTHING
     }
 
-    SectionCard("Vos clés", Modifier.fillMaxWidth()) {
-        RecapLine("Pl@ntNet — identification des plantes", keys.hasPlantNet)
-        RecapLine("IA — description, santé, champignons, questions", keys.hasAi)
+    SectionCard(stringResource(R.string.setup_recap_title), Modifier.fillMaxWidth()) {
+        RecapLine(stringResource(R.string.setup_recap_plantnet), keys.hasPlantNet)
+        RecapLine(stringResource(R.string.setup_recap_ai), keys.hasAi)
     }
 
-    Text(summary, style = MaterialTheme.typography.bodyLarge)
+    Text(stringResource(summary), style = MaterialTheme.typography.bodyLarge)
 
     Text(
-        SetupTexts.CAN_CHANGE_LATER,
+        stringResource(SetupTexts.CAN_CHANGE_LATER),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
     )
@@ -409,7 +431,9 @@ private fun RecapLine(label: String, present: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(
             if (present) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
-            contentDescription = if (present) "Configuré" else "Non configuré",
+            contentDescription = stringResource(
+                if (present) R.string.setup_configured else R.string.setup_not_configured,
+            ),
             tint = if (present) {
                 MaterialTheme.colorScheme.primary
             } else {

@@ -3,6 +3,7 @@ package ch.electromel.plantinfo.ui.capture
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.keys.KeysSnapshot
 import ch.electromel.plantinfo.data.repo.IdentificationRepository
@@ -10,6 +11,7 @@ import ch.electromel.plantinfo.domain.model.GpsLocation
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
 import ch.electromel.plantinfo.domain.model.IdentificationRequest
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
+import ch.electromel.plantinfo.util.AppStrings
 import ch.electromel.plantinfo.util.ImageStorage
 import ch.electromel.plantinfo.util.LocationProvider
 import ch.electromel.plantinfo.work.IdentificationQueue
@@ -40,6 +42,7 @@ class CaptureViewModel @Inject constructor(
     private val locationProvider: LocationProvider,
     private val repository: IdentificationRepository,
     private val queue: IdentificationQueue,
+    private val strings: AppStrings,
     keyStore: ApiKeyStore,
 ) : ViewModel() {
 
@@ -124,8 +127,7 @@ class CaptureViewModel @Inject constructor(
                         // Les photos restent dans le stockage interne pour le worker.
                         queue.enqueue(request)
                         _state.value = CaptureUiState(
-                            info = "Hors ligne : l'identification a été mise en file. Vous serez " +
-                                "notifié dès qu'elle sera prête.",
+                            info = strings.get(R.string.capture_queued_offline),
                         )
                     } else {
                         _state.update { it.copy(identifying = false, error = outcome.message) }

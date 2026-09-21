@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Le build de développement s'installe à côté de la version publiée (applicationIdSuffix) :
+     il lui faut un nom distinct pour être reconnaissable dans le lanceur. -->
+<resources>
+    <string name="app_name" translatable="false">PlantInfo (debug)</string>
+</resources>

@@ -6,8 +6,11 @@ import ch.electromel.plantinfo.domain.model.GpsLocation
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.SpeciesUse
+import androidx.annotation.StringRes
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.domain.model.TokenUsage
-import ch.electromel.plantinfo.domain.model.label
+import ch.electromel.plantinfo.util.StringProvider
+import ch.electromel.plantinfo.util.AppLanguage
 
 /** Une image à analyser : octets JPEG/WebP + type MIME. */
 data class AiImage(
@@ -20,6 +23,12 @@ data class AiAnalysisInput(
     val images: List<AiImage>,
     val plantNetCandidates: List<SpeciesCandidate>,
     val gps: GpsLocation?,
+    /**
+     * Langue dans laquelle le modèle doit rédiger la fiche. C'est la langue de l'application au
+     * moment de l'identification : une fiche est écrite une fois et reste telle quelle dans
+     * l'historique, changer de langue plus tard ne la retraduit pas.
+     */
+    val language: AppLanguage,
 )
 
 /** Demande de photo complémentaire telle que renvoyée par l'IA (organe + raison). */
@@ -82,17 +91,19 @@ enum class AiFailureReason {
     UNKNOWN,
 }
 
-/** Libellé court en français d'un motif d'échec, partagé par tous les messages utilisateur. */
-fun AiFailureReason.label(): String = when (this) {
-    AiFailureReason.MISSING_KEY -> "aucune clé"
-    AiFailureReason.INVALID_KEY -> "clé invalide"
-    AiFailureReason.QUOTA -> "quota atteint"
-    AiFailureReason.BILLING -> "crédit épuisé sur le compte"
-    AiFailureReason.NETWORK -> "réseau indisponible"
-    AiFailureReason.SERVER -> "erreur serveur"
-    AiFailureReason.PARSE -> "réponse illisible"
-    AiFailureReason.UNKNOWN -> "erreur inconnue"
-}
+/** Libellé court d'un motif d'échec, partagé par tous les messages utilisateur. */
+@get:StringRes
+val AiFailureReason.labelRes: Int
+    get() = when (this) {
+        AiFailureReason.MISSING_KEY -> R.string.failure_missing_key
+        AiFailureReason.INVALID_KEY -> R.string.failure_invalid_key
+        AiFailureReason.QUOTA -> R.string.failure_quota
+        AiFailureReason.BILLING -> R.string.failure_billing
+        AiFailureReason.NETWORK -> R.string.failure_network
+        AiFailureReason.SERVER -> R.string.failure_server
+        AiFailureReason.PARSE -> R.string.failure_parse
+        AiFailureReason.UNKNOWN -> R.string.failure_unknown
+    }
 
 /** Échec d'un fournisseur précis lors du repli, pour des messages d'erreur honnêtes par fournisseur. */
 data class ProviderFailure(
@@ -101,8 +112,8 @@ data class ProviderFailure(
 )
 
 /** Résumé lisible des échecs par fournisseur, ex. « Claude : crédit épuisé · Gemini : quota atteint ». */
-fun List<ProviderFailure>.summary(): String =
-    joinToString(" · ") { "${it.provider.label} : ${it.reason.label()}" }
+fun List<ProviderFailure>.summary(strings: StringProvider): String =
+    joinToString(" · ") { "${it.provider.label} : ${strings.get(it.reason.labelRes)}" }
 
 /** Exception typée levée par un client IA, portant le motif pour la logique de repli. */
 class AiException(

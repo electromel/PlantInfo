@@ -1,5 +1,6 @@
 package ch.electromel.plantinfo.domain.model
 
+import ch.electromel.plantinfo.TestStrings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -11,6 +12,8 @@ import org.junit.Test
  * « 0 » quand on ne sait pas.
  */
 class TokenUsageTest {
+
+    private val strings = TestStrings()
 
     @Test
     fun `le cout suit le tarif du modele, entree et sortie separement`() {
@@ -43,8 +46,8 @@ class TokenUsageTest {
         val usage = TokenUsage("gpt-4o", inputTokens = 982, outputTokens = 252)
 
         assertEquals(1_234, usage.totalTokens)
-        assertTrue(usage.tokensText().contains("1"))
-        assertTrue(usage.tokensText().contains("entrée"))
+        assertTrue(usage.tokensText(strings).contains("1"))
+        assertTrue(usage.tokensText(strings).contains("entrée"))
     }
 
     @Test

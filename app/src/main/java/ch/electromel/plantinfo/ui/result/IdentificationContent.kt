@@ -55,7 +55,7 @@ import ch.electromel.plantinfo.domain.model.careCalendarLines
 import ch.electromel.plantinfo.domain.model.costText
 import ch.electromel.plantinfo.domain.model.edibilityVerdict
 import ch.electromel.plantinfo.domain.model.iucnStatus
-import ch.electromel.plantinfo.domain.model.label
+import ch.electromel.plantinfo.domain.model.labelRes
 import ch.electromel.plantinfo.domain.model.maturityLines
 import ch.electromel.plantinfo.domain.model.tokensText
 import ch.electromel.plantinfo.domain.model.usesByDomain
@@ -68,6 +68,8 @@ import ch.electromel.plantinfo.ui.components.scoreColor
 import ch.electromel.plantinfo.ui.components.scoreTextColor
 import ch.electromel.plantinfo.ui.map.SpeciesMap
 import ch.electromel.plantinfo.ui.qa.PlantQaSection
+import ch.electromel.plantinfo.util.StringProvider
+import ch.electromel.plantinfo.util.rememberStringProvider
 import java.io.File
 
 /**
@@ -88,6 +90,9 @@ fun IdentificationContent(
     header: (@Composable () -> Unit)? = null,
 ) {
     val result = entity.toResult()
+    // Une fiche peut arriver sans nom exploitable (réponse d'IA tronquée) : on n'affiche jamais un
+    // titre vide.
+    val displayName = result.commonName.ifBlank { stringResource(R.string.species_unknown) }
 
     // Le détail du score et les autres hypothèses sont masqués par défaut quand la confiance est
     // bonne (> 50) : un appui sur le badge de score les révèle, un second appui les masque.
@@ -113,7 +118,7 @@ fun IdentificationContent(
             val path = entity.photoPaths.first()
             AsyncImage(
                 model = File(path),
-                contentDescription = "Photo de ${result.commonName} — appuyer pour agrandir",
+                contentDescription = stringResource(R.string.fiche_photo_of, displayName),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -127,7 +132,7 @@ fun IdentificationContent(
                 items(entity.photoPaths) { path ->
                     AsyncImage(
                         model = File(path),
-                        contentDescription = "Photo de ${result.commonName} — appuyer pour agrandir",
+                        contentDescription = stringResource(R.string.fiche_photo_of, displayName),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(width = 170.dp, height = 220.dp)
@@ -146,7 +151,7 @@ fun IdentificationContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text(result.commonName, style = MaterialTheme.typography.headlineMedium)
+                Text(displayName, style = MaterialTheme.typography.headlineMedium)
                 Text(
                     result.scientificName,
                     style = MaterialTheme.typography.titleMedium,
@@ -172,7 +177,7 @@ fun IdentificationContent(
         // Invite discrète, uniquement quand le détail est replié (le rappel permanent alourdit la fiche).
         if (canCollapseScore && !showScoreDetails) {
             Text(
-                "Appuyez sur le score pour afficher le détail et les autres hypothèses.",
+                stringResource(R.string.fiche_score_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             )
@@ -180,7 +185,7 @@ fun IdentificationContent(
 
         if (entity.userConfirmed) {
             WarningBanner(
-                text = "Espèce validée manuellement parmi les hypothèses proposées.",
+                text = stringResource(R.string.fiche_user_confirmed),
                 icon = Icons.Filled.CheckCircle,
                 severity = BannerSeverity.WARNING,
                 modifier = Modifier.fillMaxWidth(),
@@ -193,9 +198,7 @@ fun IdentificationContent(
         // clairement et proposer de relancer l'analyse — utile aussi après ajout d'une clé IA.
         if (result.aiProvider == AiProviderType.NONE) {
             WarningBanner(
-                text = "Aucune IA n'a pu être interrogée : résultat Pl@ntNet brut, sans description, " +
-                    "diagnostic de santé ni comestibilité. Vérifiez vos clés IA dans les paramètres " +
-                    "ou relancez l'analyse.",
+                text = stringResource(R.string.fiche_no_ai_banner),
                 icon = Icons.Filled.Info,
                 severity = BannerSeverity.WARNING,
                 modifier = Modifier.fillMaxWidth(),
@@ -229,8 +232,7 @@ fun IdentificationContent(
         // Divergence et faible confiance ne s'affichent plus une fois l'espèce validée par l'utilisateur.
         if (!entity.userConfirmed && result.sourcesDisagree) {
             WarningBanner(
-                text = "Identification incertaine : Pl@ntNet et l'IA proposent des espèces différentes. " +
-                    "Voir les hypothèses alternatives ci-dessous.",
+                text = stringResource(R.string.fiche_sources_disagree),
                 icon = Icons.AutoMirrored.Filled.CompareArrows,
                 severity = BannerSeverity.WARNING,
                 modifier = Modifier.fillMaxWidth(),
@@ -247,10 +249,12 @@ fun IdentificationContent(
 
         // Détail des scores (masqué si l'espèce validée manuellement, ou replié si confiance > 50).
         if (!entity.userConfirmed && showScoreDetails) {
-            SectionCard("Score d'exactitude", Modifier.fillMaxWidth()) {
-                ScoreLine("Score final", result.scoreFinal)
+            SectionCard(stringResource(R.string.fiche_score_section), Modifier.fillMaxWidth()) {
+                ScoreLine(stringResource(R.string.fiche_score_final), result.scoreFinal)
                 result.scorePlantNet?.let { ScoreLine("Pl@ntNet", it) }
-                result.scoreAi?.let { ScoreLine("IA (${result.aiProvider.label})", it) }
+                result.scoreAi?.let {
+                    ScoreLine(stringResource(R.string.fiche_score_ai, result.aiProvider.label), it)
+                }
             }
         }
 
@@ -259,7 +263,7 @@ fun IdentificationContent(
 
         // Habitat
         result.habitat?.let {
-            SectionCard("Habitat et répartition", Modifier.fillMaxWidth()) {
+            SectionCard(stringResource(R.string.fiche_habitat), Modifier.fillMaxWidth()) {
                 Text(it, style = MaterialTheme.typography.bodyLarge)
             }
         }
@@ -269,11 +273,17 @@ fun IdentificationContent(
 
         // État de santé
         result.health?.let { health ->
-            SectionCard("État de santé", Modifier.fillMaxWidth()) {
-                Text(health.status, style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium)
+            SectionCard(stringResource(R.string.fiche_health), Modifier.fillMaxWidth()) {
+                Text(
+                    health.status.ifBlank { stringResource(R.string.health_not_assessed) },
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                )
                 if (health.recommendations.isNotEmpty()) {
-                    Text("Recommandations :", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        stringResource(R.string.fiche_health_recommendations),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                     health.recommendations.forEach { rec ->
                         Text("•  $rec", style = MaterialTheme.typography.bodyLarge)
                     }
@@ -283,7 +293,7 @@ fun IdentificationContent(
 
         // Informations générales
         result.description?.let {
-            SectionCard("Informations", Modifier.fillMaxWidth()) {
+            SectionCard(stringResource(R.string.fiche_information), Modifier.fillMaxWidth()) {
                 Text(it, style = MaterialTheme.typography.bodyLarge)
             }
         }
@@ -298,11 +308,10 @@ fun IdentificationContent(
 
         // Alternatives (masquées avec le détail du score quand la confiance est bonne).
         if (result.alternatives.isNotEmpty() && showScoreDetails) {
-            val title = if (onSelectAlternative != null) {
-                "Autres hypothèses — appuyez pour valider"
-            } else {
-                "Autres hypothèses"
-            }
+            val title = stringResource(
+                if (onSelectAlternative != null) R.string.fiche_alternatives_selectable
+                else R.string.fiche_alternatives,
+            )
             SectionCard(title, Modifier.fillMaxWidth()) {
                 result.alternatives.forEach { alt ->
                     Column(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
@@ -330,7 +339,7 @@ fun IdentificationContent(
                                 Icon(Icons.Filled.CheckCircle, contentDescription = null,
                                     modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Choisir cette espèce")
+                                Text(stringResource(R.string.fiche_alternative_choose))
                             }
                         }
                     }
@@ -343,7 +352,9 @@ fun IdentificationContent(
         // GPS) : elle est alors centrée sur l'aire de répartition connue de l'espèce.
         val hasCapturePoint = entity.latitude != null && entity.longitude != null
         SectionCard(
-            if (hasCapturePoint) "Lieu de la prise de vue" else "Où trouver cette espèce",
+            stringResource(
+                if (hasCapturePoint) R.string.fiche_location_title else R.string.fiche_range_title,
+            ),
             Modifier.fillMaxWidth(),
         ) {
             if (hasCapturePoint) {
@@ -356,15 +367,17 @@ fun IdentificationContent(
                 )
                 entity.gpsAccuracy?.let {
                     Text(
-                        "Précision GPS ~${it.toInt()} m" + if (it > 50f) " (faible)" else "",
+                        stringResource(
+                            if (it > 50f) R.string.fiche_gps_accuracy_low else R.string.fiche_gps_accuracy,
+                            it.toInt(),
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     )
                 }
             } else {
                 Text(
-                    "Photo sans position GPS : la carte est centrée sur l'aire de répartition connue " +
-                        "de l'espèce (occurrences GBIF), et non sur le lieu de la prise de vue.",
+                    stringResource(R.string.fiche_no_gps_explanation),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 )
@@ -374,14 +387,16 @@ fun IdentificationContent(
                 longitude = entity.longitude,
                 accuracyMeters = entity.gpsAccuracy,
                 scientificName = result.scientificName,
-                title = result.commonName,
+                title = displayName,
                 modifier = Modifier.fillMaxWidth(),
                 gbifKey = result.gbifKey,
             )
         }
 
         // Consommation de l'appel IA d'identification (jetons + coût estimé).
-        result.usage?.let { AiUsageSection("Coût de l'identification", it, result.aiProvider) }
+        result.usage?.let {
+            AiUsageSection(stringResource(R.string.fiche_identification_cost), it, result.aiProvider)
+        }
 
         // Questions à l'IA sur la plante (texte ou dictée vocale).
         PlantQaSection(entity = entity, modifier = Modifier.fillMaxWidth())
@@ -400,12 +415,12 @@ fun IdentificationContent(
  */
 @Composable
 private fun AdviceCard(advice: FicheAdvice, onOpenSetup: ((String) -> Unit)?) {
-    SectionCard("Fiche incomplète", Modifier.fillMaxWidth()) {
-        Text(advice.message, style = MaterialTheme.typography.bodyMedium)
-        val label = advice.actionLabel
+    SectionCard(stringResource(R.string.fiche_incomplete), Modifier.fillMaxWidth()) {
+        Text(stringResource(advice.messageRes), style = MaterialTheme.typography.bodyMedium)
+        val labelRes = advice.actionLabelRes
         val focus = advice.focus
-        if (label != null && focus != null && onOpenSetup != null) {
-            Button(onClick = { onOpenSetup(focus) }) { Text(label) }
+        if (labelRes != null && focus != null && onOpenSetup != null) {
+            Button(onClick = { onOpenSetup(focus) }) { Text(stringResource(labelRes)) }
         }
     }
 }
@@ -415,20 +430,20 @@ private fun MaturitySection(result: IdentificationResult) {
     val lines = result.maturityLines()
     if (lines.isEmpty()) return
 
-    SectionCard("Dimensions à maturité", Modifier.fillMaxWidth()) {
-        lines.forEach { (label, value) ->
+    SectionCard(stringResource(R.string.fiche_maturity_title), Modifier.fillMaxWidth()) {
+        lines.forEach { (labelRes, value) ->
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(label, style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(labelRes), style = MaterialTheme.typography.bodyLarge)
                 Text(value, style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium)
             }
         }
         Text(
-            "Taille de l'espèce adulte, à titre indicatif : elle varie avec le sol, l'exposition et le climat.",
+            stringResource(R.string.fiche_maturity_note),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
         )
@@ -445,7 +460,9 @@ private fun CareCalendarSection(result: IdentificationResult) {
     val tasks = result.careCalendarLines()
     if (tasks.isEmpty()) return
 
-    val title = if (result.isFungus) "Période de pousse et de cueillette" else "Quand planter et entretenir"
+    val title = stringResource(
+        if (result.isFungus) R.string.fiche_calendar_fungus_title else R.string.fiche_calendar_title,
+    )
     SectionCard(title, Modifier.fillMaxWidth()) {
         tasks.forEach { task ->
             Column(Modifier.fillMaxWidth()) {
@@ -477,8 +494,7 @@ private fun CareCalendarSection(result: IdentificationResult) {
             }
         }
         Text(
-            "Périodes indicatives pour le climat du lieu de prise de vue : décalez-les selon " +
-                "l'altitude, l'exposition et la météo de l'année.",
+            stringResource(R.string.fiche_calendar_note),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
         )
@@ -495,9 +511,9 @@ private fun UsesSection(result: IdentificationResult) {
     val grouped = result.usesByDomain()
     if (grouped.isEmpty()) return
 
-    SectionCard("Usages", Modifier.fillMaxWidth()) {
+    SectionCard(stringResource(R.string.fiche_uses_title), Modifier.fillMaxWidth()) {
         grouped.forEach { (domain, details) ->
-            Text(domain.label, style = MaterialTheme.typography.titleSmall,
+            Text(stringResource(domain.labelRes), style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold)
             details.forEach { detail ->
                 Text("•  $detail", style = MaterialTheme.typography.bodyLarge)
@@ -505,8 +521,7 @@ private fun UsesSection(result: IdentificationResult) {
         }
         if (grouped.any { (domain, _) -> domain == UseDomain.MEDICINAL }) {
             Text(
-                "Usages traditionnels ou documentés, cités à titre informatif : ce ne sont pas des " +
-                    "conseils thérapeutiques. Demandez l'avis d'un professionnel de santé avant tout usage.",
+                stringResource(R.string.fiche_uses_medicinal_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             )
@@ -519,7 +534,7 @@ private fun UsesSection(result: IdentificationResult) {
 private fun SymbolismSection(result: IdentificationResult) {
     val symbolism = result.symbolism?.takeIf { it.isNotBlank() } ?: return
 
-    SectionCard("Symbolique", Modifier.fillMaxWidth()) {
+    SectionCard(stringResource(R.string.fiche_symbolism_title), Modifier.fillMaxWidth()) {
         Text(symbolism, style = MaterialTheme.typography.bodyLarge)
     }
 }
@@ -533,16 +548,15 @@ private fun SymbolismSection(result: IdentificationResult) {
 private fun ConservationSection(result: IdentificationResult) {
     val status = result.iucnStatus ?: return
 
-    SectionCard("Statut de conservation", Modifier.fillMaxWidth()) {
+    SectionCard(stringResource(R.string.fiche_conservation_title), Modifier.fillMaxWidth()) {
         Text(
-            "${status.label} (${status.code})",
+            stringResource(R.string.fiche_conservation_status, stringResource(status.labelRes), status.code),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = if (status.threatened) scoreTextColor(0) else MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            "Liste rouge UICN mondiale, via Pl@ntNet. Un statut de conservation ne vaut pas " +
-                "protection juridique : la réglementation locale peut être plus stricte.",
+            stringResource(R.string.fiche_conservation_note),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
         )
@@ -558,28 +572,27 @@ private fun EdibilitySection(result: IdentificationResult) {
 
     if (verdict == EdibilityVerdict.TOXIC) {
         WarningBanner(
-            text = "Espèce signalée comme toxique. Ne pas consommer ni porter à la bouche.",
+            text = stringResource(R.string.fiche_toxic_banner),
             icon = Icons.Filled.Warning,
             severity = BannerSeverity.DANGER,
             modifier = Modifier.fillMaxWidth(),
         )
     }
 
-    SectionCard("Comestibilité", Modifier.fillMaxWidth()) {
-        verdict.label?.let { text ->
+    SectionCard(stringResource(R.string.fiche_edibility_title), Modifier.fillMaxWidth()) {
+        verdict.labelRes?.let { textRes ->
             val color = when (verdict) {
                 EdibilityVerdict.EDIBLE -> scoreTextColor(100)
                 EdibilityVerdict.TOXIC -> scoreTextColor(0)
                 else -> MaterialTheme.colorScheme.onSurface
             }
-            Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
-                color = color)
+            Text(stringResource(textRes), style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold, color = color)
         }
         note?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
         if (verdict == EdibilityVerdict.EDIBLE) {
             Text(
-                "Ne consommez jamais une plante ou un champignon sauvage sans confirmation par un " +
-                    "expert : une identification peut être erronée et certaines espèces ont des sosies dangereux.",
+                stringResource(R.string.fiche_edible_warning),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             )
@@ -612,7 +625,7 @@ private fun ConfirmedPill() {
     ) {
         Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = androidx.compose.ui.graphics.Color.White,
             modifier = Modifier.size(20.dp))
-        Text("Confirmé", color = androidx.compose.ui.graphics.Color.White,
+        Text(stringResource(R.string.fiche_confirmed_pill), color = androidx.compose.ui.graphics.Color.White,
             fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
     }
 }
@@ -632,11 +645,11 @@ fun ReanalyzeButton(
                 color = LocalContentColor.current,
             )
             Spacer(Modifier.width(8.dp))
-            Text("Nouvelle analyse…")
+            Text(stringResource(R.string.fiche_reanalyzing))
         } else {
             Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Relancer l'analyse IA")
+            Text(stringResource(R.string.fiche_reanalyze_ai))
         }
     }
 }
@@ -644,9 +657,9 @@ fun ReanalyzeButton(
 @Composable
 private fun ProviderChip(provider: AiProviderType) {
     val text = if (provider == AiProviderType.NONE) {
-        "Résultat Pl@ntNet seul (aucune IA)"
+        stringResource(R.string.fiche_provider_none)
     } else {
-        "Analysé par ${provider.label}"
+        stringResource(R.string.fiche_provider_analyzed_by, provider.label)
     }
     Text(
         text,
@@ -673,14 +686,17 @@ fun AiUsageSection(
     usage: TokenUsage,
     provider: AiProviderType,
     modifier: Modifier = Modifier.fillMaxWidth(),
+    strings: StringProvider = rememberStringProvider(),
 ) {
     SectionCard(title, modifier) {
-        UsageLine("Fournisseur", "${provider.label} · ${usage.model}")
-        UsageLine("Jetons", usage.tokensText())
-        UsageLine("Coût estimé", usage.costText() ?: "tarif du modèle inconnu")
+        UsageLine(stringResource(R.string.usage_provider), "${provider.label} · ${usage.model}")
+        UsageLine(stringResource(R.string.usage_tokens), usage.tokensText(strings))
+        UsageLine(
+            stringResource(R.string.usage_cost),
+            usage.costText() ?: stringResource(R.string.usage_cost_unknown),
+        )
         Text(
-            "Estimation au tarif public du modèle. Nulle si votre compte est encore sur un palier " +
-                "gratuit du fournisseur.",
+            stringResource(R.string.usage_note),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
         )

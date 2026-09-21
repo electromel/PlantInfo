@@ -1,5 +1,7 @@
 package ch.electromel.plantinfo.ui.result
 
+import androidx.annotation.StringRes
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.data.keys.KeysSnapshot
@@ -13,29 +15,30 @@ import ch.electromel.plantinfo.ui.setup.SetupFocus
  * l'identification : il reste donc juste des mois plus tard, dans l'historique, et disparaît de
  * lui-même dès que la clé manquante est renseignée — au lieu de figer un message devenu faux.
  */
-enum class FicheAdvice(val message: String, val actionLabel: String?, val focus: String?) {
+enum class FicheAdvice(
+    @StringRes val messageRes: Int,
+    @StringRes val actionLabelRes: Int?,
+    val focus: String?,
+) {
 
     /** Aucune IA disponible : la fiche se limite au nom trouvé par Pl@ntNet. */
     NO_AI_KEY(
-        message = "Aucune clé d'IA n'est configurée : cette fiche se limite à l'identification " +
-            "Pl@ntNet, sans description, sans état de santé et sans questions possibles.",
-        actionLabel = "Ajouter une clé d'IA",
+        messageRes = R.string.advice_no_ai_key,
+        actionLabelRes = R.string.advice_no_ai_key_action,
         focus = SetupFocus.LLM,
     ),
 
     /** Les clés IA existent mais aucune n'a répondu : la relance est déjà offerte par la fiche. */
     AI_UNAVAILABLE(
-        message = "L'analyse par l'IA n'a pas abouti lors de cette identification. Relancez " +
-            "l'analyse pour compléter la fiche.",
-        actionLabel = null,
+        messageRes = R.string.advice_ai_unavailable,
+        actionLabelRes = null,
         focus = null,
     ),
 
     /** IA seule : l'espèce n'a pas été confrontée à la base botanique de Pl@ntNet. */
     NO_PLANTNET_KEY(
-        message = "Cette identification vient de l'IA seule : sans clé Pl@ntNet, le nom de l'espèce " +
-            "n'a pas été confronté à la base d'observations botaniques.",
-        actionLabel = "Ajouter la clé Pl@ntNet",
+        messageRes = R.string.advice_no_plantnet_key,
+        actionLabelRes = R.string.advice_no_plantnet_key_action,
         focus = SetupFocus.provider(ApiProvider.PLANTNET),
     ),
     ;

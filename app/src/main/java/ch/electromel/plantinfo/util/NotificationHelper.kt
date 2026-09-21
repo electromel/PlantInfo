@@ -24,6 +24,7 @@ import javax.inject.Singleton
 @Singleton
 class NotificationHelper @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val strings: StringProvider,
 ) {
     init {
         createChannel()
@@ -32,16 +33,16 @@ class NotificationHelper @Inject constructor(
     private fun createChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Identifications",
+            strings.get(R.string.notif_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT,
-        ).apply { description = "Résultats des identifications différées (mode hors-ligne)" }
+        ).apply { description = strings.get(R.string.notif_channel_description) }
         context.getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
 
     fun showResultReady(identificationId: Long, commonName: String) {
         notify(
             id = identificationId.toInt(),
-            title = "Identification prête",
+            title = strings.get(R.string.notif_result_ready),
             text = commonName,
         )
     }
@@ -49,7 +50,7 @@ class NotificationHelper @Inject constructor(
     fun showFailed(message: String) {
         notify(
             id = FAILURE_NOTIF_ID,
-            title = "Identification échouée",
+            title = strings.get(R.string.notif_failed),
             text = message,
         )
     }

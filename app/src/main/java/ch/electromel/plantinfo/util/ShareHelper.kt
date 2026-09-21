@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.prefs.SafetySettingsStore
 import ch.electromel.plantinfo.data.repo.toResult
@@ -14,6 +15,7 @@ import ch.electromel.plantinfo.domain.model.toxicConfusionWarningText
 import ch.electromel.plantinfo.domain.model.usesByDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,6 +27,7 @@ import javax.inject.Singleton
 class ShareHelper @Inject constructor(
     @ApplicationContext private val context: Context,
     private val safetySettings: SafetySettingsStore,
+    private val strings: StringProvider,
 ) {
     private val authority get() = "${context.packageName}.fileprovider"
 
@@ -32,37 +35,54 @@ class ShareHelper @Inject constructor(
     fun shareSummary(entity: IdentificationEntity) {
         val result = entity.toResult()
         val text = buildString {
-            appendLine(result.commonName)
+            appendLine(result.commonName.ifBlank { strings.get(R.string.species_unknown) })
             appendLine(result.scientificName)
             if (entity.userConfirmed) {
-                appendLine("Identification confirmée manuellement")
+                appendLine(strings.get(R.string.share_confirmed))
             } else {
-                appendLine("Score : ${result.scoreFinal}/100")
+                appendLine(strings.get(R.string.share_score, result.scoreFinal))
             }
             // Avant la comestibilité : un message partagé ne doit pas afficher « Comestible » sans
             // la réserve qui l'accompagne à l'écran.
-            result.toxicConfusionWarningText(safetySettings.current())
+            result.toxicConfusionWarningText(strings, safetySettings.current())
                 ?.let { appendLine(); appendLine("⚠ $it") }
-            result.edibilitySummaryText()?.let { appendLine(); appendLine("Comestibilité : $it") }
-            result.maturitySummaryText()?.let { appendLine(); appendLine("À maturité : $it") }
-            result.habitat?.let { appendLine(); appendLine("Habitat : $it") }
+            result.edibilitySummaryText(strings)
+                ?.let { appendLine(); appendLine(strings.get(R.string.share_edibility, it)) }
+            result.maturitySummaryText(strings)
+                ?.let { appendLine(); appendLine(strings.get(R.string.share_maturity, it)) }
+            result.habitat?.let { appendLine(); appendLine(strings.get(R.string.share_habitat, it)) }
             // Calendrier et usages sont condensés sur une ligne : un message de partage doit rester
             // lisible d'un coup d'œil, le détail est dans l'app et dans le PDF.
             result.careCalendarLines().takeIf { it.isNotEmpty() }?.let { tasks ->
                 appendLine()
-                appendLine("Calendrier : " + tasks.joinToString(" · ") { "${it.label} ${it.period}" })
+                appendLine(
+                    strings.get(
+                        R.string.share_calendar,
+                        tasks.joinToString(" · ") { "${it.label} ${it.period}" },
+                    ),
+                )
             }
             result.usesByDomain().takeIf { it.isNotEmpty() }?.let { grouped ->
                 appendLine()
-                appendLine("Usages : " + grouped.joinToString(" · ") { (domain, _) -> domain.label })
+                appendLine(
+                    strings.get(
+                        R.string.share_uses,
+                        grouped.joinToString(" · ") { (domain, _) -> strings.get(domain.labelRes) },
+                    ),
+                )
             }
-            result.symbolism?.let { appendLine(); appendLine("Symbolique : $it") }
+            result.symbolism?.let { appendLine(); appendLine(strings.get(R.string.share_symbolism, it)) }
             if (entity.latitude != null && entity.longitude != null) {
                 appendLine()
-                appendLine("Lieu : %.5f, %.5f".format(entity.latitude, entity.longitude))
+                appendLine(
+                    strings.get(
+                        R.string.share_place,
+                        "%.5f, %.5f".format(Locale.US, entity.latitude, entity.longitude),
+                    ),
+                )
             }
             appendLine()
-            append("— via PlantInfo")
+            append(strings.get(R.string.share_signature))
         }
 
         val photoUri = entity.photoPaths.firstOrNull()?.let { fileUri(File(it)) }
@@ -75,9 +95,9 @@ class ShareHelper @Inject constructor(
                 type = "text/plain"
             }
             putExtra(Intent.EXTRA_TEXT, text)
-            putExtra(Intent.EXTRA_SUBJECT, result.commonName)
+            putExtra(Intent.EXTRA_SUBJECT, result.commonName.ifBlank { strings.get(R.string.species_unknown) })
         }
-        launchChooser(intent, "Partager l'identification")
+        launchChooser(intent, strings.get(R.string.share_chooser_identification))
     }
 
     /** Partage un fichier PDF déjà généré. */
@@ -87,7 +107,7 @@ class ShareHelper @Inject constructor(
             putExtra(Intent.EXTRA_STREAM, fileUri(file))
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        launchChooser(intent, "Partager la fiche PDF")
+        launchChooser(intent, strings.get(R.string.share_chooser_pdf))
     }
 
     /** Ouvre le PDF dans une visionneuse. */

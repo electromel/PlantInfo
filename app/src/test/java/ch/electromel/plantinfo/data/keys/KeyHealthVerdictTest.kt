@@ -1,8 +1,10 @@
 package ch.electromel.plantinfo.data.keys
 
+import ch.electromel.plantinfo.TestStrings
 import ch.electromel.plantinfo.data.remote.ai.AiFailureReason
 import ch.electromel.plantinfo.data.remote.plantnet.PlantNetError
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 /**
@@ -51,10 +53,13 @@ class KeyHealthVerdictTest {
 
     @Test
     fun `chaque verdict inutilisable porte un motif affichable`() {
+        val strings = TestStrings()
         listOf(AiFailureReason.INVALID_KEY, AiFailureReason.BILLING, AiFailureReason.QUOTA)
             .forEach { reason ->
-                val verdict = KeyHealthMonitor.verdictFor(reason)
-                assertEquals("motif $reason", true, !verdict.reason.isNullOrBlank())
+                val issue = KeyHealthMonitor.verdictFor(reason).issue
+                assertNotNull("motif $reason", issue)
+                // Le motif est persisté sous forme de code : c'est sa traduction qui est montrée.
+                assertEquals("motif $reason", true, strings.get(issue!!.labelRes).isNotBlank())
             }
     }
 }

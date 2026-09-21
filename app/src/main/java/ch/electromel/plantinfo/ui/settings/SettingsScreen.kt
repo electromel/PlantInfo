@@ -1,5 +1,8 @@
 package ch.electromel.plantinfo.ui.settings
 
+import android.app.Activity
+import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,10 +49,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.data.keys.KeyTestState
 import ch.electromel.plantinfo.domain.model.AiProviderType
@@ -57,6 +64,8 @@ import ch.electromel.plantinfo.ui.components.BannerSeverity
 import ch.electromel.plantinfo.ui.components.SectionCard
 import ch.electromel.plantinfo.ui.components.WarningBanner
 import ch.electromel.plantinfo.ui.setup.SetupFocus
+import ch.electromel.plantinfo.util.AppLanguage
+import ch.electromel.plantinfo.util.AppLocales
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +77,7 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Paramètres") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title)) }) },
     ) { padding ->
         Column(
             Modifier
@@ -78,8 +87,10 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            LanguageCard()
+
             Text(
-                "Clés API",
+                stringResource(R.string.settings_api_keys),
                 style = MaterialTheme.typography.titleLarge,
             )
 
@@ -116,7 +127,7 @@ fun SettingsScreen(
                 enabled = !state.freeGeminiOnly,
             )
 
-            Text("Sécurité", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.settings_security), style = MaterialTheme.typography.titleLarge)
 
             ToxicAlertCard(
                 thresholds = state.toxicAlert,
@@ -125,6 +136,70 @@ fun SettingsScreen(
                 onReset = viewModel::resetToxicAlertThresholds,
             )
         }
+    }
+}
+
+/**
+ * Choix de la langue de l'interface.
+ *
+ * « Langue du téléphone » est l'état par défaut et reste toujours proposé : c'est le seul moyen de
+ * revenir en arrière après un choix explicite. Sur Android 13 et plus, le système enregistre le
+ * choix (il apparaît aussi dans « Paramètres > Langues de l'app ») et recrée l'activité lui-même ;
+ * en deçà, l'application le mémorise et recrée l'écran pour recharger les ressources.
+ */
+@Composable
+private fun LanguageCard() {
+    val context = LocalContext.current
+    var selected by remember { mutableStateOf(AppLocales.selected(context)) }
+    var menuOpen by remember { mutableStateOf(false) }
+
+    SectionCard(title = stringResource(R.string.settings_language_title)) {
+        Text(
+            stringResource(R.string.settings_language_body),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Box {
+            OutlinedButton(onClick = { menuOpen = true }) {
+                Icon(Icons.Filled.Language, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(selected?.endonym ?: stringResource(R.string.settings_language_system))
+            }
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.settings_language_system)) },
+                    onClick = {
+                        menuOpen = false
+                        selected = null
+                        applyLanguage(context, null)
+                    },
+                )
+                AppLanguage.entries.forEach { language ->
+                    DropdownMenuItem(
+                        // Chaque langue est écrite dans sa propre langue : celui qui cherche la
+                        // sienne ne comprend pas forcément celle affichée à l'écran.
+                        text = { Text(language.endonym) },
+                        onClick = {
+                            menuOpen = false
+                            selected = language
+                            applyLanguage(context, language)
+                        },
+                    )
+                }
+            }
+        }
+        Text(
+            stringResource(R.string.settings_language_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+        )
+    }
+}
+
+private fun applyLanguage(context: Context, language: AppLanguage?) {
+    AppLocales.apply(context, language)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        // Avant Android 13, rien ne recharge les ressources tout seul.
+        (context as? Activity)?.recreate()
     }
 }
 
@@ -137,7 +212,7 @@ private fun AddKeyRow(addable: List<ApiProvider>, onAdd: (ApiProvider) -> Unit) 
         OutlinedButton(onClick = { menuOpen = true }) {
             Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Ajouter une clé")
+            Text(stringResource(R.string.settings_add_key))
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             addable.forEach { provider ->
@@ -164,11 +239,14 @@ private fun RecheckKeysButton(rechecking: Boolean, onRecheck: () -> Unit) {
                 Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
             }
             Spacer(Modifier.width(8.dp))
-            Text(if (rechecking) "Vérification…" else "Revérifier mes clés")
+            Text(
+                stringResource(
+                    if (rechecking) R.string.settings_recheck_running else R.string.settings_recheck,
+                ),
+            )
         }
         Text(
-            "Les clés sont contrôlées automatiquement une fois par jour au lancement. Chaque " +
-                "vérification consomme une requête chez le fournisseur.",
+            stringResource(R.string.settings_recheck_note),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
         )
@@ -189,48 +267,52 @@ private fun ToxicAlertCard(
     onReset: () -> Unit,
 ) {
     val defaults = ToxicAlertThresholds()
-    SectionCard(title = "Avertissement d'espèce toxique") {
+    SectionCard(title = stringResource(R.string.settings_toxic_alert_title)) {
         Text(
-            "Avertit lorsqu'une identification n'est pas assurée alors qu'une espèce toxique reste " +
-                "une hypothèse possible.",
+            stringResource(R.string.settings_toxic_alert_intro),
             style = MaterialTheme.typography.bodyMedium,
         )
 
         ThresholdSlider(
-            label = "Avertir si le score est inférieur à",
+            label = stringResource(R.string.settings_toxic_max_score),
             value = thresholds.maxScore,
             range = ToxicAlertThresholds.MAX_SCORE_RANGE,
             onChange = onMaxScoreChange,
-            hint = "Plus haut = avertir plus souvent. À 100, l'avertissement apparaît dès qu'une " +
-                "hypothèse toxique est présente, même sur une identification très sûre.",
+            hint = stringResource(R.string.settings_toxic_max_score_hint),
         )
         ThresholdSlider(
-            label = "Ne retenir que les hypothèses au-dessus de",
+            label = stringResource(R.string.settings_toxic_min_alt),
             value = thresholds.minAlternativeScore,
             range = ToxicAlertThresholds.MIN_ALTERNATIVE_RANGE,
             onChange = onMinAlternativeChange,
-            hint = "Plus bas = avertir plus souvent. À 0, même une hypothèse très peu probable " +
-                "déclenche l'avertissement.",
+            hint = stringResource(R.string.settings_toxic_min_alt_hint),
         )
 
         Text(
-            "Règle actuelle : avertir quand le score final est inférieur à ${thresholds.maxScore} " +
-                "et qu'une hypothèse toxique dépasse ${thresholds.minAlternativeScore}.",
+            stringResource(
+                R.string.settings_toxic_rule,
+                thresholds.maxScore,
+                thresholds.minAlternativeScore,
+            ),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.primary,
         )
         Text(
-            "Ce réglage ne change que le moment où l'avertissement s'affiche : il ne rend jamais une " +
-                "espèce plus sûre. Ne consommez jamais une plante ou un champignon sauvage sans " +
-                "confirmation par un expert.",
+            stringResource(R.string.settings_toxic_caveat),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
 
         if (thresholds != defaults) {
             TextButton(onClick = onReset) {
-                Text("Revenir aux valeurs par défaut (${defaults.maxScore} et ${defaults.minAlternativeScore})")
+                Text(
+                    stringResource(
+                        R.string.settings_toxic_reset,
+                        defaults.maxScore,
+                        defaults.minAlternativeScore,
+                    ),
+                )
             }
         }
     }
@@ -278,7 +360,7 @@ private fun RelaunchSetupButton(onRelaunch: () -> Unit) {
     OutlinedButton(onClick = onRelaunch) {
         Icon(Icons.AutoMirrored.Filled.HelpOutline, contentDescription = null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
-        Text("Relancer l'assistant de configuration")
+        Text(stringResource(R.string.settings_relaunch_setup))
     }
 }
 
@@ -288,17 +370,17 @@ private fun FreeGeminiCard(
     enabled: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
-    SectionCard(title = "IA gratuite (Gemini seul)") {
+    SectionCard(title = stringResource(R.string.settings_free_gemini_title)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
+            // Les deux paragraphes ont besoin d'un interligne propre : en allemand comme en italien
+            // ils font plusieurs lignes chacun et se touchaient.
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    "N'utilise que Gemini pour l'identification et les questions.",
+                    stringResource(R.string.settings_free_gemini_body),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    "Claude et GPT sont ignorés : leurs API sont payantes (l'abonnement Claude Pro " +
-                        "n'inclut pas de crédits API). Désactivez cette option seulement après avoir " +
-                        "rechargé un compte Anthropic ou OpenAI.",
+                    stringResource(R.string.settings_free_gemini_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 )
@@ -327,17 +409,17 @@ private fun ProviderCard(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (state.hasStoredKey) {
                 Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
-                Text("Clé enregistrée", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.settings_key_stored), style = MaterialTheme.typography.bodyMedium)
             } else {
-                Text("Aucune clé enregistrée", style = MaterialTheme.typography.bodyMedium,
+                Text(stringResource(R.string.settings_key_absent), style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             }
         }
 
         // Verdict connu du dernier contrôle : la clé est enregistrée mais ne fonctionne plus.
-        state.problem?.let { reason ->
+        state.problem?.let { issue ->
             WarningBanner(
-                text = "Cette clé ne fonctionne plus : $reason.",
+                text = stringResource(R.string.settings_key_broken, stringResource(issue.labelRes)),
                 icon = Icons.Filled.Error,
                 severity = BannerSeverity.DANGER,
                 modifier = Modifier.fillMaxWidth(),
@@ -347,14 +429,24 @@ private fun ProviderCard(
         OutlinedTextField(
             value = state.input,
             onValueChange = onInputChange,
-            label = { Text(if (state.hasStoredKey) "Remplacer la clé API" else "Coller la clé API") },
+            label = {
+                Text(
+                    stringResource(
+                        if (state.hasStoredKey) R.string.settings_key_replace
+                        else R.string.settings_key_paste_label,
+                    ),
+                )
+            },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
                 IconButton(onClick = {
                     clipboard.getText()?.text?.let { onInputChange(it.trim()) }
                 }) {
-                    Icon(Icons.Filled.ContentPaste, contentDescription = "Coller depuis le presse-papier")
+                    Icon(
+                        Icons.Filled.ContentPaste,
+                        contentDescription = stringResource(R.string.settings_key_paste_action),
+                    )
                 }
             },
         )
@@ -366,14 +458,14 @@ private fun ProviderCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 CircularProgressIndicator(Modifier.padding(2.dp), strokeWidth = 2.dp)
-                Text("Test de la clé…", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.settings_key_testing), style = MaterialTheme.typography.bodySmall)
             }
             KeyTestState.Valid -> Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary)
-                Text("Clé valide", color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.settings_key_valid), color = MaterialTheme.colorScheme.primary)
             }
             is KeyTestState.Invalid -> Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -388,10 +480,10 @@ private fun ProviderCard(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = onSaveAndTest, enabled = state.input.isNotBlank()) {
-                Text("Enregistrer et tester")
+                Text(stringResource(R.string.settings_key_save_and_test))
             }
             if (state.hasStoredKey) {
-                OutlinedButton(onClick = onClear) { Text("Effacer") }
+                OutlinedButton(onClick = onClear) { Text(stringResource(R.string.settings_key_clear)) }
             }
         }
     }
@@ -403,13 +495,11 @@ private fun FallbackOrderCard(
     onMove: (AiProviderType, Boolean) -> Unit,
     enabled: Boolean,
 ) {
-    SectionCard(title = "Ordre de repli IA") {
+    SectionCard(title = stringResource(R.string.settings_fallback_title)) {
         Text(
-            if (enabled) {
-                "En cas d'échec (clé invalide, quota, réseau), l'app essaie le fournisseur suivant."
-            } else {
-                "Sans effet tant que « IA gratuite (Gemini seul) » est activé : seul Gemini est essayé."
-            },
+            stringResource(
+                if (enabled) R.string.settings_fallback_body else R.string.settings_fallback_disabled,
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 0.7f else 0.5f),
         )
@@ -418,14 +508,22 @@ private fun FallbackOrderCard(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("${index + 1}. ${type.label}", modifier = Modifier.weight(1f),
+                Text(
+                    stringResource(R.string.settings_fallback_position, index + 1, type.label),
+                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.5f))
                 IconButton(onClick = { onMove(type, true) }, enabled = enabled && index > 0) {
-                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Monter")
+                    Icon(
+                        Icons.Filled.KeyboardArrowUp,
+                        contentDescription = stringResource(R.string.settings_move_up),
+                    )
                 }
                 IconButton(onClick = { onMove(type, false) }, enabled = enabled && index < order.lastIndex) {
-                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Descendre")
+                    Icon(
+                        Icons.Filled.KeyboardArrowDown,
+                        contentDescription = stringResource(R.string.settings_move_down),
+                    )
                 }
             }
         }

@@ -1,3 +1,5 @@
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Properties
 
 plugins {
@@ -54,6 +56,10 @@ android {
         buildConfigField("String", "DEFAULT_CLAUDE_API_KEY", "\"\"")
         buildConfigField("String", "DEFAULT_GEMINI_API_KEY", "\"\"")
         buildConfigField("String", "DEFAULT_OPENAI_API_KEY", "\"\"")
+
+        // Horodatage du build, affiché par le filigrane de la version de test. Vide en release :
+        // rien n'est estampillé dans l'app publiée.
+        buildConfigField("String", "BUILD_STAMP", "\"\"")
     }
 
     signingConfigs {
@@ -69,6 +75,21 @@ android {
 
     buildTypes {
         debug {
+            // Identifiant distinct : la version publiée est signée par Google (Play App Signing) et
+            // refuse toute mise à jour signée localement. Le build de développement s'installe donc
+            // à côté d'elle, sans toucher à son historique ni à ses clés.
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+
+            // Date et heure du build : c'est ce qui distingue deux installations de test du même
+            // jour. Recalculé à chaque configuration Gradle, donc le BuildConfig debug se
+            // recompile à chaque build — sans intérêt en release, où le champ reste vide.
+            buildConfigField(
+                "String",
+                "BUILD_STAMP",
+                "\"" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "\"",
+            )
+
             // Clés de dev pré-remplies uniquement en debug (jamais dans l'app publiée).
             buildConfigField("String", "DEFAULT_PLANTNET_API_KEY", devKey("PLANTNET_API_KEY"))
             buildConfigField("String", "DEFAULT_CLAUDE_API_KEY", devKey("CLAUDE_API_KEY"))
@@ -97,6 +118,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    androidResources {
+        // Seules ces langues sont embarquées (cf. res/xml/locales_config.xml et util/AppLocale.kt).
+        // values/ porte l'anglais (langue de repli), values-fr/ le français d'origine.
+        localeFilters += listOf("en", "fr", "de", "it", "es")
     }
     packaging {
         resources {

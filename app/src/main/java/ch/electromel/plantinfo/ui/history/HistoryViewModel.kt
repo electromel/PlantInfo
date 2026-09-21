@@ -1,12 +1,15 @@
 package ch.electromel.plantinfo.ui.history
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.repo.HistoryRepository
 import ch.electromel.plantinfo.data.repo.IdentificationRepository
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
+import ch.electromel.plantinfo.util.AppStrings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,11 +23,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** Périodes prédéfinies pour le filtre temporel de l'historique. */
-enum class DateRange(val label: String) {
-    ALL("Toutes dates"),
-    LAST_7_DAYS("7 jours"),
-    LAST_30_DAYS("30 jours"),
-    THIS_YEAR("Cette année");
+enum class DateRange(@StringRes val labelRes: Int) {
+    ALL(R.string.history_range_all),
+    LAST_7_DAYS(R.string.history_range_7_days),
+    LAST_30_DAYS(R.string.history_range_30_days),
+    THIS_YEAR(R.string.history_range_this_year);
 
     /** Borne inférieure en millis epoch (0 = pas de borne). */
     fun fromMillis(now: Long): Long = when (this) {
@@ -57,6 +60,7 @@ data class HistoryFilters(
 class HistoryViewModel @Inject constructor(
     private val repository: HistoryRepository,
     private val identificationRepository: IdentificationRepository,
+    private val strings: AppStrings,
 ) : ViewModel() {
 
     private val _filters = MutableStateFlow(HistoryFilters())
@@ -103,7 +107,10 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             when (val outcome = identificationRepository.reanalyzeAndUpdate(entity)) {
                 is IdentificationOutcome.Success -> _message.value = outcome.infoMessage
-                    ?: "Analyse mise à jour (${outcome.result.aiProvider.takeIf { it != AiProviderType.NONE }?.label ?: "Pl@ntNet"})."
+                    ?: strings.get(
+                        R.string.history_reanalyzed,
+                        outcome.result.aiProvider.takeIf { it != AiProviderType.NONE }?.label ?: "Pl@ntNet",
+                    )
                 is IdentificationOutcome.Failure -> _message.value = outcome.message
             }
             _reanalyzingIds.update { it - entity.id }

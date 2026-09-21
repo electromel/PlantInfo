@@ -23,10 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.domain.model.LatLng
 import ch.electromel.plantinfo.domain.model.SpeciesRange
 import ch.electromel.plantinfo.util.GeoUtils
@@ -116,8 +118,7 @@ fun SpeciesMap(
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (noLocationAtAll) {
             Text(
-                "Aucune position de prise de vue et aucune donnée de répartition GBIF pour cette espèce : " +
-                    "la carte ne peut pas être affichée.",
+                stringResource(R.string.map_no_location_at_all),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             )
@@ -138,20 +139,19 @@ fun SpeciesMap(
         when (rangeState) {
             RangeState.Loading -> Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
-                Text("  Chargement de l'aire de répartition…",
-                    style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "  " + stringResource(R.string.map_loading_range),
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
             is RangeState.Loaded -> {
-                val text = when {
-                    range?.hasData == true ->
-                        "Zone verte : aire de répartition approximative (occurrences GBIF). " +
-                            "Approximation basée sur les observations connues, sans valeur légale."
-                    hasCapturePoint ->
-                        "Aucune donnée de répartition GBIF pour cette espèce : seul le point de prise de vue " +
-                            "est affiché."
-                    else ->
-                        "Aucune donnée de répartition GBIF pour cette espèce."
-                }
+                val text = stringResource(
+                    when {
+                        range?.hasData == true -> R.string.map_range_legend
+                        hasCapturePoint -> R.string.map_no_range_with_point
+                        else -> R.string.map_no_range
+                    },
+                )
                 Text(text, style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             }

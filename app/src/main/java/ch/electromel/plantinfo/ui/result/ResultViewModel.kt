@@ -3,6 +3,7 @@ package ch.electromel.plantinfo.ui.result
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.repo.HistoryRepository
@@ -10,6 +11,7 @@ import ch.electromel.plantinfo.data.repo.IdentificationRepository
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
+import ch.electromel.plantinfo.util.AppStrings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,6 +29,7 @@ class ResultViewModel @Inject constructor(
     private val repository: HistoryRepository,
     private val identificationRepository: IdentificationRepository,
     private val keyStore: ApiKeyStore,
+    private val strings: AppStrings,
 ) : ViewModel() {
 
     private val id: Long = savedStateHandle.get<String>("id")?.toLongOrNull() ?: -1L
@@ -63,7 +66,10 @@ class ResultViewModel @Inject constructor(
         viewModelScope.launch {
             when (val outcome = identificationRepository.reanalyzeAndUpdate(current)) {
                 is IdentificationOutcome.Success -> _message.value = outcome.infoMessage
-                    ?: "Analyse mise à jour (${outcome.result.aiProvider.takeIf { it != AiProviderType.NONE }?.label ?: "Pl@ntNet"})."
+                    ?: strings.get(
+                        R.string.history_reanalyzed,
+                        outcome.result.aiProvider.takeIf { it != AiProviderType.NONE }?.label ?: "Pl@ntNet",
+                    )
                 is IdentificationOutcome.Failure -> _message.value = outcome.message
             }
             _reanalyzing.value = false
