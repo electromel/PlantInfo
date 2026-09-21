@@ -57,15 +57,16 @@ AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
-### Notes de version — 0.5.0 (versionCode 5)
+### Notes de version — 0.5.0 (versionCode 6)
 
-(380 caractères.)
+(433 caractères.)
 
 ```
 Nouveautés :
 • PlantInfo parle maintenant français, anglais, allemand, italien et espagnol. L'application suit la langue de votre téléphone ; vous pouvez en choisir une autre dans les Paramètres.
 • Les fiches d'identification et les réponses de l'IA sont rédigées dans cette langue. Les fiches déjà enregistrées gardent la leur.
 • Nouvelle icône : un viseur qui cadre une feuille.
+• Présentation du coût de l'identification corrigée.
 ```
 
 ---
@@ -124,6 +125,7 @@ What's new:
 • PlantInfo now speaks French, English, German, Italian and Spanish. The app follows your phone's language; you can pick another one in the Settings.
 • Identification records and AI answers are written in that language. Records already saved keep theirs.
 • New icon: a viewfinder framing a leaf.
+• Fixed the layout of the identification cost.
 ```
 
 ---
@@ -182,6 +184,7 @@ Neu:
 • PlantInfo spricht jetzt Französisch, Englisch, Deutsch, Italienisch und Spanisch. Die App folgt der Sprache Ihres Telefons; in den Einstellungen können Sie eine andere wählen.
 • Einträge und KI-Antworten werden in dieser Sprache verfasst. Bereits gespeicherte Einträge behalten ihre.
 • Neues Symbol: ein Sucher, der ein Blatt einrahmt.
+• Darstellung der Kosten einer Bestimmung korrigiert.
 ```
 
 ---
@@ -240,6 +243,7 @@ Novità:
 • PlantInfo parla ora francese, inglese, tedesco, italiano e spagnolo. L'app segue la lingua del telefono; nelle Impostazioni potete sceglierne un'altra.
 • Le schede e le risposte dell'IA sono redatte in quella lingua. Le schede già salvate mantengono la loro.
 • Nuova icona: un mirino che inquadra una foglia.
+• Corretta la presentazione del costo dell'identificazione.
 ```
 
 ---
@@ -298,6 +302,7 @@ Novedades:
 • PlantInfo habla ahora francés, inglés, alemán, italiano y español. La aplicación sigue el idioma del teléfono; puede elegir otro en los Ajustes.
 • Las fichas y las respuestas de la IA se redactan en ese idioma. Las fichas ya guardadas conservan el suyo.
 • Nuevo icono: un visor que encuadra una hoja.
+• Corregida la presentación del coste de la identificación.
 ```
 
 ---
