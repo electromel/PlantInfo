@@ -45,8 +45,10 @@ android {
         // 1 = première release de test interne (0.1.0, publiée le 2026.07.13).
         // 2 = bundle 0.2.0 construit le 2026.08.14 mais jamais téléversé (numéro consommé localement).
         // 3 = bundle 0.3.0 construit le 2026.08.24 (jetons, coût, aide aux clés).
-        versionCode = 4
-        versionName = "0.4.0"
+        // 4 = bundle 0.4.0 publié le 2026.08.26 (assistant de configuration).
+        // 5 = bundle 0.5.0 construit le 2026.09.21 (multilangue, nouvelle icône).
+        versionCode = 5
+        versionName = "0.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
