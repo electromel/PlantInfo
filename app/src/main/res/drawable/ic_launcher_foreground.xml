@@ -3,11 +3,38 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Feuille stylisée -->
+    <!-- Viseur : quatre coins, tout dans la zone sûre (cercle central de 66dp) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,30 C40,38 34,52 36,68 C36,72 40,76 44,76 C60,76 72,62 74,44 C74,40 70,36 66,36 C60,36 56,30 54,30 Z" />
+        android:pathData="M34,45 L34,34 L45,34"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
     <path
-        android:fillColor="#C8E6C9"
-        android:pathData="M54,34 C54,48 50,62 44,72 L46,74 C54,64 58,50 58,36 Z" />
+        android:pathData="M63,34 L74,34 L74,45"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M74,63 L74,74 L63,74"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M45,74 L34,74 L34,63"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- Feuille cadrée dans le viseur ; la nervure reprend la couleur du fond -->
+    <path
+        android:pathData="M43,63 C40,50 50,41 65,41 C67,54 57,66 43,63 Z"
+        android:fillColor="#A5D6A7" />
+    <path
+        android:pathData="M43,63 C51,58 59,51 65,41"
+        android:strokeColor="#2E7D32"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
 </vector>
