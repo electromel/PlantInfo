@@ -1,6 +1,7 @@
 package ch.electromel.plantinfo.di
 
 import ch.electromel.plantinfo.BuildConfig
+import ch.electromel.plantinfo.data.remote.LogRedactor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,10 +18,15 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            // Corps loggés en debug seulement ; jamais les en-têtes (clés API) — voir redaction.
+        // Chaque ligne passe par LogRedactor : l'URL de Pl@ntNet porte la clé en clair (api-key=).
+        val logger = HttpLoggingInterceptor.Logger { message ->
+            HttpLoggingInterceptor.Logger.DEFAULT.log(LogRedactor.redact(message))
+        }
+        val logging = HttpLoggingInterceptor(logger).apply {
+            // Ligne requête/réponse en debug seulement ; rien du tout en release.
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC
             else HttpLoggingInterceptor.Level.NONE
+            LogRedactor.SECRET_HEADERS.forEach(::redactHeader)
         }
         return OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
