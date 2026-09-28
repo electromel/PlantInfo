@@ -369,12 +369,21 @@ Nouveautés :
 Première version de test : identification par photo, diagnostic de santé, comestibilité, carte de répartition, questions à l'IA et historique local.
 ```
 
-## Rappels des visuels à fournir dans la Console (non textuels)
+## Visuels de la Console (non textuels)
+
+Tous fournis et rangés par langue — voir `docs/play-store-inscription.md` pour le reste des
+questionnaires (classification, public cible, Sécurité des données, autorisations).
 
 - Icône **512 × 512** PNG (32 bits, avec alpha) : `app/src/main/ic_launcher-playstore.png`, à
   régénérer avec `tools/render_playstore_icon.py` si le dessin de l'icône change.
-- Image de bandeau (« feature graphic ») **1024 × 500** PNG/JPG.
-- **2 captures d'écran minimum** (téléphone), ratio entre 16:9 et 9:16, côté min 320 px.
-  Elles sont en français aujourd'hui ; la Console permet un jeu de captures **par langue**, à
-  compléter au fur et à mesure (une fiche allemande avec des captures françaises reste acceptée).
-- Catégorie suggérée : « Éducation » ou « Style de vie ».
+- Bandeau (« feature graphic ») **1024 × 500** : `store/feature-graphic/<langue>.png`.
+- **6 captures téléphone par langue**, **1080 × 1920** (9:16, le ratio attendu par la Console) :
+  `store/screenshots/<langue>/01-capture … 06-parametres`.
+
+Les deux derniers jeux sont produits par `python tools/render_store_assets.py`, qui encadre les
+captures brutes de l'appareil et y ajoute une accroche traduite. Les captures brutes ne sont pas
+versionnées : les reprendre à l'adb avant de relancer le script (procédure dans
+`log/2026.09.21-Visuels Play Store.md`).
+
+Une même fiche traduite peut garder les captures d'une autre langue — mais les cinq jeux existent,
+autant les téléverser.
