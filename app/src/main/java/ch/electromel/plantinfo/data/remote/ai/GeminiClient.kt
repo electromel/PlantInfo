@@ -46,7 +46,8 @@ class GeminiClient @Inject constructor(
             }
         }
         val request = Request.Builder()
-            .url("https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent?key=$apiKey")
+            .url(ENDPOINT)
+            .header("x-goog-api-key", apiKey)
             .header("content-type", HttpSupport.JSON_MEDIA)
             .post(body.toString().toRequestBody())
             .build()
@@ -66,7 +67,8 @@ class GeminiClient @Inject constructor(
             }
         }
         val request = Request.Builder()
-            .url("https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent?key=$apiKey")
+            .url(ENDPOINT)
+            .header("x-goog-api-key", apiKey)
             .header("content-type", HttpSupport.JSON_MEDIA)
             .post(body.toString().toRequestBody())
             .build()
@@ -86,7 +88,8 @@ class GeminiClient @Inject constructor(
             putJsonObject("generationConfig") { put("maxOutputTokens", 1) }
         }
         val request = Request.Builder()
-            .url("https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent?key=$apiKey")
+            .url(ENDPOINT)
+            .header("x-goog-api-key", apiKey)
             .header("content-type", HttpSupport.JSON_MEDIA)
             .post(body.toString().toRequestBody())
             .build()
@@ -122,5 +125,9 @@ class GeminiClient @Inject constructor(
         // Alias « latest » : suit le dernier modèle Flash et conserve un quota gratuit, contrairement
         // à gemini-2.0-flash dont le niveau gratuit a été supprimé (429 avec limit: 0).
         const val MODEL = "gemini-flash-latest"
+
+        // Clé passée en en-tête (x-goog-api-key) et non en ?key= : une URL finit dans les logs.
+        const val ENDPOINT =
+            "https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent"
     }
 }
