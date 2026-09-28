@@ -8,7 +8,10 @@ import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.repo.HistoryRepository
 import ch.electromel.plantinfo.data.repo.IdentificationRepository
+import android.net.Uri
 import ch.electromel.plantinfo.domain.model.AiProviderType
+import ch.electromel.plantinfo.domain.model.PhotoOrgan
+import ch.electromel.plantinfo.util.ImageStorage
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.ui.result.FicheAdvice
@@ -30,6 +33,7 @@ class DetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: HistoryRepository,
     private val identificationRepository: IdentificationRepository,
+    private val imageStorage: ImageStorage,
     private val keyStore: ApiKeyStore,
     private val pdfExporter: PdfExporter,
     private val shareHelper: ShareHelper,
@@ -62,10 +66,29 @@ class DetailViewModel @Inject constructor(
     /** Relance Pl@ntNet + IA sur la fiche (ex. IA inaccessible au 1er essai ou clé ajoutée depuis). */
     fun reanalyze() {
         val current = entity.value ?: return
+        runReanalysis { identificationRepository.reanalyzeAndUpdate(current) }
+    }
+
+    /**
+     * Photo complémentaire prise depuis la fiche (identification incertaine) : ajoutée aux photos
+     * existantes, puis toute la fiche est réanalysée.
+     */
+    fun addPhoto(uri: Uri, organ: PhotoOrgan) {
+        val current = entity.value ?: return
+        runReanalysis {
+            // null : photo illisible, l'analyse n'est pas lancée et un message le dit.
+            val path = runCatching { imageStorage.saveFromUri(uri) }.getOrNull()
+                ?: return@runReanalysis null
+            identificationRepository.addPhotoAndReanalyze(current, path, organ)
+        }
+    }
+
+    private fun runReanalysis(block: suspend () -> IdentificationOutcome?) {
         if (_reanalyzing.value) return
         _reanalyzing.value = true
         viewModelScope.launch {
-            when (val outcome = identificationRepository.reanalyzeAndUpdate(current)) {
+            when (val outcome = block()) {
+                null -> _message.value = strings.get(R.string.fiche_photo_save_failed)
                 is IdentificationOutcome.Success -> _message.value = outcome.infoMessage
                     ?: strings.get(
                         R.string.history_reanalyzed,

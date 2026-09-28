@@ -51,6 +51,10 @@ data class IdentificationEntity(
     val careCalendarJson: String?,      // List<CareTask> sérialisée : plantation, taille, récolte…
     val usesJson: String?,              // List<SpeciesUse> sérialisée : santé, chimie, parfumerie…
     val symbolism: String?,             // signification symbolique / culturelle
+    // v8, même logique que careCalendarJson : null pour les fiches antérieures ou sans réponse IA.
+    val propagationJson: String?,       // List<PropagationMethod> sérialisée : semis, bouturage…
+    // v9 : photos complémentaires proposées par l'IA (List<ComplementaryPhotoRequest> sérialisée).
+    val photoSuggestionsJson: String?,
 
     val gbifKey: Long?,                 // clé taxonomique GBIF de l'espèce retenue (Pl@ntNet)
     val iucnCategory: String?,          // code UICN de l'espèce retenue (Pl@ntNet)

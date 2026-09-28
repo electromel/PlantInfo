@@ -11,6 +11,7 @@ import ch.electromel.plantinfo.data.repo.toResult
 import ch.electromel.plantinfo.domain.model.careCalendarLines
 import ch.electromel.plantinfo.domain.model.edibilitySummaryText
 import ch.electromel.plantinfo.domain.model.maturitySummaryText
+import ch.electromel.plantinfo.domain.model.propagationLines
 import ch.electromel.plantinfo.domain.model.toxicConfusionWarningText
 import ch.electromel.plantinfo.domain.model.usesByDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -61,6 +62,10 @@ class ShareHelper @Inject constructor(
                         tasks.joinToString(" · ") { "${it.label} ${it.period}" },
                     ),
                 )
+            }
+            result.propagationLines().takeIf { it.isNotEmpty() }?.let { methods ->
+                appendLine()
+                appendLine(strings.get(R.string.share_propagation, methods.joinToString(" · ") { it.label }))
             }
             result.usesByDomain().takeIf { it.isNotEmpty() }?.let { grouped ->
                 appendLine()

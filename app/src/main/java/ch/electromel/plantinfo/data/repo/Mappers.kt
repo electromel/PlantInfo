@@ -3,9 +3,11 @@ package ch.electromel.plantinfo.data.repo
 import ch.electromel.plantinfo.data.db.IdentificationEntity
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.CareTask
+import ch.electromel.plantinfo.domain.model.ComplementaryPhotoRequest
 import ch.electromel.plantinfo.domain.model.GpsLocation
 import ch.electromel.plantinfo.domain.model.HealthAssessment
 import ch.electromel.plantinfo.domain.model.IdentificationResult
+import ch.electromel.plantinfo.domain.model.PropagationMethod
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.SpeciesUse
 import ch.electromel.plantinfo.domain.model.TokenUsage
@@ -16,6 +18,8 @@ private val json = Json { ignoreUnknownKeys = true }
 private val candidateListSerializer = ListSerializer(SpeciesCandidate.serializer())
 private val careTaskListSerializer = ListSerializer(CareTask.serializer())
 private val useListSerializer = ListSerializer(SpeciesUse.serializer())
+private val propagationListSerializer = ListSerializer(PropagationMethod.serializer())
+private val photoSuggestionListSerializer = ListSerializer(ComplementaryPhotoRequest.serializer())
 
 /** Convertit un résultat de domaine + contexte en entité persistable. */
 fun IdentificationResult.toEntity(
@@ -54,6 +58,10 @@ fun IdentificationResult.toEntity(
     careCalendarJson = careCalendar.takeIf { it.isNotEmpty() }
         ?.let { json.encodeToString(careTaskListSerializer, it) },
     usesJson = uses.takeIf { it.isNotEmpty() }?.let { json.encodeToString(useListSerializer, it) },
+    propagationJson = propagation.takeIf { it.isNotEmpty() }
+        ?.let { json.encodeToString(propagationListSerializer, it) },
+    photoSuggestionsJson = photoSuggestions.takeIf { it.isNotEmpty() }
+        ?.let { json.encodeToString(photoSuggestionListSerializer, it) },
     symbolism = symbolism,
     gbifKey = gbifKey,
     iucnCategory = iucnCategory,
@@ -74,6 +82,12 @@ fun IdentificationEntity.toResult(): IdentificationResult {
     }.orEmpty()
     val uses = usesJson?.let {
         runCatching { json.decodeFromString(useListSerializer, it) }.getOrNull()
+    }.orEmpty()
+    val propagation = propagationJson?.let {
+        runCatching { json.decodeFromString(propagationListSerializer, it) }.getOrNull()
+    }.orEmpty()
+    val photoSuggestions = photoSuggestionsJson?.let {
+        runCatching { json.decodeFromString(photoSuggestionListSerializer, it) }.getOrNull()
     }.orEmpty()
     val health = healthStatus?.let {
         HealthAssessment(it, isHealthy ?: true, recommendations)
@@ -103,11 +117,12 @@ fun IdentificationEntity.toResult(): IdentificationResult {
         edibilityNote = edibilityNote,
         careCalendar = careCalendar,
         uses = uses,
+        propagation = propagation,
         symbolism = symbolism,
         gbifKey = gbifKey,
         iucnCategory = iucnCategory,
         sourcesDisagree = sourcesDisagree,
-        complementaryPhotoRequest = null, // non persisté ; pertinent uniquement au moment de l'ID
+        photoSuggestions = photoSuggestions,
         usage = usage,
     )
 }

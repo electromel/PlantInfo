@@ -17,11 +17,17 @@ internal object HttpSupport {
 
     /** Traduit un code HTTP (et le corps d'erreur) en motif de repli typé. */
     fun reasonForStatus(code: Int, body: String = ""): AiFailureReason = when {
-        code == 401 || code == 403 -> AiFailureReason.INVALID_KEY
-        // Solde/crédit épuisé côté compte, distinct d'une simple limite de débit :
-        // Anthropic répond 400 « credit balance is too low », OpenAI 429 « insufficient_quota ».
+        // Solde/crédit épuisé côté compte, distinct d'une clé refusée ou d'une limite de débit :
+        // Anthropic répond 400 « credit balance is too low », OpenAI 429 « insufficient_quota »,
+        // DeepSeek et OpenRouter 402, xAI 403 « …credits… », Moonshot 429 « …balance… »,
+        // Alibaba 400 « Arrearage ». Testé avant 401/403 : un 403 sans crédit n'est pas une clé fausse.
+        code == 402 -> AiFailureReason.BILLING
+        code == 403 && body.contains("credits", ignoreCase = true) -> AiFailureReason.BILLING
         code == 400 && body.contains("credit balance", ignoreCase = true) -> AiFailureReason.BILLING
+        code == 400 && body.contains("Arrearage", ignoreCase = true) -> AiFailureReason.BILLING
         code == 429 && body.contains("insufficient_quota", ignoreCase = true) -> AiFailureReason.BILLING
+        code == 429 && body.contains("balance", ignoreCase = true) -> AiFailureReason.BILLING
+        code == 401 || code == 403 -> AiFailureReason.INVALID_KEY
         code == 429 -> AiFailureReason.QUOTA
         code in 500..599 -> AiFailureReason.SERVER
         else -> AiFailureReason.UNKNOWN

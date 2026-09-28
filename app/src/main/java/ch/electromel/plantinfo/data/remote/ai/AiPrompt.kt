@@ -1,13 +1,17 @@
 package ch.electromel.plantinfo.data.remote.ai
 
 import ch.electromel.plantinfo.domain.model.CareTask
+import ch.electromel.plantinfo.domain.model.ComplementaryPhotoRequest
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
+import ch.electromel.plantinfo.domain.model.PropagationMethod
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.SpeciesUse
 import ch.electromel.plantinfo.domain.model.UseDomain
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * Construction du prompt structuré envoyé aux modèles multimodaux et parsing de leur réponse JSON.
@@ -18,8 +22,12 @@ object AiPrompt {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    /** Instruction système/utilisateur commune. */
-    fun buildInstruction(input: AiAnalysisInput): String {
+    /**
+     * Instruction système/utilisateur commune. [today] est la date à laquelle l'utilisateur pourrait
+     * prendre les photos complémentaires : sans elle, le modèle demande volontiers des fleurs ou des
+     * fruits hors saison.
+     */
+    fun buildInstruction(input: AiAnalysisInput, today: LocalDate = LocalDate.now()): String {
         val plantNet = if (input.plantNetCandidates.isEmpty()) {
             "Aucun résultat Pl@ntNet fourni (ex. champignon, ou plante non couverte)."
         } else {
@@ -43,8 +51,8 @@ d'un arbre ou d'un champignon et produis une identification.
 
 LANGUE DE RÉPONSE : rédige TOUTES les valeurs textuelles du JSON en ${language.aiName}
 (${language.endonym}) — noms communs, état de santé, recommandations, habitat, description,
-comestibilité, libellés et périodes du calendrier, usages, symbolique, raison de la photo
-complémentaire. Les CLÉS du JSON et les valeurs codées (domain, organ) restent telles quelles, en
+comestibilité, libellés et périodes du calendrier, méthodes de multiplication, usages, symbolique, raison des photos
+complémentaires. Les CLÉS du JSON et les valeurs codées (domain, organ) restent telles quelles, en
 anglais. Les noms scientifiques restent en latin.
 
 Contexte :
@@ -52,6 +60,7 @@ Contexte :
 $plantNet
 - Lieu de la prise de vue : $geo
   Utilise la région, l'altitude et le climat comme critères complémentaires de plausibilité.
+- Date du jour : ${today.format(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.FRENCH))}.
 
 Consignes :
 1. Croise ta propre analyse visuelle avec les résultats Pl@ntNet : valide, corrige ou complète.
@@ -79,12 +88,42 @@ Consignes :
    ornamental (ornement, paysage), ecological (mellifère, engrais vert, dépollution, haie), other.
    Reste factuel et historique/traditionnel pour les usages médicinaux : ce n'est jamais un conseil
    thérapeutique. Liste vide si aucun usage notable n'est documenté.
-9. Renseigne symbolism : la signification symbolique, culturelle, religieuse ou dans le langage des
-   fleurs, si l'espèce en porte une (une à trois phrases, en citant la culture concernée). Mets null
-   si l'espèce n'a pas de charge symbolique connue — n'en invente aucune.
-10. Donne une confiance globale sur 100 tenant compte de l'accord/désaccord avec Pl@ntNet.
-11. Si la confiance est < 60, demande UNE photo complémentaire précise (organ + raison).
-12. Fournis 2 à 3 hypothèses alternatives si tu n'es pas certain. Pour CHACUNE, renseigne toxic :
+9. Renseigne propagation : les façons d'obtenir de nouveaux sujets à partir de cette plante
+   (semis, bouturage de tige/de racine/de feuille, marcottage, division de touffe, drageons,
+   stolons, greffe, bulbilles…), en ne retenant que celles qui fonctionnent vraiment pour cette
+   espèce et en commençant par la plus facile pour un amateur. Pour chacune, explique en deux à
+   quatre phrases comment faire (quoi prélever, préparation, substrat, conditions de reprise, délai)
+   et donne la meilleure période si elle compte. Pour un champignon, décris la culture si elle est
+   praticable par un amateur (ex. mycélium sur substrat), sinon liste vide. Liste vide aussi si tu
+   ne peux rien affirmer de fiable.
+10. Renseigne symbolism : la signification symbolique, culturelle, religieuse ou dans le langage des
+    fleurs, si l'espèce en porte une (une à trois phrases, en citant la culture concernée). Mets null
+    si l'espèce n'a pas de charge symbolique connue — n'en invente aucune.
+11. Donne une confiance globale sur 100 tenant compte de l'accord/désaccord avec Pl@ntNet.
+12. Renseigne photoSuggestions dès que tu fournis des hypothèses alternatives ou que Pl@ntNet
+    propose une autre espèce que la tienne — même si tu es sûr de ton choix : c'est l'application qui
+    décide, selon le score final, de montrer ces suggestions à l'utilisateur quand l'identification
+    reste incertaine. Donne une à trois photos complémentaires qui départageraient ton choix des
+    autres hypothèses, la plus utile d'abord : le caractère qui fonde ta certitude, s'il n'est pas
+    visible, est exactement ce que l'utilisateur doit photographier pour la vérifier. Pour chacune,
+    indique l'organe (organ) et, dans reason, en une ou deux phrases, ce qu'il faut cadrer et ce que
+    cela permettra de distinguer (ex. « Le dessous d'une feuille : sa pilosité distingue X de Y »).
+    Un organe ou un détail absent des photos fournies mais que la plante porte probablement (dessous
+    des feuilles, stolons, base de la tige, écorce…) est précisément ce qu'il faut demander.
+    SAISON : la photo serait prise maintenant, à la date du jour et au lieu indiqués (tiens compte de
+    l'hémisphère, du climat, et d'une culture en intérieur si c'est manifestement le cas). Ne demande
+    une fleur, un fruit, une graine ou un chaton que si l'espèce en porte probablement à cette date ;
+    sinon, cherche un autre caractère photographiable dès maintenant qui départage aussi (feuilles et
+    leur revers, pilosité, bourgeons, écorce, tige, stolons, port). Pour ces photos faisables
+    maintenant, period = null.
+    HORS SAISON : si une fleur, un fruit, une graine ou un chaton départagerait aussi mais n'est
+    probablement pas visible à cette date, ajoute-le quand même, en dernier et au plus un seul, avec
+    period = la période où il l'est (ex. « mai à août ») et une raison d'une seule phrase courte
+    (ex. « Les fleurs, blanches en étoile, confirmeraient C. comosum. ») : la plante en porte
+    peut-être déjà.
+    Ne propose pas d'organe déjà net sur les photos. Liste vide s'il n'y a aucune hypothèse
+    concurrente, ou si aucun caractère ne départagerait les hypothèses.
+13. Fournis 2 à 3 hypothèses alternatives si tu n'es pas certain. Pour CHACUNE, renseigne toxic :
     true si l'espèce est toxique ou vénéneuse pour l'humain, false si elle ne l'est pas, null si tu
     ne peux pas te prononcer. C'est essentiel : l'application avertit l'utilisateur qu'il pourrait
     s'agir d'une espèce toxique lorsqu'une hypothèse toxique reste plausible.
@@ -107,9 +146,10 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
   "toxic": true|false|null,
   "edibilityNote": "précisions sur comestibilité/toxicité, parties concernées, dangers et confusions",
   "careCalendar": [{"label":"opération (plantation, semis, taille, arrosage, fertilisation, division, protection hivernale, récolte, cueillette…), traduite dans la langue de réponse","period":"période, ex. mars à avril","note":"précision courte" | null}],
+"propagation": [{"label":"méthode (semis, bouturage de tige, division…), dans la langue de réponse","howTo":"marche à suivre en 2 à 4 phrases","period":"meilleure période, ex. fin d'été" | null}],
   "uses": [{"domain":"medicinal|food|cosmetic|chemical|craft|ornamental|ecological|other","detail":"usage en une phrase"}],
   "symbolism": "signification symbolique/culturelle et culture concernée" | null,
-  "complementaryPhoto": {"organ":"leaf|flower|fruit|bark|habit|cap|gills|other","reason":"..."} | null
+  "photoSuggestions": [{"organ":"leaf|flower|fruit|bark|habit|cap|gills|other","reason":"quoi cadrer et ce que cela départagera","period":"période de visibilité si hors saison, ex. mai à août" | null}]
 }
 """.trimIndent()
     }
@@ -190,15 +230,22 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
             val period = it.period?.takeIf { p -> p.isNotBlank() } ?: return@mapNotNull null
             CareTask(label, period, it.note?.takeIf { n -> n.isNotBlank() })
         },
+        propagation = propagation.orEmpty().mapNotNull {
+            val label = it.label?.takeIf { l -> l.isNotBlank() } ?: return@mapNotNull null
+            val howTo = it.howTo?.takeIf { h -> h.isNotBlank() } ?: return@mapNotNull null
+            PropagationMethod(label, howTo, it.period?.takeIf { p -> p.isNotBlank() })
+        },
         uses = uses.orEmpty().mapNotNull {
             val detail = it.detail?.takeIf { d -> d.isNotBlank() } ?: return@mapNotNull null
             SpeciesUse(UseDomain.fromCode(it.domain), detail)
         },
         symbolism = symbolism?.takeIf { it.isNotBlank() },
-        complementary = complementaryPhoto?.let {
-            val reason = it.reason ?: return@let null
-            AiComplementaryRequest(mapOrgan(it.organ), reason)
-        },
+        // Une suggestion sans raison ne dit pas quoi photographier : écartée. Au plus trois, la
+        // carte doit rester une invite et non une liste de corvées.
+        photoSuggestions = photoSuggestions.orEmpty().mapNotNull {
+            val reason = it.reason?.takeIf { r -> r.isNotBlank() } ?: return@mapNotNull null
+            ComplementaryPhotoRequest(mapOrgan(it.organ), reason, it.period?.takeIf { p -> p.isNotBlank() })
+        }.take(3),
     )
 
     // --- DTO de parsing ---
@@ -222,8 +269,9 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
         val edibilityNote: String? = null,
         val careCalendar: List<CareTaskDto>? = null,
         val uses: List<UseDto>? = null,
+        val propagation: List<PropagationDto>? = null,
         val symbolism: String? = null,
-        @SerialName("complementaryPhoto") val complementaryPhoto: ComplementaryDto? = null,
+        val photoSuggestions: List<ComplementaryDto>? = null,
     )
 
     @Serializable
@@ -231,6 +279,13 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
         val label: String? = null,
         val period: String? = null,
         val note: String? = null,
+    )
+
+    @Serializable
+    private data class PropagationDto(
+        val label: String? = null,
+        val howTo: String? = null,
+        val period: String? = null,
     )
 
     // Le domaine reste une String au parsing : un libellé inattendu du modèle doit retomber sur
@@ -260,5 +315,6 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
     private data class ComplementaryDto(
         val organ: String? = null,
         val reason: String? = null,
+        val period: String? = null,
     )
 }

@@ -49,12 +49,10 @@ class AiOrchestrator @Inject constructor(
     claude: ClaudeClient,
     gemini: GeminiClient,
     openai: OpenAiClient,
+    additional: AdditionalAiProviders,
 ) {
-    private val providers: Map<AiProviderType, AiProvider> = mapOf(
-        AiProviderType.CLAUDE to claude,
-        AiProviderType.GEMINI to gemini,
-        AiProviderType.GPT to openai,
-    )
+    private val providers: Map<AiProviderType, AiProvider> =
+        (listOf(claude, gemini, openai) + additional.all).associateBy { it.type }
 
     suspend fun analyze(input: AiAnalysisInput): AiOutcome {
         val order = keyStore.availableAiProvidersInOrder()

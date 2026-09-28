@@ -32,7 +32,9 @@ class ClaudeClient @Inject constructor(
         val instruction = AiPrompt.buildInstruction(input)
         val body = buildJsonObject {
             put("model", MODEL)
-            put("max_tokens", 1500)
+            // La fiche complète (calendrier, multiplication, usages, photos à prendre…) dépasse
+            // 1500 jetons en français : une réponse tronquée serait un JSON illisible.
+            put("max_tokens", 4000)
             putJsonArray("messages") {
                 addJsonObject {
                     put("role", "user")

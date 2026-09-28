@@ -1,5 +1,6 @@
 package ch.electromel.plantinfo.ui.result
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +54,9 @@ import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.TokenUsage
 import ch.electromel.plantinfo.domain.model.UseDomain
 import ch.electromel.plantinfo.domain.model.careCalendarLines
+import ch.electromel.plantinfo.domain.model.propagationLines
+import ch.electromel.plantinfo.domain.model.photoSuggestionsToShow
+import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.costText
 import ch.electromel.plantinfo.domain.model.edibilityVerdict
 import ch.electromel.plantinfo.domain.model.iucnStatus
@@ -85,6 +89,8 @@ fun IdentificationContent(
     onSelectAlternative: ((SpeciesCandidate) -> Unit)? = null,
     onReanalyze: (() -> Unit)? = null,
     reanalyzing: Boolean = false,
+    // Photo complémentaire prise depuis la fiche (identification incertaine) ; null = pas de caméra.
+    onAddPhoto: ((Uri, PhotoOrgan) -> Unit)? = null,
     advice: FicheAdvice? = null,
     onOpenSetup: ((String) -> Unit)? = null,
     // Dernier paramètre : l'écran Détail le passe en lambda finale (en-tête « notes »).
@@ -247,6 +253,16 @@ fun IdentificationContent(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+        // Les photos qui lèveraient l'incertitude, juste sous les avertissements qui la signalent.
+        if (!entity.userConfirmed) {
+            PhotoSuggestionsCard(
+                suggestions = result.photoSuggestionsToShow(),
+                canAddPhoto = entity.photoPaths.size < IdentificationResult.MAX_PHOTOS,
+                reanalyzing = reanalyzing,
+                onAddPhoto = onAddPhoto,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         // Détail des scores (masqué si l'espèce validée manuellement, ou replié si confiance > 50).
         if (!entity.userConfirmed && showScoreDetails) {
@@ -302,8 +318,9 @@ fun IdentificationContent(
         // Dimensions à maturité (IA uniquement : absentes d'un résultat Pl@ntNet brut).
         MaturitySection(result)
 
-        // Calendrier de plantation et d'entretien, usages et symbolique (IA uniquement).
+        // Calendrier de plantation et d'entretien, multiplication, usages et symbolique (IA uniquement).
         CareCalendarSection(result)
+        PropagationSection(result)
         UsesSection(result)
         SymbolismSection(result)
 
@@ -501,6 +518,63 @@ private fun CareCalendarSection(result: IdentificationResult) {
         }
         Text(
             stringResource(R.string.fiche_calendar_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        )
+    }
+}
+
+/**
+ * Section « Multiplier la plante » : comment obtenir de nouveaux sujets (semis, bouturage,
+ * division…), avec la marche à suivre de chaque méthode. Pour un champignon, l'IA n'y décrit une
+ * culture que si elle est à la portée d'un amateur. Masquée si aucune méthode n'est connue —
+ * notamment pour les fiches antérieures, qu'une nouvelle analyse complète.
+ */
+@Composable
+private fun PropagationSection(result: IdentificationResult) {
+    val methods = result.propagationLines()
+    if (methods.isEmpty()) return
+
+    val title = stringResource(
+        if (result.isFungus) R.string.fiche_propagation_fungus_title else R.string.fiche_propagation_title,
+    )
+    SectionCard(title, Modifier.fillMaxWidth()) {
+        methods.forEach { method ->
+            Column(Modifier.fillMaxWidth()) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        method.label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    method.period?.takeIf { it.isNotBlank() }?.let {
+                        Text(
+                            it,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 12.dp),
+                        )
+                    }
+                }
+                Text(method.howTo, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+        // Prélever graines ou boutures sur une station sauvage d'une espèce protégée reste une
+        // cueillette : le rappel suit la fiche, pas seulement l'avertissement du haut.
+        if (result.isProtected) {
+            Text(
+                stringResource(R.string.fiche_propagation_protected_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        Text(
+            stringResource(R.string.fiche_propagation_note),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
         )

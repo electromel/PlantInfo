@@ -3,6 +3,7 @@ package ch.electromel.plantinfo.data.keys
 import androidx.annotation.ArrayRes
 import androidx.annotation.StringRes
 import ch.electromel.plantinfo.R
+import ch.electromel.plantinfo.data.remote.ai.CompatibleProviderConfig
 
 /**
  * Mode d'emploi d'une clé API, destiné à un utilisateur qui n'en a jamais créé (§3.1).
@@ -29,6 +30,11 @@ data class ApiKeyGuide(
     @ArrayRes val stepsRes: Int,
     /** Le piège classique sur lequel butent les débutants, ou null. */
     @StringRes val pitfallRes: Int?,
+    /**
+     * Modèle dont le coût d'une identification typique remplit le `%1$s` de [costRes], calculé
+     * sur `AiPricing` ; null = l'ordre de grandeur annoncé pour Gemini (`AiPricing.GEMINI_COST_HINT`).
+     */
+    val costModel: String? = null,
 )
 
 /** Guides par fournisseur. */
@@ -84,5 +90,26 @@ object ApiKeyGuides {
             stepsRes = R.array.guide_openai_steps,
             pitfallRes = R.string.guide_openai_pitfall,
         )
+
+        // Fournisseurs compatibles OpenAI : même rôle et même marche à suivre (compte, crédit,
+        // clé) ; seuls le coût — calculé sur le modèle réellement appelé — et le piège diffèrent.
+        ApiProvider.DEEPSEEK -> otherAi(CompatibleProviderConfig.DEEPSEEK)
+        ApiProvider.GROK -> otherAi(CompatibleProviderConfig.GROK)
+        ApiProvider.QWEN -> otherAi(CompatibleProviderConfig.QWEN, R.string.guide_qwen_pitfall)
+        ApiProvider.KIMI -> otherAi(CompatibleProviderConfig.KIMI, R.string.guide_kimi_pitfall)
+        ApiProvider.MISTRAL -> otherAi(CompatibleProviderConfig.MISTRAL)
+        ApiProvider.OPENROUTER -> otherAi(CompatibleProviderConfig.OPENROUTER, R.string.guide_openrouter_pitfall)
     }
+
+    private fun otherAi(
+        config: CompatibleProviderConfig,
+        @StringRes pitfallRes: Int = R.string.guide_other_ai_pitfall,
+    ) = ApiKeyGuide(
+        roleRes = R.string.guide_other_ai_role,
+        required = false,
+        costRes = R.string.guide_other_ai_cost,
+        stepsRes = R.array.guide_other_ai_steps,
+        pitfallRes = pitfallRes,
+        costModel = config.model,
+    )
 }

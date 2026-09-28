@@ -121,11 +121,14 @@ fun SettingsScreen(
 
             RelaunchSetupButton { onOpenSetup(SetupFocus.ALL) }
 
-            FallbackOrderCard(
-                order = state.fallbackOrder,
-                onMove = viewModel::moveFallback,
-                enabled = !state.freeGeminiOnly,
-            )
+            // Un ordre n'a de sens qu'à partir de deux IA configurées.
+            if (state.fallbackOrder.size >= 2) {
+                FallbackOrderCard(
+                    order = state.fallbackOrder,
+                    onMove = viewModel::moveFallback,
+                    enabled = !state.freeGeminiOnly,
+                )
+            }
 
             Text(stringResource(R.string.settings_security), style = MaterialTheme.typography.titleLarge)
 

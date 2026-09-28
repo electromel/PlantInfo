@@ -121,6 +121,8 @@ class HistoryRepository @Inject constructor(
                 timeToMaturity = null,
                 careCalendarJson = null,
                 usesJson = null,
+                propagationJson = null,
+                photoSuggestionsJson = null,
                 symbolism = null,
                 // Le diagnostic porte bien sur le sujet photographié, mais l'IA l'a formulé en
                 // supposant l'ancienne espèce (« feuillage normal pour un… », recommandations

@@ -1,6 +1,9 @@
 package ch.electromel.plantinfo.data.remote.ai
 
+import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.UseDomain
+import ch.electromel.plantinfo.util.AppLanguage
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -83,11 +86,88 @@ class AiPromptTest {
     }
 
     @Test
+    fun `les methodes de multiplication sont extraites et les entrees incompletes ecartees`() {
+        val analysis = AiPrompt.parse(
+            """
+            {
+              "scientificName": "Salvia rosmarinus", "confidence": 90,
+              "propagation": [
+                {"label": "Bouturage de tige", "howTo": "Prélever un rameau de 10 cm.", "period": "Fin d'été"},
+                {"label": "Semis", "howTo": "Semer en surface, lever lente.", "period": "  "},
+                {"label": "Marcottage"},
+                {"howTo": "Sans libellé"}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(listOf("Bouturage de tige", "Semis"), analysis.propagation.map { it.label })
+        assertEquals("Fin d'été", analysis.propagation[0].period)
+        // Une période blanche vaut « non précisée », pas une parenthèse vide sur la fiche.
+        assertNull(analysis.propagation[1].period)
+    }
+
+    @Test
+    fun `les photos proposees sans raison sont ecartees et limitees a trois`() {
+        val analysis = AiPrompt.parse(
+            """
+            {
+              "scientificName": "Salix alba", "confidence": 55,
+              "photoSuggestions": [
+                {"organ": "leaf", "reason": "Le dessous d'une feuille : sa pilosité distingue S. alba de S. fragilis."},
+                {"organ": "fruit"},
+                {"organ": "bark", "reason": "L'écorce du tronc."},
+                {"organ": "catkin", "reason": "Les chatons."},
+                {"organ": "habit", "reason": "Le port entier."}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals(3, analysis.photoSuggestions.size)
+        assertEquals(PhotoOrgan.LEAF, analysis.photoSuggestions[0].organ)
+        // Un organe inconnu du modèle retombe sur OTHER, la raison dit quoi cadrer.
+        assertEquals(PhotoOrgan.OTHER, analysis.photoSuggestions[2].organ)
+    }
+
+    @Test
+    fun `un organe hors saison garde sa periode, une periode blanche vaut maintenant`() {
+        val analysis = AiPrompt.parse(
+            """
+            {
+              "scientificName": "Chlorophytum comosum", "confidence": 95,
+              "photoSuggestions": [
+                {"organ": "habit", "reason": "Les stolons portant des plantules.", "period": " "},
+                {"organ": "flower", "reason": "Les fleurs blanches en étoile.", "period": "mai à août"}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertNull(analysis.photoSuggestions[0].period)
+        assertEquals("mai à août", analysis.photoSuggestions[1].period)
+    }
+
+    @Test
+    fun `le prompt porte la date du jour pour ne pas demander de photo hors saison`() {
+        val input = AiAnalysisInput(
+            images = emptyList(),
+            plantNetCandidates = emptyList(),
+            gps = null,
+            language = AppLanguage.FRENCH,
+        )
+        val prompt = AiPrompt.buildInstruction(input, today = LocalDate.of(2026, 1, 15))
+
+        assertTrue(prompt.contains("Date du jour : 15 janvier 2026"))
+    }
+
+    @Test
     fun `une reponse sans les nouveaux champs reste valide`() {
         val analysis = AiPrompt.parse("""{"scientificName": "Quercus robur", "confidence": 90}""")
 
         assertTrue(analysis.careCalendar.isEmpty())
         assertTrue(analysis.uses.isEmpty())
+        assertTrue(analysis.propagation.isEmpty())
         assertNull(analysis.symbolism)
     }
 }

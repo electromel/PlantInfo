@@ -18,10 +18,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *        symbolique (symbolism).
  * - v7 : consommation de jetons de l'appel IA (usageModel, usageInputTokens, usageOutputTokens),
  *        pour afficher le nombre de jetons et le coût estimé de chaque identification.
+ * - v8 : méthodes de multiplication (propagationJson) : semis, bouturage, division…
+ * - v9 : photos complémentaires proposées quand l'identification est incertaine
+ *        (photoSuggestionsJson).
  */
 @Database(
     entities = [IdentificationEntity::class, SpeciesRangeCacheEntity::class],
-    version = 7,
+    version = 9,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -90,6 +93,21 @@ abstract class PlantInfoDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE identifications ADD COLUMN usageModel TEXT")
                 db.execSQL("ALTER TABLE identifications ADD COLUMN usageInputTokens INTEGER")
                 db.execSQL("ALTER TABLE identifications ADD COLUMN usageOutputTokens INTEGER")
+            }
+        }
+
+        // Nullable : une fiche d'avant la v8 n'a pas été interrogée sur la multiplication ; une
+        // nouvelle analyse (bouton « Relancer ») la renseigne.
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE identifications ADD COLUMN propagationJson TEXT")
+            }
+        }
+
+        // Nullable : les fiches d'avant la v9 n'ont gardé aucune suggestion (elle n'était pas persistée).
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE identifications ADD COLUMN photoSuggestionsJson TEXT")
             }
         }
     }

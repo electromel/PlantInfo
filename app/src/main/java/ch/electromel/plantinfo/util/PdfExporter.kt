@@ -19,6 +19,7 @@ import ch.electromel.plantinfo.domain.model.careCalendarSummaryText
 import ch.electromel.plantinfo.domain.model.edibilitySummaryText
 import ch.electromel.plantinfo.domain.model.iucnStatus
 import ch.electromel.plantinfo.domain.model.maturitySummaryText
+import ch.electromel.plantinfo.domain.model.propagationSummaryText
 import ch.electromel.plantinfo.domain.model.toxicConfusionWarningText
 import ch.electromel.plantinfo.domain.model.usesSummaryText
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -145,6 +146,17 @@ class PdfExporter @Inject constructor(
                 if (result.isFungus) R.string.fiche_calendar_fungus_title else R.string.fiche_calendar_title,
             )
             writer.section(heading, headingPaint, it, bodyPaint)
+        }
+        result.propagationSummaryText()?.let {
+            val heading = strings.get(
+                if (result.isFungus) R.string.fiche_propagation_fungus_title else R.string.fiche_propagation_title,
+            )
+            val text = if (result.isProtected) {
+                it + "\n" + strings.get(R.string.fiche_propagation_protected_note)
+            } else {
+                it
+            }
+            writer.section(heading, headingPaint, text, bodyPaint)
         }
         result.usesSummaryText(strings)?.let {
             val text = if (result.uses.any { use -> use.domain == UseDomain.MEDICINAL }) {

@@ -125,10 +125,16 @@ Point d'entrée : `data/repo/IdentificationRepository.identifyAndSave(request)`.
 1. **Pl@ntNet** (`data/remote/plantnet`) → candidats taxonomiques (plantes/arbres ; peu fiable ou
    absent pour les champignons).
 2. **IA générative** via `data/remote/ai/AiOrchestrator` : applique l'**ordre de repli** configuré
-   (défaut Claude → Gemini → GPT) en ne retenant que les fournisseurs ayant une clé, et bascule au
-   suivant à chaque `AiException`. Chaque client (`ClaudeClient`/`GeminiClient`/`OpenAiClient`)
-   implémente `AiProvider` et partage **le même prompt** et le même schéma JSON défini dans
-   `AiPrompt.kt` — modifier le prompt/schéma là, pas dans les clients.
+   (défaut Claude → Gemini → GPT → DeepSeek → Grok → Qwen → Kimi → Mistral → OpenRouter) en ne
+   retenant que les fournisseurs ayant une clé, et bascule au suivant à chaque `AiException`.
+   Chaque client implémente `AiProvider` et partage **le même prompt** et le même schéma JSON
+   défini dans `AiPrompt.kt` — modifier le prompt/schéma là, pas dans les clients. Claude et Gemini
+   ont leur client ; tous les autres passent par `OpenAiCompatibleClient`, paramétré par un
+   `CompatibleProviderConfig` (adresse, **modèle multimodal**, format d'image).
+   **Ajouter un fournisseur compatible OpenAI** : une constante `AiProviderType`, une entrée
+   `ApiProvider` (+ champ `DEFAULT_…_API_KEY` dans `app/build.gradle.kts` et
+   `dev-keys.properties.example`), un `CompatibleProviderConfig` dans `ADDITIONAL`, son tarif dans
+   `AiPricing.rates`, son guide dans `ApiKeyGuides` — `CompatibleProvidersTest` vérifie le câblage.
 3. **Fusion des scores** : `domain/ConfidenceEngine` combine IA (prioritaire) + Pl@ntNet en un
    `IdentificationResult` avec un `scoreFinal /100` (bonus si accord, pénalité + `sourcesDisagree` si
    désaccord ; suit l'IA seule pour les champignons).
@@ -145,7 +151,8 @@ résultat Pl@ntNet brut ; toutes les IA en échec réseau → mise en file `work
 Chaque appel IA rapporte sa consommation ; l'app l'affiche après l'identification (carte « Coût de
 l'identification ») et sous chaque réponse du Q&A.
 
-- Chaque client IA extrait le bloc d'usage de **sa** réponse (`usage` chez Anthropic/OpenAI,
+- Chaque client IA extrait le bloc d'usage de **sa** réponse (`usage` chez Anthropic et les
+  compatibles OpenAI — sortie = `total_tokens − prompt_tokens`, raisonnement compris,
   `usageMetadata` chez Gemini — dont `thoughtsTokenCount`, facturé comme de la sortie) et le pose
   dans `AiAnalysis.usage` / `AiAnswer.usage`.
 - `domain/model/TokenUsage.kt` porte le modèle (**pas** le fournisseur : les tarifs sont par modèle)

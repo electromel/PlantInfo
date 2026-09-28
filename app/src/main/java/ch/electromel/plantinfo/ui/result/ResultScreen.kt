@@ -87,6 +87,7 @@ fun ResultScreen(
                     .verticalScroll(rememberScrollState()),
                 onSelectAlternative = viewModel::selectAlternative,
                 onReanalyze = viewModel::reanalyze,
+                onAddPhoto = viewModel::addPhoto,
                 reanalyzing = reanalyzing,
                 advice = advice,
                 onOpenSetup = onOpenSetup,

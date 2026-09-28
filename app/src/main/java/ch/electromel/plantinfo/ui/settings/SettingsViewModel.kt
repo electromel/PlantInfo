@@ -37,7 +37,11 @@ data class SettingsUiState(
     val providers: List<ProviderUiState> = emptyList(),
     /** Fournisseurs sans clé, proposés derrière le bouton « + » — qui ouvre l'assistant. */
     val addable: List<ApiProvider> = emptyList(),
-    val fallbackOrder: List<AiProviderType> = AiProviderType.DEFAULT_FALLBACK_ORDER,
+    /**
+     * Ordre de repli, réduit aux IA qui ont une clé : avec neuf fournisseurs possibles, ordonner
+     * ceux qu'on n'utilise pas noierait les deux ou trois qui comptent.
+     */
+    val fallbackOrder: List<AiProviderType> = emptyList(),
     val freeGeminiOnly: Boolean = true,
     val toxicAlert: ToxicAlertThresholds = ToxicAlertThresholds(),
     val rechecking: Boolean = false,
@@ -70,7 +74,7 @@ class SettingsViewModel @Inject constructor(
     private fun buildState(): SettingsUiState = SettingsUiState(
         providers = storedProviders().map { p -> ProviderUiState(p, true) },
         addable = addableProviders(),
-        fallbackOrder = keyStore.fallbackOrder(),
+        fallbackOrder = activeFallbackOrder(),
         freeGeminiOnly = keyStore.freeGeminiOnly(),
         toxicAlert = safetySettings.current(),
     ).withProblems()
@@ -81,6 +85,11 @@ class SettingsViewModel @Inject constructor(
     private fun addableProviders(): List<ApiProvider> =
         ApiProvider.entries.filter { keyStore.getKey(it) == null }
 
+    private fun activeFallbackOrder(): List<AiProviderType> =
+        keyStore.fallbackOrder().filter { type ->
+            ApiProvider.forAiType(type)?.let { keyStore.getKey(it) } != null
+        }
+
     /** Recompose la liste des cartes en conservant la saisie et le test en cours de chacune. */
     private fun refreshProviders() {
         _state.update { s ->
@@ -90,7 +99,7 @@ class SettingsViewModel @Inject constructor(
                     previous[p]?.copy(hasStoredKey = true) ?: ProviderUiState(p, true)
                 },
                 addable = addableProviders(),
-                fallbackOrder = keyStore.fallbackOrder(),
+                fallbackOrder = activeFallbackOrder(),
                 freeGeminiOnly = keyStore.freeGeminiOnly(),
             ).withProblems()
         }
@@ -155,7 +164,7 @@ class SettingsViewModel @Inject constructor(
                 )
             }
             // L'ordre de repli disponible peut changer quand une clé IA devient valide.
-            _state.update { s -> s.copy(fallbackOrder = keyStore.fallbackOrder()) }
+            _state.update { s -> s.copy(fallbackOrder = activeFallbackOrder()) }
             refreshProviders()
         }
     }
@@ -166,6 +175,10 @@ class SettingsViewModel @Inject constructor(
         refreshProviders()
     }
 
+    /**
+     * Déplace une IA dans l'ordre visible (celles qui ont une clé). Les autres sont rangées à la
+     * suite, dans leur ordre précédent : elles reprendront cette place si on leur ajoute une clé.
+     */
     fun moveFallback(type: AiProviderType, up: Boolean) {
         val order = _state.value.fallbackOrder.toMutableList()
         val idx = order.indexOf(type)
@@ -173,7 +186,7 @@ class SettingsViewModel @Inject constructor(
         val target = if (up) idx - 1 else idx + 1
         if (target !in order.indices) return
         order[idx] = order[target].also { order[target] = order[idx] }
-        keyStore.setFallbackOrder(order)
+        keyStore.setFallbackOrder(order + keyStore.fallbackOrder().filter { it !in order })
         _state.update { it.copy(fallbackOrder = order) }
     }
 

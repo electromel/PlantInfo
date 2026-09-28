@@ -2,8 +2,10 @@ package ch.electromel.plantinfo.data.remote.ai
 
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.CareTask
+import ch.electromel.plantinfo.domain.model.ComplementaryPhotoRequest
 import ch.electromel.plantinfo.domain.model.GpsLocation
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
+import ch.electromel.plantinfo.domain.model.PropagationMethod
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.SpeciesUse
 import androidx.annotation.StringRes
@@ -31,12 +33,6 @@ data class AiAnalysisInput(
     val language: AppLanguage,
 )
 
-/** Demande de photo complémentaire telle que renvoyée par l'IA (organe + raison). */
-data class AiComplementaryRequest(
-    val organ: PhotoOrgan,
-    val reason: String,
-)
-
 /**
  * Sortie structurée de l'IA après parsing du JSON. Ne contient pas encore le score final combiné :
  * la fusion avec Pl@ntNet est faite par le moteur de score (domain.ConfidenceEngine).
@@ -61,8 +57,9 @@ data class AiAnalysis(
     val edibilityNote: String?,
     val careCalendar: List<CareTask>, // plantation, taille, arrosage, récolte… ; vide si non évaluable
     val uses: List<SpeciesUse>,       // usages documentés par domaine ; vide si aucun connu
+    val propagation: List<PropagationMethod>, // semis, bouturage, division… ; vide si non évaluable
     val symbolism: String?,           // signification symbolique/culturelle, null si aucune
-    val complementary: AiComplementaryRequest?,
+    val photoSuggestions: List<ComplementaryPhotoRequest>, // photos qui aideraient à trancher
     // Jetons consommés par l'appel, rapportés par le fournisseur. Renseigné par le client HTTP
     // après le parsing du JSON métier (AiPrompt.parse n'en sait rien) ; null si le fournisseur
     // ne rapporte rien d'exploitable.

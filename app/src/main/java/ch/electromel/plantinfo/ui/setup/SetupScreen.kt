@@ -51,6 +51,7 @@ import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.keys.ApiKeyGuide
 import ch.electromel.plantinfo.data.keys.ApiKeyGuides
 import ch.electromel.plantinfo.data.keys.ApiProvider
+import ch.electromel.plantinfo.domain.model.AiPricing
 import ch.electromel.plantinfo.data.keys.KeyTestState
 import ch.electromel.plantinfo.data.keys.KeysSnapshot
 import ch.electromel.plantinfo.ui.components.BannerSeverity
@@ -361,8 +362,10 @@ private fun KeyTestFeedback(test: KeyTestState) {
 private fun KeyGuideBlock(guide: ApiKeyGuide, createKeyUrl: String, label: String) {
     val uriHandler = LocalUriHandler.current
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        val costHint = guide.costModel?.let { AiPricing.typicalIdentificationCostText(it) }
+            ?: stringResource(R.string.gemini_cost_hint)
         Text(
-            stringResource(guide.costRes, stringResource(R.string.gemini_cost_hint)),
+            stringResource(guide.costRes, costHint),
             style = MaterialTheme.typography.bodyMedium,
             color = if (guide.required) {
                 MaterialTheme.colorScheme.primary

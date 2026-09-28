@@ -47,11 +47,12 @@ class ToxicAlternativeWarningTest {
         edibilityNote = null,
         careCalendar = emptyList(),
         uses = emptyList(),
+        propagation = emptyList(),
         symbolism = null,
         gbifKey = null,
         iucnCategory = null,
         sourcesDisagree = false,
-        complementaryPhotoRequest = null,
+        photoSuggestions = emptyList(),
     )
 
     @Test

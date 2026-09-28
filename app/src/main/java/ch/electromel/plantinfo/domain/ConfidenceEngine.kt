@@ -1,13 +1,9 @@
 package ch.electromel.plantinfo.domain
 
-import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.remote.ai.AiAnalysis
-import ch.electromel.plantinfo.domain.model.ComplementaryPhotoRequest
 import ch.electromel.plantinfo.domain.model.HealthAssessment
 import ch.electromel.plantinfo.domain.model.IdentificationResult
-import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
-import ch.electromel.plantinfo.util.StringProvider
 import kotlin.math.roundToInt
 
 /**
@@ -27,7 +23,6 @@ object ConfidenceEngine {
 
     /** Combine une analyse IA (prioritaire) avec les candidats Pl@ntNet. */
     fun combineWithAi(
-        strings: StringProvider,
         ai: AiAnalysis,
         plantNetCandidates: List<SpeciesCandidate>,
     ): IdentificationResult {
@@ -62,10 +57,6 @@ object ConfidenceEngine {
             disagreeingTop = if (sourcesDisagree) plantNetTop else null,
         )
 
-        val complementary = ai.complementary?.let {
-            ComplementaryPhotoRequest(it.organ, it.reason)
-        } ?: complementaryFallback(strings, scoreFinal, ai.isFungus)
-
         // Clé GBIF et statut UICN appartiennent au taxon reconnu par Pl@ntNet. L'espèce finalement
         // retenue est celle de l'IA, qui a pu corriger Pl@ntNet : on ne reprend ces métadonnées que
         // du candidat portant réellement le même nom, sinon la carte interrogerait le mauvais taxon.
@@ -92,18 +83,18 @@ object ConfidenceEngine {
             edibilityNote = ai.edibilityNote,
             careCalendar = ai.careCalendar,
             uses = ai.uses,
+            propagation = ai.propagation,
             symbolism = ai.symbolism,
             gbifKey = matched?.gbifKey,
             iucnCategory = matched?.iucnCategory,
             sourcesDisagree = sourcesDisagree,
-            complementaryPhotoRequest = complementary,
+            photoSuggestions = ai.photoSuggestions,
             usage = ai.usage,
         )
     }
 
     /** Résultat Pl@ntNet brut, sans IA (§3.1 : aucune clé IA configurée ou toutes en échec). */
     fun plantNetOnly(
-        strings: StringProvider,
         plantNetCandidates: List<SpeciesCandidate>,
     ): IdentificationResult {
         val top = plantNetCandidates.first()
@@ -131,11 +122,14 @@ object ConfidenceEngine {
             // Calendrier, usages et symbolique : informations IA uniquement.
             careCalendar = emptyList(),
             uses = emptyList(),
+            propagation = emptyList(),
             symbolism = null,
             gbifKey = top.gbifKey,
             iucnCategory = top.iucnCategory,
             sourcesDisagree = false,
-            complementaryPhotoRequest = complementaryFallback(strings, top.score, isFungus = false),
+            // Pas de photo à suggérer sans IA : un conseil générique (« une feuille ») ne dirait pas
+            // quelle photo départagerait réellement les hypothèses.
+            photoSuggestions = emptyList(),
             // Aucune IA interrogée : aucun jeton consommé, donc rien à facturer ni à afficher.
             usage = null,
         )
@@ -156,19 +150,6 @@ object ConfidenceEngine {
             .filter { !namesMatch(it.scientificName, chosenScientific) }
             .sortedByDescending { it.score }
             .take(3)
-    }
-
-    private fun complementaryFallback(
-        strings: StringProvider,
-        scoreFinal: Int,
-        isFungus: Boolean,
-    ): ComplementaryPhotoRequest? {
-        if (scoreFinal >= IdentificationResult.LOW_CONFIDENCE_THRESHOLD) return null
-        return if (isFungus) {
-            ComplementaryPhotoRequest(PhotoOrgan.GILLS, strings.get(R.string.complementary_fungus))
-        } else {
-            ComplementaryPhotoRequest(PhotoOrgan.LEAF, strings.get(R.string.complementary_plant))
-        }
     }
 
     private fun normalize(name: String): String =

@@ -16,8 +16,9 @@ import javax.inject.Singleton
  * Stockage chiffré des clés API et de l'ordre de repli entre fournisseurs IA (§3.1).
  *
  * Les clés sont chiffrées au repos via l'Android Keystore (EncryptedSharedPreferences). Elles ne
- * sont jamais écrites en clair. Au premier accès, une clé absente est pré-remplie depuis la valeur
- * par défaut de BuildConfig (dev-keys.properties) ; une clé déjà saisie n'est jamais écrasée (§3.2).
+ * sont jamais écrites en clair. Une clé absente est pré-remplie **une seule fois** depuis la valeur
+ * par défaut de BuildConfig (dev-keys.properties, build debug uniquement) ; une clé saisie n'est
+ * jamais écrasée, et une clé effacée ne revient pas au lancement suivant (§3.2).
  */
 @Singleton
 class ApiKeyStore @Inject constructor(
@@ -45,18 +46,34 @@ class ApiKeyStore @Inject constructor(
         prefillDefaultsIfAbsent()
     }
 
-    /** Copie les valeurs par défaut de BuildConfig dans le stockage pour les clés encore absentes. */
+    /**
+     * Copie les valeurs par défaut de BuildConfig dans le stockage pour les clés encore absentes, et
+     * marque chaque fournisseur comme « pris en main » dès qu'il a eu une clé. Sans ce marqueur, une
+     * clé effacée par l'utilisateur (périmée, par exemple) revenait à chaque lancement depuis
+     * dev-keys.properties, avec l'alerte « clé à corriger » qui l'accompagne.
+     */
     private fun prefillDefaultsIfAbsent() {
         var changed = false
         ApiProvider.entries.forEach { provider ->
+            val handled = prefs.getBoolean(handledKey(provider), false)
             val existing = prefs.getString(provider.prefKey, null)
-            if (existing.isNullOrBlank() && provider.default.isNotBlank()) {
-                prefs.edit().putString(provider.prefKey, provider.default).apply()
-                changed = true
+            when {
+                !existing.isNullOrBlank() -> {
+                    if (!handled) prefs.edit().putBoolean(handledKey(provider), true).apply()
+                }
+                shouldPrefill(handled, existing, provider.default) -> {
+                    prefs.edit()
+                        .putString(provider.prefKey, provider.default)
+                        .putBoolean(handledKey(provider), true)
+                        .apply()
+                    changed = true
+                }
             }
         }
         if (changed) _state.value = readSnapshot()
     }
+
+    private fun handledKey(provider: ApiProvider) = "handled_${provider.prefKey}"
 
     /** Retourne la clé enregistrée pour un fournisseur, ou null si aucune. */
     fun getKey(provider: ApiProvider): String? =
@@ -66,18 +83,18 @@ class ApiKeyStore @Inject constructor(
     fun setKey(provider: ApiProvider, key: String) {
         prefs.edit().apply {
             if (key.isBlank()) remove(provider.prefKey) else putString(provider.prefKey, key.trim())
+            // Choix de l'utilisateur, y compris l'effacement : la valeur de dev ne revient plus.
+            putBoolean(handledKey(provider), true)
         }.apply()
         _state.value = readSnapshot()
     }
 
-    /** Ordre de repli IA configuré (défaut Claude → Gemini → GPT). */
-    fun fallbackOrder(): List<AiProviderType> {
-        val stored = prefs.getString(KEY_FALLBACK_ORDER, null)
-        if (stored.isNullOrBlank()) return AiProviderType.DEFAULT_FALLBACK_ORDER
-        return stored.split(",").mapNotNull { name ->
-            runCatching { AiProviderType.valueOf(name) }.getOrNull()
-        }.filter { it != AiProviderType.NONE }.ifEmpty { AiProviderType.DEFAULT_FALLBACK_ORDER }
-    }
+    /**
+     * Ordre de repli IA configuré (défaut [AiProviderType.DEFAULT_FALLBACK_ORDER]). Voir
+     * [completeFallbackOrder] : un ordre enregistré avant l'ajout d'un fournisseur est complété.
+     */
+    fun fallbackOrder(): List<AiProviderType> =
+        completeFallbackOrder(prefs.getString(KEY_FALLBACK_ORDER, null))
 
     fun setFallbackOrder(order: List<AiProviderType>) {
         prefs.edit().putString(
@@ -124,6 +141,26 @@ class ApiKeyStore @Inject constructor(
         private const val KEY_FREE_GEMINI_ONLY = "ai_free_gemini_only"
         private const val DEFAULT_FREE_GEMINI_ONLY = true
     }
+}
+
+/**
+ * Faut-il pré-remplir la clé depuis dev-keys.properties ? Seulement si le fournisseur n'a jamais eu
+ * de clé ([handled] faux), qu'il n'en a pas, et qu'une valeur de dev existe.
+ */
+internal fun shouldPrefill(handled: Boolean, existing: String?, default: String): Boolean =
+    !handled && existing.isNullOrBlank() && default.isNotBlank()
+
+/**
+ * Relit un ordre de repli enregistré (« CLAUDE,GEMINI,GPT ») et y ajoute, à la fin, les
+ * fournisseurs qu'il ne connaît pas encore. Sans ce complément, un utilisateur qui avait réglé
+ * l'ordre avant l'arrivée d'un nouveau fournisseur ne pourrait jamais l'utiliser : l'orchestrateur
+ * ne parcourt que cet ordre. Les noms inconnus (fournisseur retiré) sont ignorés.
+ */
+internal fun completeFallbackOrder(stored: String?): List<AiProviderType> {
+    val known = stored.orEmpty().split(",").mapNotNull { name ->
+        runCatching { AiProviderType.valueOf(name.trim()) }.getOrNull()
+    }.filter { it != AiProviderType.NONE }.distinct()
+    return known + AiProviderType.DEFAULT_FALLBACK_ORDER.filter { it !in known }
 }
 
 /** Instantané non sensible de l'état des clés, pour l'UI (ne contient jamais les clés en clair). */

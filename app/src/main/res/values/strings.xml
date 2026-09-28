@@ -18,6 +18,15 @@
     <!-- Generic messages -->
     <string name="no_ai_key_message">No AI key configured: only the raw Pl@ntNet result is shown (no health assessment, no extra information). Add a key in the settings for the full analysis.</string>
     <string name="low_confidence_hint">Identification is unreliable. Add another photo to refine the result.</string>
+    <string name="photo_suggestions_title">Photos that would settle it</string>
+    <string name="photo_suggestions_intro">The identification is uncertain. These shots would help tell the likely species apart:</string>
+    <string name="photo_suggestions_take_organ">Photograph: %1$s</string>
+    <string name="photo_suggestions_take">Take this photo</string>
+    <string name="photo_suggestions_seasonal">Later: %1$s (%2$s)</string>
+    <string name="photo_suggestions_seasonal_take">Already there? Photograph it</string>
+    <string name="photo_suggestions_note">The photo is added to this record and the whole record is analysed again (one AI request).</string>
+    <string name="photo_suggestions_max_reached">This record already has the maximum number of photos Pl@ntNet accepts (5). Start a new identification with the photos that show the most.</string>
+    <string name="fiche_photo_save_failed">The photo could not be saved. Try again.</string>
 
     <!-- Common actions -->
     <string name="action_continue">Continue</string>
@@ -179,6 +188,10 @@
     <string name="fiche_calendar_fungus_title">Fruiting and picking season</string>
     <string name="fiche_calendar_title">When to plant and tend</string>
     <string name="fiche_calendar_note">Indicative periods for the climate where the photo was taken: shift them according to altitude, exposure and the weather that year.</string>
+    <string name="fiche_propagation_title">How to propagate it</string>
+    <string name="fiche_propagation_fungus_title">Growing this mushroom</string>
+    <string name="fiche_propagation_note">General guidance: success depends on the vigour of the parent plant, the season and humidity. Try several cuttings or seeds at once.</string>
+    <string name="fiche_propagation_protected_note">Protected species: take neither seeds nor cuttings from the wild — start from a nursery-grown plant.</string>
     <string name="fiche_uses_title">Uses</string>
     <string name="fiche_uses_medicinal_note">Traditional or documented uses, quoted for information only: they are not medical advice. Ask a healthcare professional before any use.</string>
     <string name="fiche_symbolism_title">Symbolism</string>
@@ -271,6 +284,7 @@
     <string name="share_maturity">At maturity: %1$s</string>
     <string name="share_habitat">Habitat: %1$s</string>
     <string name="share_calendar">Calendar: %1$s</string>
+    <string name="share_propagation">Propagation: %1$s</string>
     <string name="share_uses">Uses: %1$s</string>
     <string name="share_symbolism">Symbolism: %1$s</string>
     <string name="share_place">Place: %1$s</string>
@@ -317,7 +331,7 @@
     <string name="settings_relaunch_setup">Start the setup assistant again</string>
     <string name="settings_free_gemini_title">Free AI (Gemini only)</string>
     <string name="settings_free_gemini_body">Uses Gemini only, for identification and questions.</string>
-    <string name="settings_free_gemini_note">Claude and GPT are ignored: their APIs are paid for (a Claude Pro subscription does not include API credits). Only turn this off once you have topped up an Anthropic or OpenAI account.</string>
+    <string name="settings_free_gemini_note">Other providers (Claude, GPT, DeepSeek, Mistral…) are ignored: their APIs are paid for (a Claude Pro or ChatGPT Plus subscription does not include API credits). Only turn this off once you have topped up the account of one of them.</string>
     <string name="settings_key_stored">Key saved</string>
     <string name="settings_key_absent">No key saved</string>
     <string name="settings_key_broken">This key no longer works: %1$s.</string>
@@ -393,6 +407,13 @@
     <string name="guide_openai_role">A second alternative for the description, the condition and questions.</string>
     <string name="guide_openai_cost">Pay as you go, billed by token. The account must be topped up before first use.</string>
     <string name="guide_openai_pitfall">A ChatGPT Plus subscription includes no API credit: the developer account is topped up separately.</string>
+    <!-- Guide — fournisseurs compatibles OpenAI (DeepSeek, Grok, Qwen, Kimi, Mistral, OpenRouter) -->
+    <string name="guide_other_ai_role">An alternative AI: it identifies the plant in the photo, writes the record (health, edibility, care…) and answers your questions. Useful as a backup when Gemini is unavailable or exhausted.</string>
+    <string name="guide_other_ai_cost">Pay as you go: about %1$s per identification, taken from the credit you have paid to the provider.</string>
+    <string name="guide_other_ai_pitfall">Without credit on the account the key is created, but every call is refused: the test will tell you.</string>
+    <string name="guide_qwen_pitfall">Create the key in the international console (Singapore region): a key from the Chinese mainland console is refused by the app.</string>
+    <string name="guide_kimi_pitfall">Use the international platform platform.moonshot.ai: a key created on the Chinese platform (.cn) is refused by the app.</string>
+    <string name="guide_openrouter_pitfall">OpenRouter gives access to many models; PlantInfo uses Gemini Flash through it. Without credit on the account, every call is refused.</string>
 
     <!-- API key guides — step by step -->
     <string-array name="guide_plantnet_steps">
@@ -415,6 +436,12 @@
         <item>Open “Settings” then “API keys”.</item>
         <item>Click “Create key” and give it a name (“PlantInfo”, for instance).</item>
         <item>Copy the key shown (it starts with “sk-ant-”) and paste it below.</item>
+    </string-array>
+    <string-array name="guide_other_ai_steps">
+        <item>Open the provider\'s page (button below) and create an account, or sign in.</item>
+        <item>Add credit in the billing section: a few dollars cover hundreds of identifications.</item>
+        <item>Create an API key and copy it: it will not be shown again.</item>
+        <item>Come back here, paste the key and test it.</item>
     </string-array>
     <string-array name="guide_openai_steps">
         <item>Open platform.openai.com and create an account.</item>
@@ -457,6 +484,4 @@
     <string name="settings_language_note">Records already saved keep the language they were written in: changing the language here does not translate them, but the next identifications will follow your choice.</string>
 
     <!-- Request for an additional photo -->
-    <string name="complementary_fungus">Photograph the underside of the cap (gills/pores) and the stem to narrow down the identification.</string>
-    <string name="complementary_plant">Add a sharp close-up of a leaf (and of a flower or fruit if there are any).</string>
 </resources>

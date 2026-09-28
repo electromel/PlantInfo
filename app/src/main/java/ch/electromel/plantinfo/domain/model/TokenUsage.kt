@@ -59,12 +59,40 @@ object AiPricing {
      * - `gemini-flash-latest` : alias suivant le dernier Gemini Flash, facturé 0,75 / 3,75 $.
      *   **Gratuit** tant que le compte reste sur le palier gratuit — d'où la mention « estimation ».
      * - `gpt-4o` : 2,50 / 10,00 $.
+     *
+     * Relevé du 2026-09-28 (fournisseurs compatibles OpenAI, voir `CompatibleProviderConfig`) :
+     * - `deepseek-flash` : 0,30 / 1,20 $ en heures de pointe (01–04 h et 06–10 h UTC en semaine),
+     *   moitié prix le reste du temps — on retient la pointe pour ne jamais sous-estimer.
+     * - `grok-4.3` : 1,25 / 2,50 $ (sous 200 000 jetons de contexte).
+     * - `qwen3-vl-plus` : 0,20 / 1,60 $ (région internationale, requête sous 32 000 jetons).
+     * - `kimi-k2.6` : 0,95 / 4,00 $ (entrée hors cache).
+     * - `mistral-small-latest` (Mistral Small 4) : 0,15 / 0,60 $.
+     * - `~google/gemini-flash-latest` via OpenRouter : 0,75 / 3,75 $, comme chez Google ; les frais
+     *   d'OpenRouter se prennent à l'achat de crédit, pas au jeton.
      */
     private val rates: Map<String, Rate> = mapOf(
         "claude-sonnet-5" to Rate(3.00, 15.00),
         "gemini-flash-latest" to Rate(0.75, 3.75),
         "gpt-4o" to Rate(2.50, 10.00),
+        "deepseek-flash" to Rate(0.30, 1.20),
+        "grok-4.3" to Rate(1.25, 2.50),
+        "qwen3-vl-plus" to Rate(0.20, 1.60),
+        "kimi-k2.6" to Rate(0.95, 4.00),
+        "mistral-small-latest" to Rate(0.15, 0.60),
+        "~google/gemini-flash-latest" to Rate(0.75, 3.75),
     )
+
+    /**
+     * Consommation d'une identification typique : deux photos et le prompt en entrée, la fiche et
+     * le raisonnement éventuel en sortie. Sert à annoncer un ordre de grandeur **calculé** sur les
+     * tarifs ci-dessus, qui suit donc toute mise à jour de [rates].
+     */
+    private const val TYPICAL_INPUT_TOKENS = 3_000
+    private const val TYPICAL_OUTPUT_TOKENS = 2_500
+
+    /** Coût d'une identification typique avec ce modèle, formaté ; null si le tarif est inconnu. */
+    fun typicalIdentificationCostText(model: String): String? =
+        TokenUsage(model, TYPICAL_INPUT_TOKENS, TYPICAL_OUTPUT_TOKENS).costText()
 
     /**
      * Ordre de grandeur du coût d'une identification avec Gemini, pour l'accompagnement de

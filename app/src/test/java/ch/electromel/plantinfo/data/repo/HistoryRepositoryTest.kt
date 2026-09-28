@@ -71,6 +71,8 @@ class HistoryRepositoryTest {
         edibilityNote = "Feuilles consommées crues ou cuites.",
         careCalendarJson = """[{"label":"Récolte","period":"Mars à avril"}]""",
         usesJson = """[{"domain":"FOOD","detail":"Condiment"}]""",
+        propagationJson = """[{"label":"Semis","howTo":"Semer en surface."}]""",
+        photoSuggestionsJson = """[{"organ":"FRUIT","reason":"Les fruits trancheraient."}]""",
         symbolism = "Symbole du renouveau printanier.",
         gbifKey = 2_857_697,
         iucnCategory = "LC",
@@ -120,6 +122,8 @@ class HistoryRepositoryTest {
         assertNull(updated.timeToMaturity)
         assertNull(updated.careCalendarJson)
         assertNull(updated.usesJson)
+        assertNull(updated.propagationJson)
+        assertNull(updated.photoSuggestionsJson)
         assertNull(updated.symbolism)
         assertNull(updated.edible)
 

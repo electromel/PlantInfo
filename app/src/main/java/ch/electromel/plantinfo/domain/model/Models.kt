@@ -17,11 +17,20 @@ enum class AiProviderType(val label: String) {
     CLAUDE("Claude"),
     GEMINI("Gemini"),
     GPT("GPT"),
+    DEEPSEEK("DeepSeek"),
+    GROK("Grok"),
+    QWEN("Qwen"),
+    KIMI("Kimi"),
+    MISTRAL("Mistral"),
+    OPENROUTER("OpenRouter"),
     NONE("—");
 
     companion object {
-        /** Ordre de priorité de repli par défaut (§3.1) : Claude → Gemini → GPT. */
-        val DEFAULT_FALLBACK_ORDER = listOf(CLAUDE, GEMINI, GPT)
+        /**
+         * Ordre de priorité de repli par défaut (§3.1) : Claude → Gemini → GPT, puis les
+         * fournisseurs ajoutés ensuite. Seuls ceux qui ont une clé sont réellement essayés.
+         */
+        val DEFAULT_FALLBACK_ORDER = entries.filter { it != NONE }
     }
 }
 
@@ -122,6 +131,19 @@ data class CareTask(
 )
 
 /**
+ * Une façon d'obtenir de nouveaux sujets à partir d'une plante existante : semis, bouturage,
+ * marcottage, division, greffe… Le libellé est du texte libre rédigé par l'IA dans la langue de la
+ * fiche, comme pour [CareTask] : les techniques et leurs variantes (bouture herbacée, aoûtée, de
+ * racine…) sont trop nombreuses pour une énumération figée.
+ */
+@Serializable
+data class PropagationMethod(
+    val label: String,          // ex. « Bouturage de tige », « Semis »
+    val howTo: String,          // marche à suivre en quelques phrases
+    val period: String? = null, // meilleure période, ex. « Fin d'été »
+)
+
+/**
  * Domaine d'usage d'une espèce, utilisé pour regrouper et titrer les usages connus (§2.4).
  * Le code sérialisé est le nom de la constante ; [fromCode] accepte aussi les libellés anglais
  * renvoyés par l'IA et retombe sur [OTHER] plutôt que d'échouer.
@@ -153,12 +175,20 @@ data class SpeciesUse(
 )
 
 /**
- * Demande de photo complémentaire quand la confiance est insuffisante (§2.1 / §2.4) :
- * précise quel cliché est utile et pourquoi.
+ * Photo complémentaire proposée par l'IA quand l'identification est incertaine (§2.1 / §2.4) :
+ * quel organe cadrer et ce que ce cliché permettrait de départager. Rédigée par l'IA dans la langue
+ * de la fiche et persistée avec elle : le conseil reste lisible dans l'historique, là où
+ * l'utilisateur peut encore aller reprendre la photo.
+ *
+ * [period] non null = organe **hors saison** à la date de l'analyse (fleur, fruit…) : il
+ * départagerait, mais ne se photographie probablement qu'à cette période. Signalé en une ligne, au
+ * cas où la plante en porterait déjà.
  */
+@Serializable
 data class ComplementaryPhotoRequest(
     val organ: PhotoOrgan,
     val reason: String,
+    val period: String? = null, // ex. « mai à août » ; null = photographiable maintenant
 )
 
 /**
@@ -186,11 +216,13 @@ data class IdentificationResult(
     val edibilityNote: String?,       // précisions sur comestibilité/toxicité (parties, préparation, dangers)
     val careCalendar: List<CareTask>, // calendrier de plantation et d'entretien ; vide si non évalué
     val uses: List<SpeciesUse>,       // usages documentés (santé, chimie, parfumerie…) ; vide si aucun
+    val propagation: List<PropagationMethod>, // multiplication (semis, bouturage…) ; vide si non évaluée
     val symbolism: String?,           // signification symbolique / culturelle, null si aucune connue
     val gbifKey: Long?,               // clé GBIF de l'espèce retenue (Pl@ntNet), null si non confirmée
     val iucnCategory: String?,        // code UICN de l'espèce retenue (Pl@ntNet), null si inconnu
     val sourcesDisagree: Boolean,     // Pl@ntNet et IA divergent significativement → à signaler
-    val complementaryPhotoRequest: ComplementaryPhotoRequest?, // si score sous le seuil
+    // Photos qui aideraient à trancher, proposées par l'IA ; vide si d'autres photos n'aideraient pas.
+    val photoSuggestions: List<ComplementaryPhotoRequest>,
     // Jetons consommés par l'appel IA de cette identification (null si aucune IA n'a répondu, ou si
     // le fournisseur ne rapporte pas d'usage). Sert à afficher le coût de l'analyse (§3.x).
     val usage: TokenUsage? = null,
@@ -209,6 +241,16 @@ data class IdentificationResult(
 
         /** Au-dessus de ce score, une hypothèse alternative reste plausible et compte dans l'alerte. */
         const val PLAUSIBLE_ALTERNATIVE_MIN_SCORE = 10
+
+        /**
+         * Sous ce score final, l'identification est jugée incertaine et les photos complémentaires
+         * proposées par l'IA sont affichées. Aligné sur [TOXIC_ALERT_MAX_SCORE] : tant qu'une
+         * confusion reste envisageable, une photo qui la lèverait vaut d'être demandée.
+         */
+        const val PHOTO_SUGGESTION_MAX_SCORE = 80
+
+        /** Pl@ntNet refuse une requête de plus de 5 images : au-delà, on ne propose plus d'en ajouter. */
+        const val MAX_PHOTOS = 5
     }
 }
 
@@ -335,6 +377,30 @@ fun IdentificationResult.careCalendarLines(): List<CareTask> =
 fun IdentificationResult.careCalendarSummaryText(): String? =
     careCalendarLines().takeIf { it.isNotEmpty() }?.joinToString("\n") { task ->
         "• ${task.label} : ${task.period}" + (task.note?.takeIf { it.isNotBlank() }?.let { " — $it" } ?: "")
+    }
+
+/**
+ * Photos complémentaires à proposer : seulement si l'identification est incertaine (score sous
+ * [IdentificationResult.PHOTO_SUGGESTION_MAX_SCORE] ou sources en désaccord). Vide sinon — y
+ * compris quand l'IA en a proposé mais que le score final, après fusion avec Pl@ntNet, est bon.
+ */
+fun IdentificationResult.photoSuggestionsToShow(): List<ComplementaryPhotoRequest> {
+    val uncertain = sourcesDisagree || scoreFinal < IdentificationResult.PHOTO_SUGGESTION_MAX_SCORE
+    if (!uncertain) return emptyList()
+    // Les photos faisables maintenant d'abord, l'organe hors saison en dernier.
+    return photoSuggestions.filter { it.reason.isNotBlank() }.sortedBy { it.period != null }
+}
+
+/** Les méthodes de multiplication, débarrassées des entrées sans libellé ni explication. */
+fun IdentificationResult.propagationLines(): List<PropagationMethod> =
+    propagation.filter { it.label.isNotBlank() && it.howTo.isNotBlank() }
+
+/** Résumé textuel de la multiplication pour PDF/partage, une méthode par ligne. null si vide. */
+fun IdentificationResult.propagationSummaryText(): String? =
+    propagationLines().takeIf { it.isNotEmpty() }?.joinToString("\n") { method ->
+        "• ${method.label}" +
+            (method.period?.takeIf { it.isNotBlank() }?.let { " ($it)" } ?: "") +
+            " : ${method.howTo}"
     }
 
 /** Résumé textuel des usages pour PDF/partage, un domaine par ligne. null si aucun usage. */

@@ -62,6 +62,12 @@ android {
         buildConfigField("String", "DEFAULT_CLAUDE_API_KEY", "\"\"")
         buildConfigField("String", "DEFAULT_GEMINI_API_KEY", "\"\"")
         buildConfigField("String", "DEFAULT_OPENAI_API_KEY", "\"\"")
+        buildConfigField("String", "DEFAULT_DEEPSEEK_API_KEY", "\"\"")
+        buildConfigField("String", "DEFAULT_GROK_API_KEY", "\"\"")
+        buildConfigField("String", "DEFAULT_QWEN_API_KEY", "\"\"")
+        buildConfigField("String", "DEFAULT_KIMI_API_KEY", "\"\"")
+        buildConfigField("String", "DEFAULT_MISTRAL_API_KEY", "\"\"")
+        buildConfigField("String", "DEFAULT_OPENROUTER_API_KEY", "\"\"")
 
         // Horodatage du build, affiché par le filigrane de la version de test. Vide en release :
         // rien n'est estampillé dans l'app publiée.
@@ -101,6 +107,12 @@ android {
             buildConfigField("String", "DEFAULT_CLAUDE_API_KEY", devKey("CLAUDE_API_KEY"))
             buildConfigField("String", "DEFAULT_GEMINI_API_KEY", devKey("GEMINI_API_KEY"))
             buildConfigField("String", "DEFAULT_OPENAI_API_KEY", devKey("OPENAI_API_KEY"))
+            buildConfigField("String", "DEFAULT_DEEPSEEK_API_KEY", devKey("DEEPSEEK_API_KEY"))
+            buildConfigField("String", "DEFAULT_GROK_API_KEY", devKey("GROK_API_KEY"))
+            buildConfigField("String", "DEFAULT_QWEN_API_KEY", devKey("QWEN_API_KEY"))
+            buildConfigField("String", "DEFAULT_KIMI_API_KEY", devKey("KIMI_API_KEY"))
+            buildConfigField("String", "DEFAULT_MISTRAL_API_KEY", devKey("MISTRAL_API_KEY"))
+            buildConfigField("String", "DEFAULT_OPENROUTER_API_KEY", devKey("OPENROUTER_API_KEY"))
         }
         release {
             isMinifyEnabled = false

@@ -14,6 +14,15 @@
     <!-- Messaggi generali -->
     <string name="no_ai_key_message">Nessuna chiave IA configurata: viene mostrato solo il risultato grezzo di Pl@ntNet (senza valutazione dello stato di salute né informazioni aggiuntive). Aggiungete una chiave nelle impostazioni per l\'analisi completa.</string>
     <string name="low_confidence_hint">Identificazione poco affidabile. Aggiungete un\'altra foto per affinare il risultato.</string>
+    <string name="photo_suggestions_title">Foto per decidere</string>
+    <string name="photo_suggestions_intro">L\'identificazione è incerta. Queste foto aiuterebbero a distinguere le specie possibili:</string>
+    <string name="photo_suggestions_take_organ">Fotografa: %1$s</string>
+    <string name="photo_suggestions_take">Scatta questa foto</string>
+    <string name="photo_suggestions_seasonal">Più avanti: %1$s (%2$s)</string>
+    <string name="photo_suggestions_seasonal_take">Già presente? Fotografa</string>
+    <string name="photo_suggestions_note">La foto viene aggiunta a questa scheda, poi l\'intera scheda viene rianalizzata (una richiesta all\'IA).</string>
+    <string name="photo_suggestions_max_reached">Questa scheda ha già il numero massimo di foto accettato da Pl@ntNet (5). Avvia una nuova identificazione con le foto più significative.</string>
+    <string name="fiche_photo_save_failed">Impossibile salvare la foto. Riprova.</string>
 
     <!-- Azioni comuni -->
     <string name="action_continue">Continua</string>
@@ -175,6 +184,10 @@
     <string name="fiche_calendar_fungus_title">Periodo di crescita e di raccolta</string>
     <string name="fiche_calendar_title">Quando piantare e curare</string>
     <string name="fiche_calendar_note">Periodi indicativi per il clima del luogo dello scatto: spostateli in base ad altitudine, esposizione e andamento meteorologico dell\'anno.</string>
+    <string name="fiche_propagation_title">Come moltiplicarla</string>
+    <string name="fiche_propagation_fungus_title">Coltivare questo fungo</string>
+    <string name="fiche_propagation_note">Indicazioni generali: l\'attecchimento dipende dal vigore della pianta madre, dalla stagione e dall\'umidità. Provate con più talee o semi alla volta.</string>
+    <string name="fiche_propagation_protected_note">Specie protetta: non prelevate né semi né talee in natura — partite da una pianta di vivaio.</string>
     <string name="fiche_uses_title">Usi</string>
     <string name="fiche_uses_medicinal_note">Usi tradizionali o documentati, citati a titolo informativo: non sono consigli terapeutici. Chiedete il parere di un professionista sanitario prima di qualsiasi uso.</string>
     <string name="fiche_symbolism_title">Simbologia</string>
@@ -267,6 +280,7 @@
     <string name="share_maturity">A maturità: %1$s</string>
     <string name="share_habitat">Habitat: %1$s</string>
     <string name="share_calendar">Calendario: %1$s</string>
+    <string name="share_propagation">Moltiplicazione: %1$s</string>
     <string name="share_uses">Usi: %1$s</string>
     <string name="share_symbolism">Simbologia: %1$s</string>
     <string name="share_place">Luogo: %1$s</string>
@@ -313,7 +327,7 @@
     <string name="settings_relaunch_setup">Riavvia la procedura guidata</string>
     <string name="settings_free_gemini_title">IA gratuita (solo Gemini)</string>
     <string name="settings_free_gemini_body">Usa solo Gemini per l\'identificazione e le domande.</string>
-    <string name="settings_free_gemini_note">Claude e GPT vengono ignorati: le loro API sono a pagamento (l\'abbonamento Claude Pro non include crediti API). Disattivate questa opzione solo dopo aver ricaricato un account Anthropic o OpenAI.</string>
+    <string name="settings_free_gemini_note">Gli altri fornitori (Claude, GPT, DeepSeek, Mistral…) vengono ignorati: le loro API sono a pagamento (un abbonamento Claude Pro o ChatGPT Plus non include crediti API). Disattivate questa opzione solo dopo aver ricaricato l\'account di uno di essi.</string>
     <string name="settings_key_stored">Chiave salvata</string>
     <string name="settings_key_absent">Nessuna chiave salvata</string>
     <string name="settings_key_broken">Questa chiave non funziona più: %1$s.</string>
@@ -389,6 +403,13 @@
     <string name="guide_openai_role">Seconda alternativa per descrizione, stato di salute e domande.</string>
     <string name="guide_openai_cost">A pagamento in base all\'uso, fatturata al numero di token. Occorre accreditare l\'account prima del primo utilizzo.</string>
     <string name="guide_openai_pitfall">Un abbonamento ChatGPT Plus non include alcun credito API: l\'account per sviluppatori si accredita separatamente.</string>
+    <!-- Guide — fournisseurs compatibles OpenAI (DeepSeek, Grok, Qwen, Kimi, Mistral, OpenRouter) -->
+    <string name="guide_other_ai_role">Un\'IA alternativa: identifica la pianta nella foto, redige la scheda (salute, commestibilità, cura…) e risponde alle vostre domande. Utile come riserva quando Gemini non è disponibile o è esaurito.</string>
+    <string name="guide_other_ai_cost">A consumo: circa %1$s per identificazione, prelevati dal credito versato al fornitore.</string>
+    <string name="guide_other_ai_pitfall">Senza credito sull\'account la chiave viene creata, ma ogni chiamata viene rifiutata: la prova ve lo segnalerà.</string>
+    <string name="guide_qwen_pitfall">Create la chiave nella console internazionale (regione Singapore): una chiave della console della Cina continentale viene rifiutata dall\'app.</string>
+    <string name="guide_kimi_pitfall">Usate la piattaforma internazionale platform.moonshot.ai: una chiave creata sulla piattaforma cinese (.cn) viene rifiutata dall\'app.</string>
+    <string name="guide_openrouter_pitfall">OpenRouter dà accesso a molti modelli; PlantInfo vi usa Gemini Flash. Senza credito sull\'account, ogni chiamata viene rifiutata.</string>
 
     <!-- Guide alle chiavi API — procedure -->
     <string-array name="guide_plantnet_steps">
@@ -411,6 +432,12 @@
         <item>Aprite «Settings» e poi «API keys».</item>
         <item>Fate clic su «Create key» e dategli un nome (per esempio «PlantInfo»).</item>
         <item>Copiate la chiave mostrata (comincia con «sk-ant-») e incollatela qui sotto.</item>
+    </string-array>
+    <string-array name="guide_other_ai_steps">
+        <item>Aprite la pagina del fornitore (pulsante qui sotto) e create un account, oppure accedete.</item>
+        <item>Aggiungete credito nella sezione fatturazione: pochi dollari coprono centinaia di identificazioni.</item>
+        <item>Create una chiave API e copiatela: non verrà più mostrata.</item>
+        <item>Tornate qui, incollate la chiave e provatela.</item>
     </string-array>
     <string-array name="guide_openai_steps">
         <item>Aprite platform.openai.com e create un account.</item>
@@ -453,6 +480,4 @@
     <string name="settings_language_note">Le schede già salvate mantengono la lingua in cui sono state redatte: cambiare lingua qui non le traduce, ma le prossime identificazioni seguiranno la vostra scelta.</string>
 
     <!-- Richiesta di una foto complementare -->
-    <string name="complementary_fungus">Fotografate la parte inferiore del cappello (lamelle/pori) e il gambo per precisare l\'identificazione.</string>
-    <string name="complementary_plant">Aggiungete un primo piano nitido di una foglia (e di un fiore o di un frutto, se presenti).</string>
 </resources>

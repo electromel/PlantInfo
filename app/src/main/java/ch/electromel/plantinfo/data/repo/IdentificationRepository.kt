@@ -69,7 +69,33 @@ class IdentificationRepository @Inject constructor(
      * Conserve id, date, photos, position, favori et notes ; une validation manuelle antérieure est
      * remplacée par la nouvelle analyse. Pas de mise en file hors-ligne : la relance est manuelle.
      */
-    suspend fun reanalyzeAndUpdate(entity: IdentificationEntity): IdentificationOutcome {
+    suspend fun reanalyzeAndUpdate(entity: IdentificationEntity): IdentificationOutcome =
+        reanalyze(entity, defaultOrgans(entity.photoPaths.size))
+
+    /**
+     * Ajoute à la fiche la photo complémentaire proposée quand l'identification est incertaine,
+     * puis relance l'analyse avec toutes les photos. La photo est enregistrée **avant** l'analyse :
+     * si celle-ci échoue (réseau, quota), elle reste sur la fiche et une simple relance suffit.
+     * La position de la fiche n'est pas touchée : c'est le même sujet, au même endroit.
+     */
+    suspend fun addPhotoAndReanalyze(
+        entity: IdentificationEntity,
+        photoPath: String,
+        organ: PhotoOrgan,
+    ): IdentificationOutcome {
+        val withPhoto = entity.copy(photoPaths = entity.photoPaths + photoPath)
+        dao.update(withPhoto)
+        // L'organe de la nouvelle photo est connu (c'est celui qui a été demandé) : Pl@ntNet en tient
+        // compte. Les organes des photos précédentes ne sont pas persistés, d'où l'heuristique.
+        return reanalyze(withPhoto, defaultOrgans(entity.photoPaths.size) + organ)
+    }
+
+    // Les organes choisis à la capture ne sont pas persistés : on reprend l'heuristique de la
+    // capture (1re photo = port général, suivantes = feuille).
+    private fun defaultOrgans(count: Int): List<PhotoOrgan> =
+        List(count) { i -> if (i == 0) PhotoOrgan.HABIT else PhotoOrgan.LEAF }
+
+    private suspend fun reanalyze(entity: IdentificationEntity, organs: List<PhotoOrgan>): IdentificationOutcome {
         val gps = if (entity.latitude != null && entity.longitude != null) {
             GpsLocation(entity.latitude, entity.longitude, entity.altitude, entity.gpsAccuracy)
         } else {
@@ -77,11 +103,7 @@ class IdentificationRepository @Inject constructor(
         }
         val request = IdentificationRequest(
             photoPaths = entity.photoPaths,
-            // Les organes choisis à la capture ne sont pas persistés : on reprend l'heuristique de
-            // la capture (1re photo = port général, suivantes = feuille).
-            organs = entity.photoPaths.mapIndexed { i, _ ->
-                if (i == 0) PhotoOrgan.HABIT else PhotoOrgan.LEAF
-            },
+            organs = organs,
             gps = gps,
         )
         return when (val pipeline = runPipeline(request)) {
@@ -149,7 +171,7 @@ class IdentificationRepository @Inject constructor(
 
         return when (aiOutcome) {
             is AiOutcome.Success -> {
-                val result = ConfidenceEngine.combineWithAi(strings, aiOutcome.analysis, candidates)
+                val result = ConfidenceEngine.combineWithAi(aiOutcome.analysis, candidates)
                     .copy(aiProvider = aiOutcome.provider)
                 Pipeline.Ok(result, infoMessage = null)
             }
@@ -157,7 +179,7 @@ class IdentificationRepository @Inject constructor(
             AiOutcome.NoProvidersConfigured -> {
                 if (candidates.isNotEmpty()) {
                     Pipeline.Ok(
-                        ConfidenceEngine.plantNetOnly(strings, candidates),
+                        ConfidenceEngine.plantNetOnly(candidates),
                         infoMessage = strings.get(R.string.id_no_ai_key),
                     )
                 } else {
@@ -168,7 +190,7 @@ class IdentificationRepository @Inject constructor(
             is AiOutcome.AllFailed -> {
                 if (candidates.isNotEmpty()) {
                     Pipeline.Ok(
-                        ConfidenceEngine.plantNetOnly(strings, candidates),
+                        ConfidenceEngine.plantNetOnly(candidates),
                         infoMessage = strings.get(
                             R.string.id_ai_unavailable,
                             aiOutcome.failures.summary(strings),
