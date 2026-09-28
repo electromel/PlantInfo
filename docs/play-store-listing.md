@@ -34,6 +34,8 @@ FONCTIONNALITÉS
 • Diagnostic de l'état de santé de la plante et recommandations d'entretien.
 • Comestibilité et toxicité, avec avertissements de sécurité clairs.
 • Calendrier de plantation et d'entretien : semis, taille, arrosage, récolte, avec les périodes adaptées au lieu de la photo.
+• Multiplier la plante : semis, bouturage, marcottage, division… avec la marche à suivre et la meilleure période.
+• Identification incertaine : l'application propose les photos qui départageraient les espèces possibles (feuille, écorce, fleur…), en tenant compte de la saison, et réanalyse la fiche en un appui.
 • Usages de l'espèce : alimentation, santé, cosmétique et parfumerie, chimie, artisanat, écologie.
 • Signification symbolique et culturelle, quand l'espèce en porte une.
 • Taille à maturité et statut de conservation UICN.
@@ -51,22 +53,22 @@ RESPECT DE LA VIE PRIVÉE
 • Par défaut, l'application n'utilise que l'option d'IA gratuite (Google Gemini).
 
 CLÉS API
-L'application fonctionne avec vos propres clés (Pl@ntNet indispensable ; une clé d'IA pour l'analyse complète), à saisir dans les paramètres. Elles sont chiffrées sur l'appareil.
+L'application fonctionne avec vos propres clés (Pl@ntNet indispensable ; une clé d'IA pour l'analyse complète), à saisir dans les paramètres. Elles sont chiffrées sur l'appareil. IA prises en charge : Google Gemini (palier gratuit), Claude, GPT, DeepSeek, Grok, Qwen, Kimi, Mistral et OpenRouter.
 
 AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
-### Notes de version — 0.5.0 (versionCode 6)
+### Notes de version — 0.6.0 (versionCode 7)
 
-(433 caractères.)
+(469 caractères.)
 
 ```
 Nouveautés :
-• PlantInfo parle maintenant français, anglais, allemand, italien et espagnol. L'application suit la langue de votre téléphone ; vous pouvez en choisir une autre dans les Paramètres.
-• Les fiches d'identification et les réponses de l'IA sont rédigées dans cette langue. Les fiches déjà enregistrées gardent la leur.
-• Nouvelle icône : un viseur qui cadre une feuille.
-• Présentation du coût de l'identification corrigée.
+• Nouvelle section « Multiplier la plante » : semis, bouturage, division… avec la marche à suivre et la bonne période.
+• Identification incertaine : l'application propose les photos qui aideraient à trancher, en tenant compte de la saison, et réanalyse la fiche en un appui.
+• Six nouvelles IA au choix : DeepSeek, Grok, Qwen, Kimi, Mistral et OpenRouter.
+• Paramètres : seules vos clés enregistrées sont affichées ; « Ajouter une clé » propose les autres.
 ```
 
 ---
@@ -95,6 +97,8 @@ FEATURES
 • Assessment of the plant's condition, with care recommendations.
 • Edibility and toxicity, with clear safety warnings.
 • Planting and care calendar: sowing, pruning, watering, harvesting, with periods suited to where the photo was taken.
+• Propagating the plant: seeds, cuttings, layering, division… with how to do it and the best time.
+• Uncertain identification: the app suggests the photos that would tell the likely species apart (leaf, bark, flower…), taking the season into account, and re-analyses the record in one tap.
 • Uses of the species: food, health, cosmetics and perfumery, chemistry, crafts, ecology.
 • Symbolic and cultural meaning, where the species has one.
 • Size at maturity and IUCN conservation status.
@@ -112,20 +116,20 @@ PRIVACY
 • By default, the app uses only the free AI option (Google Gemini).
 
 API KEYS
-The app works with your own keys (Pl@ntNet is essential; an AI key for the full analysis), entered in the settings. They are encrypted on the device.
+The app works with your own keys (Pl@ntNet is essential; an AI key for the full analysis), entered in the settings. They are encrypted on the device. Supported AIs: Google Gemini (free tier), Claude, GPT, DeepSeek, Grok, Qwen, Kimi, Mistral and OpenRouter.
 
 WARNING
 Identifications are automatic and can be wrong. Never eat a wild plant or mushroom on the strength of this app alone: some edible species have dangerous look-alikes. If in doubt, consult a mycologist or a qualified expert.
 ```
 
-### Notes de version — 0.5.0
+### Notes de version — 0.6.0
 
 ```
 What's new:
-• PlantInfo now speaks French, English, German, Italian and Spanish. The app follows your phone's language; you can pick another one in the Settings.
-• Identification records and AI answers are written in that language. Records already saved keep theirs.
-• New icon: a viewfinder framing a leaf.
-• Fixed the layout of the identification cost.
+• New "Propagate the plant" section: seeds, cuttings, division… with how to do it and the right time.
+• Uncertain identification: the app suggests the photos that would settle it, taking the season into account, and re-analyses the record in one tap.
+• Six more AIs to choose from: DeepSeek, Grok, Qwen, Kimi, Mistral and OpenRouter.
+• Settings: only the keys you have saved are shown; "Add a key" offers the others.
 ```
 
 ---
@@ -154,6 +158,8 @@ FUNKTIONEN
 • Beurteilung des Pflanzenzustands mit Pflegeempfehlungen.
 • Essbarkeit und Giftigkeit, mit klaren Sicherheitshinweisen.
 • Pflanz- und Pflegekalender: Aussaat, Schnitt, Bewässerung, Ernte — mit Zeiten passend zum Aufnahmeort.
+• Pflanze vermehren: Aussaat, Stecklinge, Absenker, Teilung… mit Anleitung und bestem Zeitpunkt.
+• Unsichere Bestimmung: Die App schlägt die Fotos vor, welche die möglichen Arten unterscheiden würden (Blatt, Rinde, Blüte…), berücksichtigt dabei die Jahreszeit und analysiert den Eintrag mit einem Tippen neu.
 • Verwendung der Art: Ernährung, Gesundheit, Kosmetik und Parfümerie, Chemie, Handwerk, Ökologie.
 • Symbolische und kulturelle Bedeutung, sofern die Art eine trägt.
 • Grösse bei Reife und IUCN-Schutzstatus.
@@ -171,20 +177,20 @@ DATENSCHUTZ
 • Standardmässig nutzt die App nur die kostenlose KI-Option (Google Gemini).
 
 API-SCHLÜSSEL
-Die App arbeitet mit Ihren eigenen Schlüsseln (Pl@ntNet ist unerlässlich; ein KI-Schlüssel für die vollständige Analyse), einzutragen in den Einstellungen. Sie werden auf dem Gerät verschlüsselt.
+Die App arbeitet mit Ihren eigenen Schlüsseln (Pl@ntNet ist unerlässlich; ein KI-Schlüssel für die vollständige Analyse), einzutragen in den Einstellungen. Sie werden auf dem Gerät verschlüsselt. Unterstützte KIs: Google Gemini (kostenlose Stufe), Claude, GPT, DeepSeek, Grok, Qwen, Kimi, Mistral und OpenRouter.
 
 WARNUNG
 Die Bestimmungen erfolgen automatisch und können falsch sein. Essen Sie niemals eine wilde Pflanze oder einen Pilz allein auf Grundlage dieser App: Manche essbaren Arten haben gefährliche Doppelgänger. Ziehen Sie im Zweifelsfall eine Pilzfachperson oder eine andere fachkundige Person bei.
 ```
 
-### Notes de version — 0.5.0
+### Notes de version — 0.6.0
 
 ```
 Neu:
-• PlantInfo spricht jetzt Französisch, Englisch, Deutsch, Italienisch und Spanisch. Die App folgt der Sprache Ihres Telefons; in den Einstellungen können Sie eine andere wählen.
-• Einträge und KI-Antworten werden in dieser Sprache verfasst. Bereits gespeicherte Einträge behalten ihre.
-• Neues Symbol: ein Sucher, der ein Blatt einrahmt.
-• Darstellung der Kosten einer Bestimmung korrigiert.
+• Neuer Abschnitt «Pflanze vermehren»: Aussaat, Stecklinge, Teilung… mit Anleitung und passendem Zeitpunkt.
+• Unsichere Bestimmung: Die App schlägt Fotos vor, die Klarheit schaffen würden, berücksichtigt die Jahreszeit und analysiert den Eintrag mit einem Tippen neu.
+• Sechs weitere KIs zur Wahl: DeepSeek, Grok, Qwen, Kimi, Mistral und OpenRouter.
+• Einstellungen: Nur Ihre gespeicherten Schlüssel werden angezeigt; «Schlüssel hinzufügen» bietet die übrigen an.
 ```
 
 ---
@@ -213,6 +219,8 @@ FUNZIONALITÀ
 • Valutazione dello stato di salute della pianta e consigli di cura.
 • Commestibilità e tossicità, con avvertenze di sicurezza chiare.
 • Calendario di semina e cura: semina, potatura, irrigazione, raccolta, con periodi adatti al luogo dello scatto.
+• Moltiplicare la pianta: semina, talea, margotta, divisione… con le istruzioni e il periodo migliore.
+• Identificazione incerta: l'app propone le foto che distinguerebbero le specie possibili (foglia, corteccia, fiore…), tenendo conto della stagione, e rianalizza la scheda con un tocco.
 • Usi della specie: alimentazione, salute, cosmetica e profumeria, chimica, artigianato, ecologia.
 • Significato simbolico e culturale, quando la specie ne ha uno.
 • Dimensioni a maturità e stato di conservazione IUCN.
@@ -230,20 +238,20 @@ RISPETTO DELLA PRIVACY
 • Per impostazione predefinita l'app usa solo l'opzione IA gratuita (Google Gemini).
 
 CHIAVI API
-L'app funziona con le vostre chiavi (Pl@ntNet indispensabile; una chiave IA per l'analisi completa), da inserire nelle impostazioni. Sono cifrate sul dispositivo.
+L'app funziona con le vostre chiavi (Pl@ntNet indispensabile; una chiave IA per l'analisi completa), da inserire nelle impostazioni. Sono cifrate sul dispositivo. IA supportate: Google Gemini (livello gratuito), Claude, GPT, DeepSeek, Grok, Qwen, Kimi, Mistral e OpenRouter.
 
 AVVERTENZA
 Le identificazioni sono automatiche e possono contenere errori. Non consumate mai una pianta o un fungo selvatico basandovi solo su questa app: alcune specie commestibili hanno sosia pericolosi. In caso di dubbio, rivolgetevi a un micologo o a un esperto qualificato.
 ```
 
-### Notes de version — 0.5.0
+### Notes de version — 0.6.0
 
 ```
 Novità:
-• PlantInfo parla ora francese, inglese, tedesco, italiano e spagnolo. L'app segue la lingua del telefono; nelle Impostazioni potete sceglierne un'altra.
-• Le schede e le risposte dell'IA sono redatte in quella lingua. Le schede già salvate mantengono la loro.
-• Nuova icona: un mirino che inquadra una foglia.
-• Corretta la presentazione del costo dell'identificazione.
+• Nuova sezione «Moltiplicare la pianta»: semina, talea, divisione… con le istruzioni e il periodo giusto.
+• Identificazione incerta: l'app propone le foto che aiuterebbero a decidere, tenendo conto della stagione, e rianalizza la scheda con un tocco.
+• Sei nuove IA tra cui scegliere: DeepSeek, Grok, Qwen, Kimi, Mistral e OpenRouter.
+• Impostazioni: sono mostrate solo le chiavi salvate; «Aggiungi una chiave» propone le altre.
 ```
 
 ---
@@ -272,6 +280,8 @@ FUNCIONES
 • Evaluación del estado de salud de la planta y recomendaciones de cuidado.
 • Comestibilidad y toxicidad, con advertencias de seguridad claras.
 • Calendario de plantación y cuidados: siembra, poda, riego, recolección, con periodos adaptados al lugar de la foto.
+• Multiplicar la planta: siembra, esquejes, acodo, división… con el procedimiento y la mejor época.
+• Identificación incierta: la aplicación propone las fotos que distinguirían las especies posibles (hoja, corteza, flor…), teniendo en cuenta la estación, y vuelve a analizar la ficha con un toque.
 • Usos de la especie: alimentación, salud, cosmética y perfumería, química, artesanía, ecología.
 • Significado simbólico y cultural, cuando la especie lo tiene.
 • Tamaño en la madurez y estado de conservación de la UICN.
@@ -289,25 +299,37 @@ PRIVACIDAD
 • De forma predeterminada, la aplicación solo usa la opción de IA gratuita (Google Gemini).
 
 CLAVES DE API
-La aplicación funciona con sus propias claves (Pl@ntNet imprescindible; una clave de IA para el análisis completo), que se introducen en los ajustes. Están cifradas en el dispositivo.
+La aplicación funciona con sus propias claves (Pl@ntNet imprescindible; una clave de IA para el análisis completo), que se introducen en los ajustes. Están cifradas en el dispositivo. IA compatibles: Google Gemini (nivel gratuito), Claude, GPT, DeepSeek, Grok, Qwen, Kimi, Mistral y OpenRouter.
 
 ADVERTENCIA
 Las identificaciones son automáticas y pueden contener errores. No consuma nunca una planta o una seta silvestre basándose solo en esta aplicación: algunas especies comestibles tienen dobles peligrosos. En caso de duda, consulte a un micólogo o a una persona experta.
 ```
 
-### Notes de version — 0.5.0
+### Notes de version — 0.6.0
 
 ```
 Novedades:
-• PlantInfo habla ahora francés, inglés, alemán, italiano y español. La aplicación sigue el idioma del teléfono; puede elegir otro en los Ajustes.
-• Las fichas y las respuestas de la IA se redactan en ese idioma. Las fichas ya guardadas conservan el suyo.
-• Nuevo icono: un visor que encuadra una hoja.
-• Corregida la presentación del coste de la identificación.
+• Nueva sección «Multiplicar la planta»: siembra, esquejes, división… con el procedimiento y la época adecuada.
+• Identificación incierta: la aplicación propone las fotos que ayudarían a decidir, teniendo en cuenta la estación, y vuelve a analizar la ficha con un toque.
+• Seis IA más para elegir: DeepSeek, Grok, Qwen, Kimi, Mistral y OpenRouter.
+• Ajustes: solo se muestran las claves guardadas; «Añadir una clave» propone las demás.
 ```
 
 ---
 
 ## Historique des notes de version
+
+### 0.5.0 (versionCode 6), du 2026.09.21
+
+(433 caractères ; versionCode 5 refusé par la Console, API 35.)
+
+```
+Nouveautés :
+• PlantInfo parle maintenant français, anglais, allemand, italien et espagnol. L'application suit la langue de votre téléphone ; vous pouvez en choisir une autre dans les Paramètres.
+• Les fiches d'identification et les réponses de l'IA sont rédigées dans cette langue. Les fiches déjà enregistrées gardent la leur.
+• Nouvelle icône : un viseur qui cadre une feuille.
+• Présentation du coût de l'identification corrigée.
+```
 
 ### 0.4.0 (versionCode 4), publiée le 2026.08.26
 
