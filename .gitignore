@@ -20,3 +20,7 @@ local.properties
 # Journal de développement — mémoire de projet, non incluse dans le build de l'app.
 # Décommentez la ligne suivante si vous ne souhaitez pas versionner le journal.
 # /log/
+
+# Brouillons personnels (planches d'icônes, projets non publics) — jamais versionnés :
+# le dépôt est public.
+/notes/
