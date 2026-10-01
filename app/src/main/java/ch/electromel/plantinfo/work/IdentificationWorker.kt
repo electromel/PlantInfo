@@ -34,8 +34,8 @@ class IdentificationWorker @AssistedInject constructor(
                 Result.success()
             }
             is IdentificationOutcome.Failure -> {
-                if (outcome.queuedForRetry) {
-                    Result.retry() // toujours hors-ligne / erreur réseau → réessai
+                if (outcome.queuedForRetry && runAttemptCount < MAX_ATTEMPTS) {
+                    Result.retry() // toujours hors-ligne / erreur réseau → réessai (borné)
                 } else {
                     notifications.showFailed(outcome.message)
                     Result.failure()
@@ -65,6 +65,9 @@ class IdentificationWorker @AssistedInject constructor(
     }
 
     companion object {
+        /** Au-delà, on renonce et on prévient : un retry() sans borne rejoue les appels IA à l'infini. */
+        const val MAX_ATTEMPTS = 5
+
         const val KEY_PHOTOS = "photoPaths"
         const val KEY_ORGANS = "organs"
         const val KEY_HAS_GPS = "hasGps"
