@@ -194,8 +194,11 @@ fun SpeciesMap(
     }
 }
 
-/** Opacité des hexagones d'observation : assez pleine pour se lire, assez claire pour voir le fond. */
-private const val DENSITY_ALPHA = 0.6f
+/**
+ * Opacité des hexagones d'observation : assez pleine pour se lire, assez claire pour que les contours
+ * des terres et les noms de lieux du fond de carte restent visibles dessous.
+ */
+private const val DENSITY_ALPHA = 0.35f
 
 /** Boîte englobante des occurrences (avec une petite marge), ou null si aucun point. */
 private fun boundingBoxOf(points: List<LatLng>): BoundingBox? {
