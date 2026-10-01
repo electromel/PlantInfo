@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
+import ch.electromel.plantinfo.data.remote.ai.awaitResponse
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -44,6 +45,7 @@ class PlantNetClient @Inject constructor(
         images: List<AiImage>,
         organs: List<String>,
         apiKey: String,
+        language: String = "en",
     ): PlantNetResult = withContext(Dispatchers.IO) {
         val bodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
         images.forEachIndexed { i, img ->
@@ -54,14 +56,14 @@ class PlantNetClient @Inject constructor(
             val organ = organs.getOrElse(i) { "auto" }
             bodyBuilder.addFormDataPart("organs", organ)
         }
-        // lang=fr : noms vernaculaires en français plutôt que le défaut anglais de l'API.
+        // lang : noms vernaculaires dans la langue de l'app (fr, en, de, it, es sont tous gérés par l'API).
         val request = Request.Builder()
-            .url("https://my-api.plantnet.org/v2/identify/all?api-key=$apiKey&nb-results=5&lang=fr")
+            .url("https://my-api.plantnet.org/v2/identify/all?api-key=$apiKey&nb-results=5&lang=$language")
             .post(bodyBuilder.build())
             .build()
 
         try {
-            client.newCall(request).execute().use { response ->
+            client.newCall(request).awaitResponse().use { response ->
                 val raw = response.body?.string().orEmpty()
                 if (!response.isSuccessful) {
                     val err = when (response.code) {

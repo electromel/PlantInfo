@@ -81,9 +81,9 @@ fun SpeciesMap(
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
             setUseDataConnection(true)
-            if (hasCapturePoint) {
+            if (latitude != null && longitude != null) {
                 controller.setZoom(13.0)
-                controller.setCenter(GeoPoint(latitude!!, longitude!!))
+                controller.setCenter(GeoPoint(latitude, longitude))
             } else {
                 // Vue large par défaut (Suisse) en attendant le recentrage sur l'aire de répartition.
                 controller.setZoom(4.0)

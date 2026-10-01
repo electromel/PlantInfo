@@ -3,10 +3,15 @@ package ch.electromel.plantinfo.data.remote.ai
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /** Utilitaires partagés par les clients IA : mapping des erreurs HTTP et exécution des appels. */
 internal object HttpSupport {
@@ -40,7 +45,7 @@ internal object HttpSupport {
     suspend fun execute(client: OkHttpClient, request: Request, providerLabel: String): String =
         withContext(Dispatchers.IO) {
             val response: Response = try {
-                client.newCall(request).execute()
+                client.newCall(request).awaitResponse()
             } catch (e: IOException) {
                 throw AiException(AiFailureReason.NETWORK, "$providerLabel : erreur réseau", e)
             }
@@ -55,4 +60,22 @@ internal object HttpSupport {
                 body
             }
         }
+}
+
+/**
+ * Exécute l'appel en suspendant, et l'**annule côté réseau** si la coroutine l'est : un `execute()`
+ * bloquant continuerait sinon jusqu'à 120 s, requête (et jetons facturés) comprise, après que
+ * l'utilisateur a quitté l'écran.
+ */
+internal suspend fun Call.awaitResponse(): Response = suspendCancellableCoroutine { cont ->
+    cont.invokeOnCancellation { cancel() }
+    enqueue(object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            cont.resumeWithException(e)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            cont.resume(response) { response.close() }
+        }
+    })
 }

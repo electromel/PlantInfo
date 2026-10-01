@@ -152,7 +152,8 @@ class IdentificationRepository @Inject constructor(
             )
         }
         val plantNetResult = if (plantNetKey != null) {
-            plantNetClient.identify(images, request.organs.map { it.plantnetValue }, plantNetKey)
+            plantNetClient.identify(images, request.organs.map { it.plantnetValue }, plantNetKey,
+                AppLocales.current(context).tag)
         } else {
             null
         }

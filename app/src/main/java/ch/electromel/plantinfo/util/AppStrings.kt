@@ -39,10 +39,10 @@ class AppStrings @Inject constructor(
     @Synchronized
     private fun context(): Context {
         val current = language
-        if (cachedLanguage != current || cachedContext == null) {
-            cachedContext = AppLocales.wrap(appContext)
+        cachedContext?.takeIf { cachedLanguage == current }?.let { return it }
+        return AppLocales.wrap(appContext).also {
+            cachedContext = it
             cachedLanguage = current
         }
-        return cachedContext!!
     }
 }
