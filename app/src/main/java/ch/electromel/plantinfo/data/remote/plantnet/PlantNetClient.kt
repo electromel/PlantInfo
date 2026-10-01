@@ -106,7 +106,7 @@ class PlantNetClient @Inject constructor(
             .get()
             .build()
         try {
-            client.newCall(request).execute().use { response ->
+            client.newCall(request).awaitResponse().use { response ->
                 when (response.code) {
                     401, 403 -> PlantNetError.INVALID_KEY
                     429 -> PlantNetError.QUOTA

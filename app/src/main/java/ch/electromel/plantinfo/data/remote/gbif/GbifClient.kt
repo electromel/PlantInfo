@@ -1,5 +1,6 @@
 package ch.electromel.plantinfo.data.remote.gbif
 
+import ch.electromel.plantinfo.data.remote.ai.awaitResponse
 import ch.electromel.plantinfo.domain.model.LatLng
 import ch.electromel.plantinfo.domain.model.SpeciesRange
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +44,7 @@ class GbifClient @Inject constructor(
         SpeciesRange(scientificName, points, hasData = points.isNotEmpty(), usageKey = usageKey)
     }
 
-    private fun matchTaxon(scientificName: String): Long? {
+    private suspend fun matchTaxon(scientificName: String): Long? {
         val url = "https://api.gbif.org/v1/species/match".toHttpUrl().newBuilder()
             .addQueryParameter("name", scientificName)
             .build()
@@ -52,7 +53,7 @@ class GbifClient @Inject constructor(
         return match.usageKey?.takeIf { match.matchType != null && match.matchType != "NONE" }
     }
 
-    private fun fetchOccurrences(usageKey: Long): List<LatLng> {
+    private suspend fun fetchOccurrences(usageKey: Long): List<LatLng> {
         val url = "https://api.gbif.org/v1/occurrence/search".toHttpUrl().newBuilder()
             .addQueryParameter("taxonKey", usageKey.toString())
             .addQueryParameter("hasCoordinate", "true")
@@ -68,8 +69,8 @@ class GbifClient @Inject constructor(
         }
     }
 
-    private fun execute(request: Request): String {
-        client.newCall(request).execute().use { response ->
+    private suspend fun execute(request: Request): String {
+        client.newCall(request).awaitResponse().use { response ->
             if (!response.isSuccessful) throw IOException("GBIF HTTP ${response.code}")
             return response.body?.string().orEmpty()
         }
