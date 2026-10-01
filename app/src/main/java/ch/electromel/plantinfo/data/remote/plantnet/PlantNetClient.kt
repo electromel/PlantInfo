@@ -2,6 +2,7 @@ package ch.electromel.plantinfo.data.remote.plantnet
 
 import ch.electromel.plantinfo.data.remote.ai.AiImage
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -90,6 +91,8 @@ class PlantNetClient @Inject constructor(
             }
         } catch (e: IOException) {
             PlantNetResult(emptyList(), PlantNetError.NETWORK)
+        } catch (e: CancellationException) {
+            throw e // annulation coopérative : ne pas la transformer en résultat
         } catch (e: Exception) {
             PlantNetResult(emptyList(), PlantNetError.UNKNOWN)
         }
