@@ -143,8 +143,8 @@ app/src/main/java/ch/electromel/plantinfo/
 - L'**alerte espèce protégée** combine le jugement de l'IA et une **liste de référence Suisse
   indicative et non exhaustive** (`ProtectedSpeciesChecker`) — la réglementation cantonale/fédérale
   fait foi.
-- L'**aire de répartition** est une enveloppe convexe approximative des occurrences GBIF (avertissement
-  affiché), pas une limite scientifique/légale.
+- L'**aire de répartition** affichée est celle des observations GBIF (hexagones de densité, avertissement
+  affiché), pas une limite scientifique/légale : elle inclut les régions où l'espèce est naturalisée.
 - Le **coût affiché** est une estimation au tarif public du modèle : les paliers gratuits, les
   remises de cache et les tarifs d'introduction ne sont pas modélisés. La table de tarifs
   (`domain/model/TokenUsage.kt`) est tenue à la main et doit être relue quand un fournisseur change

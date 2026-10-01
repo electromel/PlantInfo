@@ -222,9 +222,10 @@
     <!-- Mapa de distribución -->
     <string name="map_no_location_at_all">Sin posición de la foto y sin datos de distribución de GBIF para esta especie: el mapa no se puede mostrar.</string>
     <string name="map_loading_range">Cargando el área de distribución…</string>
-    <string name="map_range_legend">Zona verde: área de distribución aproximada (observaciones de GBIF). Una aproximación basada en las observaciones conocidas, sin valor legal.</string>
+    <string name="map_range_legend">Hexágonos verdes: lugares donde se ha observado la especie (observaciones de GBIF). Solo orientativo, sin valor legal.</string>
     <string name="map_no_range_with_point">Sin datos de distribución de GBIF para esta especie: solo se muestra el punto donde se tomó la foto.</string>
     <string name="map_no_range">Sin datos de distribución de GBIF para esta especie.</string>
+    <string name="map_range_unavailable">Las zonas de observación no están disponibles por ahora (GBIF no responde). Inténtelo más tarde.</string>
 
     <!-- Motivos de fallo de los proveedores -->
     <string name="failure_missing_key">sin clave</string>
@@ -375,7 +376,7 @@
     <string-array name="setup_external_data_sent">
         <item>las fotos que envía, para obtener propuestas de especies.</item>
         <item>las fotos, las propuestas de Pl@ntNet y, cuando se conocen, las coordenadas GPS de la toma — así como el texto de sus preguntas.</item>
-        <item>el nombre científico de la especie, para obtener su área de distribución (ninguna foto, ninguna de sus posiciones).</item>
+        <item>el nombre científico de la especie y, cuando abre el mapa de una ficha, la zona del mapa mostrada, para indicar dónde se ha observado (ninguna foto).</item>
         <item>la zona del mapa mostrada, únicamente cuando abre el mapa de una ficha.</item>
     </string-array>
 

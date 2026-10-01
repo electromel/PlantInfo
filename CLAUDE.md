@@ -206,9 +206,25 @@ partage/PDF/suppression). Toute évolution d'affichage de fiche se fait ici une 
 ### Carte & aire de répartition
 
 `ui/map/SpeciesMap.kt` (osmdroid) accepte des coordonnées de capture **nullables** : avec un point
-GPS, marqueur + rayon d'incertitude ; sans (photo importée sans EXIF), la carte se recentre sur la
-boîte englobante des occurrences **GBIF** (`data/remote/gbif`, cache Room via `RangeRepository` +
-`ui/map/MapViewModel`). `util/GeoUtils.convexHull` trace l'enveloppe.
+GPS, marqueur + rayon d'incertitude ; sans (photo importée sans EXIF), la carte se cadre sur les
+occurrences **GBIF** (`data/remote/gbif`, cache Room via `RangeRepository` + `ui/map/MapViewModel`).
+
+- **Cadrage** : une fois GBIF répondu, la carte est cadrée **une fois** sur le point de capture et
+  les occurrences à moins de 2 000 km (`GeoUtils.framingPoints`). Tout englober donnait un
+  planisphère sur les espèces naturalisées. Les ~300 occurrences en cache (`SpeciesRange.points`)
+  ne servent qu'à cela.
+- **Zone d'observation** : tuiles de densité GBIF (`GbifDensityTileSource`, hexagones verts,
+  `TilesOverlay` translucide), calculées sur **toutes** les occurrences — plus d'enveloppe convexe,
+  qui débordait sur les océans. Elles exigent la **clé taxonomique GBIF** (`SpeciesRange.usageKey`,
+  cache v10) ; une ligne de cache sans clé est redemandée (`isCacheFresh`).
+- **Pièges osmdroid** : les tuiles doivent faire 256 px (`@Hx`, pas `@1x` qui sert du 512 px :
+  osmdroid ne dessine alors rien, sans erreur) ; le nom de la source indexe le cache disque, donc il
+  porte la clé de l'espèce ; une tuile sans observation répond `204`, d'où des avertissements
+  `OsmDroid: Problem downloading MapTile … No Content` sans conséquence ; le fournisseur de la
+  superposition doit recevoir un `SimpleInvalidationHandler(mapView)`, faute de quoi les tuiles
+  arrivées ne sont dessinées qu'au prochain geste sur la carte.
+- **Confidentialité** : GBIF reçoit désormais la zone de carte affichée (comme OpenStreetMap) ; le
+  tableau de l'assistant (`setup_external_data_sent`) le dit.
 
 ### Questions à l'IA (Q&A)
 

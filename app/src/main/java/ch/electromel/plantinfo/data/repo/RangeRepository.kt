@@ -38,9 +38,7 @@ class RangeRepository @Inject constructor(
 
         // 1. Cache frais ?
         dao.get(key)?.let { cached ->
-            if (System.currentTimeMillis() - cached.fetchedAt < CACHE_TTL_MS) {
-                return cached.toRange()
-            }
+            if (isCacheFresh(cached, System.currentTimeMillis())) return cached.toRange()
         }
 
         // 2. Récupération réseau ; en cas d'échec, retomber sur un cache périmé s'il existe.
@@ -59,6 +57,7 @@ class RangeRepository @Inject constructor(
         points = runCatching { json.decodeFromString(pointSerializer, pointsJson) }
             .getOrDefault(emptyList()),
         hasData = hasData,
+        usageKey = usageKey,
     )
 
     private fun SpeciesRange.toEntity(): SpeciesRangeCacheEntity = SpeciesRangeCacheEntity(
@@ -66,10 +65,20 @@ class RangeRepository @Inject constructor(
         pointsJson = json.encodeToString(pointSerializer, points),
         hasData = hasData,
         fetchedAt = System.currentTimeMillis(),
+        usageKey = usageKey,
     )
 
     private companion object {
-        val CACHE_TTL_MS = TimeUnit.DAYS.toMillis(90)
         const val TAG = "RangeRepository"
     }
 }
+
+private val CACHE_TTL_MS = TimeUnit.DAYS.toMillis(90)
+
+/**
+ * Une ligne de cache sert tant qu'elle a moins de 90 jours **et** qu'elle porte la clé GBIF dont la
+ * carte a besoin pour tracer les zones d'observation. Une espèce connue sans clé date d'avant la
+ * v10 de la base : on la redemande une fois plutôt que d'afficher une carte sans zone.
+ */
+internal fun isCacheFresh(cached: SpeciesRangeCacheEntity, nowMs: Long): Boolean =
+    nowMs - cached.fetchedAt < CACHE_TTL_MS && !(cached.hasData && cached.usageKey == null)

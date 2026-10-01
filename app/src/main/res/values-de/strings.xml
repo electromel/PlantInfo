@@ -222,9 +222,10 @@
     <!-- Verbreitungskarte -->
     <string name="map_no_location_at_all">Weder ein Aufnahmeort noch GBIF-Verbreitungsdaten für diese Art: Die Karte kann nicht angezeigt werden.</string>
     <string name="map_loading_range">Verbreitungsgebiet wird geladen…</string>
-    <string name="map_range_legend">Grüne Fläche: ungefähres Verbreitungsgebiet (GBIF-Fundmeldungen). Eine Näherung auf Basis bekannter Beobachtungen, ohne rechtliche Bedeutung.</string>
+    <string name="map_range_legend">Grüne Sechsecke: Orte, an denen die Art beobachtet wurde (GBIF-Fundmeldungen). Nur zur Orientierung, ohne rechtliche Bedeutung.</string>
     <string name="map_no_range_with_point">Keine GBIF-Verbreitungsdaten für diese Art: Es wird nur der Aufnahmeort angezeigt.</string>
     <string name="map_no_range">Keine GBIF-Verbreitungsdaten für diese Art.</string>
+    <string name="map_range_unavailable">Die Fundgebiete sind derzeit nicht verfügbar (GBIF nicht erreichbar). Versuchen Sie es später erneut.</string>
 
     <!-- Fehlergründe der Anbieter -->
     <string name="failure_missing_key">kein Schlüssel</string>
@@ -375,7 +376,7 @@
     <string-array name="setup_external_data_sent">
         <item>die Fotos, die Sie einreichen, um Artvorschläge zu erhalten.</item>
         <item>die Fotos, die Vorschläge von Pl@ntNet und, sofern bekannt, die GPS-Koordinaten der Aufnahme — sowie den Text Ihrer Fragen.</item>
-        <item>den wissenschaftlichen Namen der Art, um ihr Verbreitungsgebiet abzurufen (kein Foto, keine Ihrer Positionen).</item>
+        <item>den wissenschaftlichen Namen der Art und, wenn Sie die Karte eines Eintrags öffnen, den angezeigten Kartenausschnitt, um zu zeigen, wo sie beobachtet wurde (kein Foto).</item>
         <item>den angezeigten Kartenausschnitt, und zwar nur, wenn Sie die Karte eines Eintrags öffnen.</item>
     </string-array>
 

@@ -223,9 +223,10 @@
     <!-- Carte de répartition -->
     <string name="map_no_location_at_all">Aucune position de prise de vue et aucune donnée de répartition GBIF pour cette espèce : la carte ne peut pas être affichée.</string>
     <string name="map_loading_range">Chargement de l\'aire de répartition…</string>
-    <string name="map_range_legend">Zone verte : aire de répartition approximative (occurrences GBIF). Approximation basée sur les observations connues, sans valeur légale.</string>
+    <string name="map_range_legend">Hexagones verts : endroits où l\'espèce a été observée (occurrences GBIF). Indicatif, sans valeur légale.</string>
     <string name="map_no_range_with_point">Aucune donnée de répartition GBIF pour cette espèce : seul le point de prise de vue est affiché.</string>
     <string name="map_no_range">Aucune donnée de répartition GBIF pour cette espèce.</string>
+    <string name="map_range_unavailable">Zones d\'observation indisponibles pour le moment (GBIF injoignable). Réessayez plus tard.</string>
 
     <!-- Motifs d'échec des fournisseurs -->
     <string name="failure_missing_key">aucune clé</string>
@@ -376,7 +377,7 @@
     <string-array name="setup_external_data_sent">
         <item>les photos que vous soumettez, pour obtenir des propositions d\'espèces.</item>
         <item>les photos, les propositions de Pl@ntNet et, lorsqu\'elles sont connues, les coordonnées GPS de la prise de vue — ainsi que le texte de vos questions.</item>
-        <item>le nom scientifique de l\'espèce, pour récupérer son aire de répartition (aucune photo, aucune de vos positions).</item>
+        <item>le nom scientifique de l\'espèce et, quand vous ouvrez la carte d\'une fiche, la zone de carte affichée, pour montrer où elle a été observée (aucune photo).</item>
         <item>la zone de carte affichée, uniquement quand vous ouvrez la carte d\'une fiche.</item>
     </string-array>
 

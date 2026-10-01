@@ -21,10 +21,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - v8 : méthodes de multiplication (propagationJson) : semis, bouturage, division…
  * - v9 : photos complémentaires proposées quand l'identification est incertaine
  *        (photoSuggestionsJson).
+ * - v10 : clé taxonomique GBIF dans le cache de répartition (usageKey), pour afficher les tuiles
+ *        de densité de l'espèce.
  */
 @Database(
     entities = [IdentificationEntity::class, SpeciesRangeCacheEntity::class],
-    version = 9,
+    version = 10,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -108,6 +110,14 @@ abstract class PlantInfoDatabase : RoomDatabase() {
         val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE identifications ADD COLUMN photoSuggestionsJson TEXT")
+            }
+        }
+
+        // Nullable : une ligne de cache d'avant la v10 n'a pas de clé ; RangeRepository la considère
+        // alors périmée et la redemande à GBIF au prochain affichage.
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE species_range_cache ADD COLUMN usageKey INTEGER")
             }
         }
     }

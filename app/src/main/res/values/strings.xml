@@ -226,9 +226,10 @@
     <!-- Distribution map -->
     <string name="map_no_location_at_all">No photo location and no GBIF distribution data for this species: the map cannot be shown.</string>
     <string name="map_loading_range">Loading the distribution area…</string>
-    <string name="map_range_legend">Green area: approximate distribution (GBIF occurrences). An approximation based on known observations, with no legal value.</string>
+    <string name="map_range_legend">Green hexagons: places where the species has been observed (GBIF records). Indicative only, with no legal value.</string>
     <string name="map_no_range_with_point">No GBIF distribution data for this species: only the point where the photo was taken is shown.</string>
     <string name="map_no_range">No GBIF distribution data for this species.</string>
+    <string name="map_range_unavailable">Observation areas are unavailable right now (GBIF unreachable). Try again later.</string>
 
     <!-- Provider failure reasons -->
     <string name="failure_missing_key">no key</string>
@@ -379,7 +380,7 @@
     <string-array name="setup_external_data_sent">
         <item>the photos you submit, to get species suggestions.</item>
         <item>the photos, the Pl@ntNet suggestions and, when they are known, the GPS coordinates of the shot — as well as the text of your questions.</item>
-        <item>the scientific name of the species, to fetch its distribution area (no photo, none of your positions).</item>
+        <item>the scientific name of the species and, when you open the map of a record, the map area being displayed, to show where it has been observed (no photo).</item>
         <item>the map area being displayed, only when you open the map of a record.</item>
     </string-array>
 

@@ -2,38 +2,40 @@ package ch.electromel.plantinfo.util
 
 import ch.electromel.plantinfo.domain.model.LatLng
 
-/** Petites fonctions géométriques pour l'affichage de l'aire de répartition. */
+/** Petites fonctions géométriques pour cadrer la carte de l'aire de répartition. */
 object GeoUtils {
 
+    /** Rayon autour du lieu de prise de vue dans lequel on cadre les occurrences GBIF (~un continent). */
+    const val FRAMING_RADIUS_KM = 2000.0
+
+    private const val EARTH_RADIUS_KM = 6371.0
+
+    /** Distance orthodromique approchée (haversine), en kilomètres. */
+    fun distanceKm(a: LatLng, b: LatLng): Double {
+        val dLat = Math.toRadians(b.lat - a.lat)
+        val dLng = Math.toRadians(b.lng - a.lng)
+        val h = Math.sin(dLat / 2).let { it * it } +
+            Math.cos(Math.toRadians(a.lat)) * Math.cos(Math.toRadians(b.lat)) *
+            Math.sin(dLng / 2).let { it * it }
+        return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h.coerceIn(0.0, 1.0)))
+    }
+
     /**
-     * Enveloppe convexe (Andrew's monotone chain) d'un nuage de points. Sert à tracer une zone
-     * semi-transparente approximative à partir des occurrences GBIF. Renvoie une liste vide si
-     * moins de 3 points distincts (pas de polygone traçable).
+     * Points à cadrer pour voir à la fois le lieu de prise de vue [captured] et l'aire de répartition.
+     *
+     * Une espèce naturalisée a des occurrences aux antipodes : tout englober donnerait un planisphère
+     * où le point de prise de vue n'est plus qu'un grain. On ne garde donc que les [occurrences] à
+     * moins de [radiusKm] du point. Si aucune n'est aussi proche (l'espèce vit loin de là), on garde
+     * tout pour que les deux restent visibles malgré la distance. Sans [captured], toutes les
+     * occurrences sont cadrées.
      */
-    fun convexHull(input: List<LatLng>): List<LatLng> {
-        val points = input.distinctBy { it.lat to it.lng }
-            .sortedWith(compareBy({ it.lng }, { it.lat }))
-        if (points.size < 3) return emptyList()
-
-        fun cross(o: LatLng, a: LatLng, b: LatLng): Double =
-            (a.lng - o.lng) * (b.lat - o.lat) - (a.lat - o.lat) * (b.lng - o.lng)
-
-        val lower = ArrayList<LatLng>()
-        for (p in points) {
-            while (lower.size >= 2 && cross(lower[lower.size - 2], lower[lower.size - 1], p) <= 0) {
-                lower.removeAt(lower.size - 1)
-            }
-            lower.add(p)
-        }
-        val upper = ArrayList<LatLng>()
-        for (p in points.asReversed()) {
-            while (upper.size >= 2 && cross(upper[upper.size - 2], upper[upper.size - 1], p) <= 0) {
-                upper.removeAt(upper.size - 1)
-            }
-            upper.add(p)
-        }
-        lower.removeAt(lower.size - 1)
-        upper.removeAt(upper.size - 1)
-        return lower + upper
+    fun framingPoints(
+        captured: LatLng?,
+        occurrences: List<LatLng>,
+        radiusKm: Double = FRAMING_RADIUS_KM,
+    ): List<LatLng> {
+        if (captured == null) return occurrences
+        val near = occurrences.filter { distanceKm(captured, it) <= radiusKm }
+        return (near.ifEmpty { occurrences }) + captured
     }
 }

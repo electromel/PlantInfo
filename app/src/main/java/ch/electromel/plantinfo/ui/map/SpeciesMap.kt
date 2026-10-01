@@ -1,6 +1,8 @@
 package ch.electromel.plantinfo.ui.map
 
 import android.graphics.Color as AndroidColor
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.view.MotionEvent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,25 +31,32 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ch.electromel.plantinfo.R
+import ch.electromel.plantinfo.data.remote.gbif.GbifDensityTileSource
 import ch.electromel.plantinfo.domain.model.LatLng
-import ch.electromel.plantinfo.domain.model.SpeciesRange
 import ch.electromel.plantinfo.util.GeoUtils
+import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.tileprovider.util.SimpleInvalidationHandler
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.TilesOverlay
 
 /**
- * Carte interactive (osmdroid) centrée sur le lieu de la prise de vue (§2.4).
+ * Carte interactive (osmdroid) du lieu de la prise de vue et de l'aire de répartition (§2.4).
  * - Marqueur au point de capture ; si la précision GPS est faible, un cercle de rayon d'incertitude
  *   est tracé à la place d'un point exact.
- * - Une zone semi-transparente (enveloppe des occurrences GBIF) apparaît en dézoomant et montre les
- *   régions plus larges où l'espèce est connue. Absente si GBIF ne retourne aucune donnée.
+ * - Des hexagones verts (tuiles de densité GBIF, [GbifDensityTileSource]) ne couvrent que les
+ *   endroits où l'espèce a été observée. Absents si GBIF ne retourne aucune donnée.
+ *
+ * Le cadrage initial englobe le point de capture **et** les occurrences GBIF voisines
+ * ([GeoUtils.framingPoints]), pour voir les deux d'emblée sans dézoomer à la main. Tant que GBIF n'a
+ * pas répondu (ou s'il ne connaît pas l'espèce), la vue reste zoomée sur le point de capture.
  *
  * Quand [latitude]/[longitude] sont nulles (photo importée sans coordonnées EXIF), la carte reste
- * affichée mais centrée sur l'aire de répartition GBIF de l'espèce, sans marqueur de prise de vue.
+ * affichée mais cadrée sur l'aire de répartition GBIF de l'espèce, sans marqueur de prise de vue.
  */
 @Composable
 fun SpeciesMap(
@@ -101,13 +110,37 @@ fun SpeciesMap(
 
     val range = (rangeState as? RangeState.Loaded)?.range
 
-    // Sans point de capture, recentre une seule fois la carte sur l'aire de répartition GBIF.
-    var centeredOnRange by remember { mutableStateOf(false) }
-    LaunchedEffect(range, hasCapturePoint) {
-        if (!hasCapturePoint && !centeredOnRange && range?.hasData == true) {
-            boundingBoxOf(range.points)?.let { box ->
+    // Zones où l'espèce a été observée : tuiles de densité GBIF, superposées au fond de carte.
+    val usageKey = range?.takeIf { it.hasData }?.usageKey
+    val densityOverlay = remember(usageKey) {
+        usageKey?.let { key ->
+            val provider = MapTileProviderBasic(context, GbifDensityTileSource(key)).apply {
+                // Seul le fournisseur du fond de carte redessine la vue à l'arrivée d'une tuile : sans
+                // ce rappel, les hexagones restent invisibles jusqu'au prochain geste sur la carte.
+                setTileRequestCompleteHandler(SimpleInvalidationHandler(mapView))
+            }
+            TilesOverlay(provider, context).apply {
+                // Tuiles transparentes : sans cela osmdroid peint un fond gris quadrillé pendant le
+                // chargement, qui masquerait la carte.
+                loadingBackgroundColor = AndroidColor.TRANSPARENT
+                loadingLineColor = AndroidColor.TRANSPARENT
+                // Hexagones translucides : les frontières et les noms de lieux restent lisibles dessous.
+                setColorFilter(ColorMatrixColorFilter(ColorMatrix().apply { setScale(1f, 1f, 1f, DENSITY_ALPHA) }))
+            }
+        }
+    }
+    DisposableEffect(densityOverlay) { onDispose { densityOverlay?.onDetach(mapView) } }
+
+    // Une fois l'aire de répartition connue, cadre une seule fois la carte pour qu'on y voie à la fois
+    // le lieu de prise de vue (s'il existe) et les occurrences GBIF voisines. Sans cela, la vue
+    // resterait zoomée sur le point de capture et l'aire de répartition serait hors champ.
+    var framedOnRange by remember { mutableStateOf(false) }
+    LaunchedEffect(range, latitude, longitude) {
+        if (!framedOnRange && range?.hasData == true) {
+            val captured = if (latitude != null && longitude != null) LatLng(latitude, longitude) else null
+            boundingBoxOf(GeoUtils.framingPoints(captured, range.points))?.let { box ->
                 mapView.post { runCatching { mapView.zoomToBoundingBox(box, false, 48) } }
-                centeredOnRange = true
+                framedOnRange = true
             }
         }
     }
@@ -130,7 +163,7 @@ fun SpeciesMap(
                     .height(260.dp)
                     .clip(RoundedCornerShape(12.dp)),
                 update = { view ->
-                    drawOverlays(view, latitude, longitude, accuracyMeters, title, range)
+                    drawOverlays(view, latitude, longitude, accuracyMeters, title, densityOverlay)
                 },
             )
         }
@@ -147,7 +180,9 @@ fun SpeciesMap(
             is RangeState.Loaded -> {
                 val text = stringResource(
                     when {
-                        range?.hasData == true -> R.string.map_range_legend
+                        densityOverlay != null -> R.string.map_range_legend
+                        // Ancien cache sans clé GBIF et GBIF injoignable : pas de tuiles à afficher.
+                        range?.hasData == true -> R.string.map_range_unavailable
                         hasCapturePoint -> R.string.map_no_range_with_point
                         else -> R.string.map_no_range
                     },
@@ -158,6 +193,9 @@ fun SpeciesMap(
         }
     }
 }
+
+/** Opacité des hexagones d'observation : assez pleine pour se lire, assez claire pour voir le fond. */
+private const val DENSITY_ALPHA = 0.6f
 
 /** Boîte englobante des occurrences (avec une petite marge), ou null si aucun point. */
 private fun boundingBoxOf(points: List<LatLng>): BoundingBox? {
@@ -184,23 +222,12 @@ private fun drawOverlays(
     longitude: Double?,
     accuracyMeters: Float?,
     title: String,
-    range: SpeciesRange?,
+    densityOverlay: TilesOverlay?,
 ) {
     map.overlays.clear()
 
-    // 1. Aire de répartition (dessinée en premier pour rester sous le marqueur).
-    if (range != null && range.hasData) {
-        val hull = GeoUtils.convexHull(range.points)
-        if (hull.size >= 3) {
-            val polygon = Polygon(map).apply {
-                points = hull.map { GeoPoint(it.lat, it.lng) }
-                setFillColor(AndroidColor.argb(60, 46, 125, 50))       // vert semi-transparent
-                outlinePaint.color = AndroidColor.argb(160, 46, 125, 50)
-                outlinePaint.strokeWidth = 3f
-            }
-            map.overlays.add(polygon)
-        }
-    }
+    // 1. Zones d'observation (dessinées en premier pour rester sous le marqueur).
+    densityOverlay?.let { map.overlays.add(it) }
 
     // 2. Marqueur de prise de vue (uniquement si des coordonnées sont disponibles).
     if (latitude != null && longitude != null) {

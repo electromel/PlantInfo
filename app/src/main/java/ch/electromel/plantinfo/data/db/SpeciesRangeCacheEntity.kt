@@ -13,4 +13,5 @@ data class SpeciesRangeCacheEntity(
     val pointsJson: String, // List<LatLng> sérialisée (échantillon d'occurrences)
     val hasData: Boolean,   // false = GBIF ne connaît pas l'espèce
     val fetchedAt: Long,
+    val usageKey: Long? = null, // clé taxonomique GBIF, pour les tuiles de densité ; null avant la v10
 )

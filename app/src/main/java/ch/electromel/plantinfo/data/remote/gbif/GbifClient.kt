@@ -40,7 +40,7 @@ class GbifClient @Inject constructor(
             ?: return@withContext SpeciesRange(scientificName, emptyList(), hasData = false)
 
         val points = fetchOccurrences(usageKey)
-        SpeciesRange(scientificName, points, hasData = points.isNotEmpty())
+        SpeciesRange(scientificName, points, hasData = points.isNotEmpty(), usageKey = usageKey)
     }
 
     private fun matchTaxon(scientificName: String): Long? {
