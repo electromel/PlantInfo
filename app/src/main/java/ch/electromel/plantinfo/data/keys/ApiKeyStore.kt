@@ -9,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.security.KeyStore
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,18 +25,7 @@ import javax.inject.Singleton
 class ApiKeyStore @Inject constructor(
     @ApplicationContext context: Context,
 ) {
-    private val prefs: SharedPreferences = run {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-        EncryptedSharedPreferences.create(
-            context,
-            "plantinfo_secure_keys",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
-    }
+    private val prefs: SharedPreferences = openEncryptedPrefs(context)
 
     private val _state = MutableStateFlow(readSnapshot())
 
@@ -140,6 +130,39 @@ class ApiKeyStore @Inject constructor(
         private const val KEY_FALLBACK_ORDER = "ai_fallback_order"
         private const val KEY_FREE_GEMINI_ONLY = "ai_free_gemini_only"
         private const val DEFAULT_FREE_GEMINI_ONLY = true
+        private const val PREFS_FILE = "plantinfo_secure_keys"
+
+        /**
+         * Ouvre le stockage chiffré. Si le Keystore a perdu la clé maîtresse (changement de verrou
+         * d'écran, restauration, défaut de fabricant), la lecture lève une exception et l'app
+         * planterait à chaque lancement : on repart alors d'un stockage vide — l'assistant
+         * redemandera les clés — plutôt que de bloquer l'utilisateur.
+         */
+        fun openEncryptedPrefs(context: Context): SharedPreferences {
+            fun create(): SharedPreferences {
+                val masterKey = MasterKey.Builder(context)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build()
+                return EncryptedSharedPreferences.create(
+                    context,
+                    PREFS_FILE,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                )
+            }
+            return try {
+                create()
+            } catch (e: Exception) {
+                context.deleteSharedPreferences(PREFS_FILE)
+                // Alias de la clé maîtresse AndroidX : sans la retirer, la même clé invalide serait réutilisée.
+                runCatching {
+                    KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+                        .deleteEntry(MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+                }
+                create()
+            }
+        }
     }
 }
 
