@@ -172,7 +172,7 @@ class PdfExporter @Inject constructor(
 
         if (entity.latitude != null && entity.longitude != null) {
             val loc = buildString {
-                append("%.5f, %.5f".format(entity.latitude, entity.longitude))
+                append("%.5f, %.5f".format(Locale.ROOT, entity.latitude, entity.longitude))
                 entity.altitude?.let { append(" • %.0f m".format(it)) }
             }
             writer.section(strings.get(R.string.fiche_location_title), headingPaint, loc, bodyPaint)

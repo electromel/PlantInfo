@@ -76,6 +76,7 @@ import ch.electromel.plantinfo.ui.qa.PlantQaSection
 import ch.electromel.plantinfo.util.StringProvider
 import ch.electromel.plantinfo.util.rememberStringProvider
 import java.io.File
+import java.util.Locale
 
 /**
  * Contenu complet d'une fiche d'identification, partagé entre l'écran Résultat (juste après l'ID)
@@ -378,7 +379,7 @@ fun IdentificationContent(
             if (hasCapturePoint) {
                 Text(
                     buildString {
-                        append("%.5f, %.5f".format(entity.latitude, entity.longitude))
+                        append("%.5f, %.5f".format(Locale.ROOT, entity.latitude, entity.longitude))
                         entity.altitude?.let { append("  •  %.0f m".format(it)) }
                     },
                     style = MaterialTheme.typography.bodyLarge,

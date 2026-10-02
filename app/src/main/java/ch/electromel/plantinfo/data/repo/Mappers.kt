@@ -13,6 +13,7 @@ import ch.electromel.plantinfo.domain.model.SpeciesUse
 import ch.electromel.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+import java.util.Locale
 
 private val json = Json { ignoreUnknownKeys = true }
 private val candidateListSerializer = ListSerializer(SpeciesCandidate.serializer())
@@ -129,7 +130,7 @@ fun IdentificationEntity.toResult(): IdentificationResult {
 
 fun GpsLocation.toReadableCoordinates(): String {
     val alt = altitude?.let { ", %.0f m".format(it) } ?: ""
-    return "%.5f, %.5f%s".format(latitude, longitude, alt)
+    return "%.5f, %.5f%s".format(Locale.ROOT, latitude, longitude, alt)
 }
 
 /** Sérialise une liste de candidats pour la colonne alternativesJson. */

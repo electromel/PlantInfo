@@ -10,6 +10,7 @@ import ch.electromel.plantinfo.util.StringProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.util.Locale
 
 /**
  * Questions libres posées à l'IA sur une plante déjà identifiée (§Q&A). Construit un prompt qui
@@ -44,7 +45,7 @@ class PlantQaRepository @Inject constructor(
             result.description?.let { appendLine("- Description : $it") }
             result.edibilitySummaryText(strings)?.let { appendLine("- Comestibilité : $it") }
             if (entity.latitude != null && entity.longitude != null) {
-                append("- Lieu de la prise de vue : %.5f, %.5f".format(entity.latitude, entity.longitude))
+                append("- Lieu de la prise de vue : %.5f, %.5f".format(Locale.ROOT, entity.latitude, entity.longitude))
                 entity.altitude?.let { append(", altitude ${it.toInt()} m") }
                 appendLine()
             } else {
