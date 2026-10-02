@@ -54,7 +54,8 @@ android {
         // 7 = bundle 0.6.0 du 2026.09.28 (multiplication, photos pour trancher, six IA de plus).
         // 8 = bundle 0.6.1 du 2026.10.02 (carte en hexagones, audit de robustesse). Refuse : code deja pris sur la Console.
         // 9 = bundle 0.6.1 reconstruit le 2026.10.02.
-        versionCode = 9
+        // 10 = bundle 0.6.1 sans READ_MEDIA_IMAGES (politique Photos et videos de Google Play).
+        versionCode = 10
         versionName = "0.6.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

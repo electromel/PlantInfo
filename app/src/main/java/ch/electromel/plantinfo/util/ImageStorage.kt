@@ -56,7 +56,7 @@ class ImageStorage @Inject constructor(
     suspend fun readExifLocation(uri: Uri): GpsLocation? = withContext(Dispatchers.IO) {
         // MediaStore masque les coordonnées des images (confidentialité). Pour lire le géotag, il faut
         // demander l'original non masqué via MediaStore.setRequireOriginal(), ce qui exige :
-        //  - la permission ACCESS_MEDIA_LOCATION (+ READ_MEDIA_IMAGES pour qu'elle soit accordable) ;
+        //  - la permission ACCESS_MEDIA_LOCATION (sans permission de lecture : l'accès à la photo vient du sélecteur) ;
         //  - un Uri MediaStore. On convertit donc l'Uri « document » (SAF) en Uri MediaStore.
         // On essaie plusieurs candidats et on retient le premier qui expose des coordonnées.
         val candidates = LinkedHashSet<Uri>()

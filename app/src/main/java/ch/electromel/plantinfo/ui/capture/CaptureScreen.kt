@@ -120,19 +120,14 @@ fun CaptureScreen(
         ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? -> uri?.let { viewModel.addGalleryPhoto(it) } }
 
-    // Au premier affichage : demander caméra + localisation + accès aux médias (READ_MEDIA_IMAGES /
-    // READ_EXTERNAL_STORAGE) + géolocalisation des médias (ACCESS_MEDIA_LOCATION, nécessaire pour lire
-    // le géotag EXIF des photos importées ; elle n'est accordable qu'avec un accès média).
+    // Au premier affichage : demander caméra + localisation + géolocalisation des médias
+    // (ACCESS_MEDIA_LOCATION, nécessaire pour lire le géotag EXIF des photos importées). Aucune
+    // permission de lecture des photos : le sélecteur de documents donne accès à la photo choisie.
     LaunchedEffect(Unit) {
         if (!cameraGranted) cameraPermLauncher.launch(Manifest.permission.CAMERA)
         val perms = buildList {
             add(Manifest.permission.ACCESS_FINE_LOCATION)
             add(Manifest.permission.ACCESS_COARSE_LOCATION)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                add(Manifest.permission.READ_MEDIA_IMAGES)
-            } else {
-                add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
             add(Manifest.permission.ACCESS_MEDIA_LOCATION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 // Notifier l'utilisateur quand une identification différée (file hors-ligne) aboutit.

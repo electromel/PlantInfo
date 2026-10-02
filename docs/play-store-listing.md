@@ -59,7 +59,7 @@ AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
-### Notes de version — 0.6.1 (versionCode 9)
+### Notes de version — 0.6.1 (versionCode 10)
 
 (396 caractères.)
 
