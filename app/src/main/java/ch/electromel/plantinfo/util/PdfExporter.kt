@@ -172,7 +172,8 @@ class PdfExporter @Inject constructor(
 
         if (entity.latitude != null && entity.longitude != null) {
             val loc = buildString {
-                append("%.5f, %.5f".format(entity.latitude, entity.longitude))
+                // Arrondi à ~1 km pour une espèce protégée : voir GeoUtils.shareableCoordinates.
+                append(GeoUtils.shareableCoordinates(entity.latitude, entity.longitude, result.isProtected))
                 entity.altitude?.let { append(" • %.0f m".format(it)) }
             }
             writer.section(strings.get(R.string.fiche_location_title), headingPaint, loc, bodyPaint)

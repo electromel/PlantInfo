@@ -1,6 +1,7 @@
 package ch.electromel.plantinfo.util
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -55,6 +56,9 @@ class NotificationHelper @Inject constructor(
         )
     }
 
+    // La permission est vérifiée juste en dessous par hasPermission() ; lint ne reconnaît que
+    // checkSelfPermission appelé en ligne et signalait ici une erreur qui faisait échouer lintDebug.
+    @SuppressLint("MissingPermission")
     private fun notify(id: Int, title: String, text: String) {
         if (!hasPermission()) return
         val intent = Intent(context, MainActivity::class.java).apply {

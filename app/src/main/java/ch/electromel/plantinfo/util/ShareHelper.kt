@@ -16,7 +16,6 @@ import ch.electromel.plantinfo.domain.model.toxicConfusionWarningText
 import ch.electromel.plantinfo.domain.model.usesByDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -82,7 +81,8 @@ class ShareHelper @Inject constructor(
                 appendLine(
                     strings.get(
                         R.string.share_place,
-                        "%.5f, %.5f".format(Locale.US, entity.latitude, entity.longitude),
+                        // Arrondi à ~1 km pour une espèce protégée : voir GeoUtils.shareableCoordinates.
+                        GeoUtils.shareableCoordinates(entity.latitude, entity.longitude, result.isProtected),
                     ),
                 )
             }

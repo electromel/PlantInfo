@@ -23,7 +23,7 @@ object FungusChecker {
         // Genres toxiques ou mortels (repris de ToxicSpeciesChecker, qui ne couvre que la toxicité)
         "amanita", "galerina", "lepiota", "cortinarius", "gyromitra", "inocybe", "clitocybe",
         "entoloma", "omphalotus", "hypholoma", "paxillus", "conocybe", "pholiotina", "scleroderma",
-        "chlorophyllum", "rubroboletus",
+        "chlorophyllum", "rubroboletus", "hebeloma", "verpa", "neoboletus", "suillellus",
         // Comestibles réputés et genres courants
         "agaricus", "boletus", "cantharellus", "craterellus", "lactarius", "russula", "suillus",
         "leccinum", "xerocomus", "imleria", "tricholoma", "macrolepiota", "coprinus", "coprinopsis",

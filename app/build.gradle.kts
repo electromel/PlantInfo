@@ -116,7 +116,11 @@ android {
             buildConfigField("String", "DEFAULT_OPENROUTER_API_KEY", devKey("OPENROUTER_API_KEY"))
         }
         release {
-            isMinifyEnabled = false
+            // R8 : code et ressources inutilisés retirés (Material Icons Extended, par exemple, pèse
+            // plusieurs mégaoctets de classes dont l'application n'utilise qu'une poignée). Les règles
+            // propres à l'application sont dans proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -143,11 +147,43 @@ android {
         // values/ porte l'anglais (langue de repli), values-fr/ le français d'origine.
         localeFilters += listOf("en", "fr", "de", "it", "es")
     }
+    bundle {
+        // Les cinq langues voyagent dans l'APK de base. Avec le fractionnement par langue (défaut),
+        // Google Play ne livre que celle du téléphone : sur Android 12 et moins, où l'app applique
+        // elle-même la langue choisie dans les Paramètres (voir util/AppLocales), les autres
+        // ressources manqueraient et l'interface retomberait sur l'anglais. Le surcoût est
+        // négligeable : quatre fichiers de textes.
+        language {
+            enableSplit = false
+        }
+    }
+    testOptions {
+        // android.util.Log et consorts rendent leur valeur par défaut dans les tests JVM au lieu
+        // de lever « not mocked » : le code qui journalise (AiOrchestrator) reste testable.
+        unitTests.isReturnDefaultValues = true
+    }
+    lint {
+        // Un échec de lint doit arrêter la construction : sans cela il ne sert à rien. Les
+        // avertissements (versions de dépendances, API ktx) restent informatifs.
+        abortOnError = true
+        warningsAsErrors = false
+    }
+    sourceSets {
+        // Schémas Room exportés (voir ksp ci-dessous), lus par les tests de migration instrumentés.
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+ksp {
+    // Exporte le schéma de chaque version de la base : sans lui, une migration oubliée ou fausse ne
+    // se découvre qu'au crash d'un utilisateur qui met l'application à jour. Les fichiers générés
+    // (app/schemas) sont versionnés et servent de référence aux tests de migration.
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -177,12 +213,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
-    implementation(libs.datastore.preferences)
     implementation(libs.security.crypto)
 
     // Réseau
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.serialization)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.kotlinx.serialization.json)
@@ -208,5 +241,6 @@ dependencies {
     testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.room.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
 }

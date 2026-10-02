@@ -19,7 +19,8 @@ projet est `C:\DEV\PlantInfo`.)
 
 ## Build & test
 
-Le **wrapper jar n'est pas versionné** et il n'y a pas de `gradle` sur le PATH. Le projet exige un
+Le wrapper Gradle est versionné (`gradlew`, `gradle/wrapper/gradle-wrapper.jar`) et il n'y a pas de
+`gradle` sur le PATH. Le projet exige un
 JDK **JetBrains 21** pour exécuter le daemon (voir `gradle/gradle-daemon-jvm.properties` :
 `toolchainVendor=jetbrains`, `toolchainVersion=21`). Le JBR d'Android Studio convient :
 `C:\Program Files\Android\Android Studio\jbr`.
@@ -45,8 +46,28 @@ Si `gradlew.bat`/`gradle-wrapper.jar` manquent, les régénérer avec une distri
 (`~/.gradle/wrapper/dists/gradle-9.x/.../bin/gradle.bat`) :
 `gradle.bat -p C:\DEV\PlantInfo "-Dorg.gradle.java.installations.paths=$jbr" wrapper --gradle-version 9.1.0 --distribution-type bin`.
 
-Il n'y a **pas de lint configuré** au-delà des warnings du compilateur Kotlin et d'AGP. Les tests
-sont des tests JVM (`src/test`, JUnit4 + MockK) — pas de tests instrumentés significatifs.
+**Lint** : `:app:lintDebug` doit passer (il arrête la construction sur la moindre *erreur* ; les
+avertissements de versions de dépendances restent informatifs). La CI (`.github/workflows/ci.yml`)
+lance tests JVM, lint et `tools/check_translations.py` à chaque push et pull request.
+
+### Tests
+
+- **JVM** (`src/test`, JUnit4 + MockK) : la suite courante. `FakeHttp` (`TestFixtures.kt`) remplace le
+  réseau par un intercepteur OkHttp — pas de MockWebServer — et sait simuler une coupure en cours de
+  lecture du corps. `TestStrings` sert les vraies chaînes françaises.
+- **Instrumentés** (`src/androidTest`) : `MigrationTest` rejoue les migrations Room sur un appareil, avec
+  le vrai SQLite. Ils ne tournent pas en CI. **Ne pas lancer `connectedDebugAndroidTest`** sur le
+  téléphone de développement : Gradle désinstalle ensuite l'application et son historique avec elle.
+  À la place, installer les deux APK et lancer l'instrumentation à la main :
+
+  ```powershell
+  & gradlew.bat ... :app:assembleDebug :app:assembleDebugAndroidTest
+  adb install -r app\build\outputs\apk\debug\app-debug.apk
+  adb install -r app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk
+  adb shell am instrument -w -e class ch.electromel.plantinfo.data.db.MigrationTest ch.electromel.plantinfo.debug.test/androidx.test.runner.AndroidJUnitRunner
+  ```
+
+  Le test crée ses propres bases (`migration-*`) et les supprime : il ne touche pas à `plantinfo.db`.
 
 ### Installer sur un appareil
 
@@ -102,6 +123,9 @@ uniquement les clés absentes du stockage — une clé saisie manuellement n'est
 - **Fiche incomplète** : `ui/result/FicheAdvice.kt` **déduit** de la fiche (`scorePlantNet`,
   `aiProvider`) et de l'état courant des clés ce qui manque, et renvoie vers l'assistant. Déduit et
   non transporté : le conseil reste juste dans l'historique et disparaît dès la clé ajoutée.
+- **Mode « Gemini gratuit seul »** (actif par défaut) : `data/keys/usableAiProviders` ne l'applique
+  que **s'il y a une clé Gemini**. Sans elle il ignorerait en silence la clé que l'utilisateur vient de
+  saisir et de faire valider. `KeysSnapshot.geminiOnlyActive` porte la même règle jusqu'à l'écran.
 - **Clé devenue invalide** : `data/keys/KeyHealthMonitor` retente les clés stockées **une fois par
   24 h** (`CHECK_INTERVAL_MS`) et persiste le verdict, ce qui permet de le rappeler à chaque
   lancement sans rappeler les API. Deux règles à respecter :
@@ -139,7 +163,8 @@ Point d'entrée : `data/repo/IdentificationRepository.identifyAndSave(request)`.
    `IdentificationResult` avec un `scoreFinal /100` (bonus si accord, pénalité + `sourcesDisagree` si
    désaccord ; suit l'IA seule pour les champignons).
 4. **Persistance** : `Mappers.kt` convertit `IdentificationResult` ↔ `IdentificationEntity` (Room).
-   `ProtectedSpeciesChecker` renforce (jamais ne désactive) le drapeau « espèce protégée ».
+   `domain/SafetyFlags.reinforce` applique les trois listes locales (protégée, toxique, champignon) à
+   l'espèce **principale** — à l'enregistrement comme à la relance — et ne désactive jamais un drapeau.
 
 Cas dégradés gérés par le repository et exposés via `IdentificationOutcome` (typé) : aucune clé IA →
 résultat Pl@ntNet brut ; toutes les IA en échec réseau → mise en file `work/IdentificationQueue`
@@ -176,13 +201,18 @@ Un champ qui traverse tout le pipeline doit être ajouté de façon cohérente �
 5. `data/db/IdentificationEntity.kt` → colonne
 6. `data/repo/Mappers.kt` → `toEntity()` **et** `toResult()`
 7. `data/db/PlantInfoDatabase.kt` → incrémenter `version` + ajouter une `Migration` additive
-   (`ALTER TABLE … ADD COLUMN`, non destructive), puis l'enregistrer dans `di/DatabaseModule.kt`
+   (`ALTER TABLE … ADD COLUMN`, non destructive), puis l'ajouter à `PlantInfoDatabase.MIGRATIONS` —
+   la liste **unique**, lue par `di/DatabaseModule.kt` et par `MigrationTest`. La construction exporte
+   le schéma dans `app/schemas/` (à versionner) ; ajouter la ligne de la migration dans
+   `tools/derive_room_schemas.py` et le relancer (il reconstruit les schémas des versions
+   précédentes), puis lancer `MigrationTest` sur l'appareil (voir « Tests »)
 8. Affichage dans `ui/result/IdentificationContent.kt` (partagé Résultat + Détail)
 9. Le cas échéant : `util/PdfExporter.kt` et `util/ShareHelper.kt`
 10. Mettre à jour le builder de test `domain/ConfidenceEngineTest.kt` si `AiAnalysis` change
 
 La migration Room est le point le plus facile à oublier : sans elle l'app crashe au démarrage sur un
-appareil ayant l'ancienne base.
+appareil ayant l'ancienne base. `MigrationTest` rejoue toute la chaîne depuis la version 1 et la valide
+contre le schéma exporté : un oubli y échoue au lieu de planter chez un utilisateur.
 
 ### Avertissements de sécurité (comestibilité)
 
@@ -190,7 +220,10 @@ Trois garde-fous cumulatifs, tous **renforçants et jamais désactivants** :
 
 - `domain/FungusChecker` et `domain/ToxicSpeciesChecker` complètent le jugement de l'IA par des
   listes locales — un candidat Pl@ntNet arrive toujours avec `toxic == null`, sans la liste locale
-  l'hypothèse concurrente ne déclencherait jamais d'alerte.
+  l'hypothèse concurrente ne déclencherait jamais d'alerte. Elles s'appliquent **aussi à l'espèce
+  principale**, via `SafetyFlags.reinforce` : un résultat Pl@ntNet seul, ou une IA qui déclare
+  comestible une espèce listée, ne rassure jamais. Toute nouvelle voie qui produit un
+  `IdentificationResult` (ou en modifie l'espèce) doit passer par là.
 - `IdentificationResult.toxicConfusionWarningText()` produit **le** texte de l'avertissement, utilisé
   identiquement par `ui/result/ToxicConfusionBanner`, `util/PdfExporter` et `util/ShareHelper` : une
   fiche partagée ne doit jamais être plus rassurante que la fiche à l'écran.
@@ -217,6 +250,30 @@ boîte englobante des occurrences **GBIF** (`data/remote/gbif`, cache Room via `
 prise de vue** puis appelle `AiOrchestrator.ask()` (même ordre de repli que l'identification, mais
 sans mise en file). Ajouter une capacité IA « texte seul » = étendre l'interface `AiProvider` et les
 trois clients.
+
+### Réseau et vie privée (à ne pas contourner)
+
+- **Tout appel HTTP passe par `data/remote/HttpCalls.fetch`** : il rend la réponse entièrement lue,
+  transforme toute panne — y compris une coupure pendant la lecture du corps — en `IOException`, et
+  **annule l'appel avec la coroutine**. Les clients IA y ajoutent `HttpSupport.parseResponse`, qui
+  convertit un format de réponse inattendu en `AiException(PARSE)`. Un client qui laisse remonter une
+  autre exception fait tomber l'application : l'orchestrateur ne rattrape que ce qui est typé… et, en
+  dernier recours, toute autre exception sauf l'annulation.
+- **Une réponse IA sans espèce est un échec** (`AiPrompt.parse` lève `PARSE`) : sans cela, un
+  `{}` ou une réponse bloquée s'enregistrait comme une identification « inconnue ».
+- **Le lieu envoyé à un tiers est arrondi à ~1 km** (`GeoUtils.approximateCoordinates`, utilisé par
+  `AiPrompt` et par le prompt du Q&A). Le partage et le PDF gardent la précision complète, sauf
+  pour une espèce protégée (`GeoUtils.shareableCoordinates`). Pl@ntNet ne reçoit aucune position.
+- **`docs/privacy-policy.html` doit suivre le code** : liste des fournisseurs (`ApiProvider`), ce qui
+  part dans chaque requête, permissions et moment où elles sont demandées. Elle existe en cinq langues
+  dans le même fichier ; à relire à chaque fournisseur ajouté ou donnée nouvelle envoyée.
+- **Permissions demandées en contexte** (`ui/capture/CaptureScreen`) : caméra + localisation à
+  l'ouverture de la caméra, accès aux photos au bouton Galerie, notifications au lancement d'une
+  identification. Rien n'est demandé à l'ouverture de l'application.
+- **Stockage des clés** : `ApiKeyStore` se relève d'un Keystore illisible (un second essai, puis
+  recréation à vide : l'utilisateur ressaisit ses clés) au lieu de planter à chaque lancement.
+  `security-crypto` est déclaré obsolète par Google : tout contact avec lui est confiné à deux fonctions
+  de `ApiKeyStore.kt`, c'est là qu'il faudra le remplacer.
 
 ### Localisation & EXIF
 

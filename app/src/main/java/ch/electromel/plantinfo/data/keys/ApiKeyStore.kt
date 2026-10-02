@@ -2,6 +2,7 @@ package ch.electromel.plantinfo.data.keys
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import ch.electromel.plantinfo.domain.model.AiProviderType
@@ -10,6 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
+import java.io.IOException
+import java.security.GeneralSecurityException
+import java.security.KeyStore
 import javax.inject.Singleton
 
 /**
@@ -24,18 +28,10 @@ import javax.inject.Singleton
 class ApiKeyStore @Inject constructor(
     @ApplicationContext context: Context,
 ) {
-    private val prefs: SharedPreferences = run {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-        EncryptedSharedPreferences.create(
-            context,
-            "plantinfo_secure_keys",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
-    }
+    private val prefs: SharedPreferences = openWithRecovery(
+        open = { createEncryptedPrefs(context) },
+        reset = { resetEncryptedPrefs(context) },
+    )
 
     private val _state = MutableStateFlow(readSnapshot())
 
@@ -116,17 +112,14 @@ class ApiKeyStore @Inject constructor(
     }
 
     /**
-     * Fournisseurs IA à essayer, dans l'ordre de repli, filtrés à ceux qui ont une clé.
-     * Si le mode « Gemini gratuit seul » est actif, Claude et GPT sont exclus.
+     * Fournisseurs IA à essayer, dans l'ordre de repli, filtrés à ceux qui ont une clé et — voir
+     * [usableAiProviders] — au mode « Gemini gratuit seul » quand il s'applique.
      * Vide = aucune IA disponible → l'appelant se rabat sur le résultat Pl@ntNet brut (§3.1).
      */
-    fun availableAiProvidersInOrder(): List<AiProviderType> {
-        val geminiOnly = freeGeminiOnly()
-        return fallbackOrder().filter { type ->
-            if (geminiOnly && type != AiProviderType.GEMINI) return@filter false
-            ApiProvider.forAiType(type)?.let { getKey(it) != null } == true
+    fun availableAiProvidersInOrder(): List<AiProviderType> =
+        usableAiProviders(fallbackOrder(), freeGeminiOnly()) { type ->
+            ApiProvider.forAiType(type)?.let { getKey(it) } != null
         }
-    }
 
     fun hasPlantNetKey(): Boolean = getKey(ApiProvider.PLANTNET) != null
 
@@ -151,6 +144,100 @@ internal fun shouldPrefill(handled: Boolean, existing: String?, default: String)
     !handled && existing.isNullOrBlank() && default.isNotBlank()
 
 /**
+ * Fournisseurs IA à essayer : ceux de [order] qui ont une clé ([hasKey]).
+ *
+ * Le mode « Gemini gratuit seul » ([freeGeminiOnly], actif par défaut) n'écarte les autres IA que
+ * **s'il y a une clé Gemini** pour prendre le relais. Sans elle, l'appliquer aurait pour seul effet
+ * d'ignorer en silence la clé que l'utilisateur vient de saisir et de faire valider — et de lui
+ * répondre « aucune clé IA » juste après un test réussi. La protection visée (ne pas consommer des
+ * crédits payants par inadvertance quand un palier gratuit est disponible) n'a pas d'objet quand il
+ * n'y en a pas.
+ */
+internal fun usableAiProviders(
+    order: List<AiProviderType>,
+    freeGeminiOnly: Boolean,
+    hasKey: (AiProviderType) -> Boolean,
+): List<AiProviderType> {
+    val geminiOnly = freeGeminiOnly && hasKey(AiProviderType.GEMINI)
+    return order.filter { type -> (!geminiOnly || type == AiProviderType.GEMINI) && hasKey(type) }
+}
+
+/**
+ * Ouvre un stockage chiffré en se relevant d'une clé maîtresse devenue illisible.
+ *
+ * Le Keystore Android peut perdre ou invalider la clé maîtresse (réinitialisation par le
+ * constructeur, changement de verrouillage, restauration d'un appareil) : le fichier de préférences
+ * existe alors encore mais ne peut plus être déchiffré, et chaque lancement de l'application échoue
+ * au même endroit — une boucle de plantages dont seule la désinstallation sortait. On retente donc
+ * une fois (panne passagère), puis on le recrée à vide ([reset]) : l'utilisateur ressaisit ses clés,
+ * ce que l'assistant de configuration sait faire, plutôt que de perdre l'application. Si la dernière
+ * tentative échoue aussi, l'erreur remonte.
+ */
+internal fun <T> openWithRecovery(open: () -> T, reset: () -> Unit): T = try {
+    open()
+} catch (e: GeneralSecurityException) {
+    recover(e, open, reset)
+} catch (e: IOException) {
+    recover(e, open, reset)
+} catch (e: SecurityException) {
+    // EncryptedSharedPreferences signale une valeur indéchiffrable par une SecurityException.
+    recover(e, open, reset)
+}
+
+private fun <T> recover(cause: Exception, open: () -> T, reset: () -> Unit): T {
+    Log.w("ApiKeyStore", "Stockage chiffré illisible : ${cause.javaClass.simpleName}")
+    // Le Keystore a aussi des pannes passagères : un second essai les règle, et ne coûte rien. Les
+    // clés de l'utilisateur ne sont détruites qu'en dernier recours.
+    try {
+        return open()
+    } catch (e: GeneralSecurityException) {
+        // illisible deux fois de suite : on recrée
+    } catch (e: IOException) {
+        // idem
+    } catch (e: SecurityException) {
+        // idem
+    }
+    Log.w("ApiKeyStore", "Stockage chiffré recréé à vide : les clés sont à ressaisir")
+    reset()
+    return open()
+}
+
+private const val SECURE_PREFS_FILE = "plantinfo_secure_keys"
+
+// androidx.security:security-crypto est déclaré obsolète par Google depuis la 1.1.0 stable, sans
+// remplaçant officiel équivalent. Le format de stockage existant reste lisible : on garde la
+// bibliothèque en connaissance de cause (version stable plutôt qu'alpha), et ces deux fonctions sont
+// les seuls points de contact — le jour où elle sera retirée, c'est ici qu'on la remplace.
+@Suppress("DEPRECATION")
+private fun createEncryptedPrefs(context: Context): SharedPreferences {
+    val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+    return EncryptedSharedPreferences.create(
+        context,
+        SECURE_PREFS_FILE,
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+    ).also {
+        // Lire tout le contenu dès l'ouverture : une valeur indéchiffrable échoue ici, où la
+        // récupération est possible, plutôt qu'à la première lecture d'une clé en plein appel d'API.
+        it.all
+    }
+}
+
+@Suppress("DEPRECATION")
+private fun resetEncryptedPrefs(context: Context) {
+    context.deleteSharedPreferences(SECURE_PREFS_FILE)
+    runCatching {
+        KeyStore.getInstance("AndroidKeyStore").apply {
+            load(null)
+            deleteEntry(MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+        }
+    }
+}
+
+/**
  * Relit un ordre de repli enregistré (« CLAUDE,GEMINI,GPT ») et y ajoute, à la fin, les
  * fournisseurs qu'il ne connaît pas encore. Sans ce complément, un utilisateur qui avait réglé
  * l'ordre avant l'arrivée d'un nouveau fournisseur ne pourrait jamais l'utiliser : l'orchestrateur
@@ -172,13 +259,19 @@ data class KeysSnapshot(
     val hasPlantNet: Boolean get() = present[ApiProvider.PLANTNET] == true
 
     /**
+     * Le mode « Gemini gratuit seul » écarte-t-il réellement les autres IA ? Seulement s'il y a une
+     * clé Gemini pour prendre le relais : voir [usableAiProviders].
+     */
+    val geminiOnlyActive: Boolean get() = freeGeminiOnly && present[ApiProvider.GEMINI] == true
+
+    /**
      * Au moins un fournisseur IA réellement utilisable. Le mode « Gemini gratuit seul » est pris en
      * compte : une clé Claude enregistrée mais mise de côté par ce mode ne rend pas l'IA disponible,
      * et l'écran ne doit donc pas prétendre le contraire.
      */
     val hasAi: Boolean get() = ApiProvider.entries.any { provider ->
         present[provider] == true && provider.aiType != null &&
-            (!freeGeminiOnly || provider == ApiProvider.GEMINI)
+            (!geminiOnlyActive || provider == ApiProvider.GEMINI)
     }
 
     /** Aucune clé du tout : l'identification ne peut même pas démarrer. */

@@ -5,6 +5,9 @@ import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.TokenUsage
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -42,21 +45,33 @@ sealed interface AiAnswerOutcome {
  * Applique la logique de repli entre fournisseurs IA : parcourt l'ordre de priorité configuré,
  * ne retient que les fournisseurs disposant d'une clé, et bascule au suivant à chaque échec
  * (clé invalide, quota, réseau, serveur). Renvoie le premier succès, ou un état d'échec typé.
+ *
+ * Un fournisseur qui lève autre chose qu'une [AiException] (réponse dans un format imprévu, bogue
+ * d'un client) compte lui aussi comme un échec : il ne doit ni interrompre le repli ni faire tomber
+ * l'application. Seule l'annulation de la coroutine traverse.
  */
 @Singleton
-class AiOrchestrator @Inject constructor(
+class AiOrchestrator internal constructor(
     private val keyStore: ApiKeyStore,
-    claude: ClaudeClient,
-    gemini: GeminiClient,
-    openai: OpenAiClient,
-    additional: AdditionalAiProviders,
+    providers: List<AiProvider>,
 ) {
-    private val providers: Map<AiProviderType, AiProvider> =
-        (listOf(claude, gemini, openai) + additional.all).associateBy { it.type }
+    @Inject
+    constructor(
+        keyStore: ApiKeyStore,
+        claude: ClaudeClient,
+        gemini: GeminiClient,
+        openai: OpenAiClient,
+        additional: AdditionalAiProviders,
+    ) : this(keyStore, listOf<AiProvider>(claude, gemini, openai) + additional.all)
 
-    suspend fun analyze(input: AiAnalysisInput): AiOutcome {
+    private val providers: Map<AiProviderType, AiProvider> = providers.associateBy { it.type }
+
+    // Dispatchers.Default : encoder jusqu'à cinq photos en base64 et bâtir le JSON de la requête
+    // représente plusieurs mégaoctets de travail, qui n'ont rien à faire sur le thread principal
+    // quand l'appelant est un ViewModel.
+    suspend fun analyze(input: AiAnalysisInput): AiOutcome = withContext(Dispatchers.Default) {
         val order = keyStore.availableAiProvidersInOrder()
-        if (order.isEmpty()) return AiOutcome.NoProvidersConfigured
+        if (order.isEmpty()) return@withContext AiOutcome.NoProvidersConfigured
 
         val failures = mutableListOf<ProviderFailure>()
         var allNetwork = true
@@ -66,15 +81,18 @@ class AiOrchestrator @Inject constructor(
             val key = keyStore.getKey(apiProvider) ?: continue
             try {
                 val analysis = provider.analyze(input, key)
-                return AiOutcome.Success(analysis, type)
-            } catch (e: AiException) {
-                Log.w(TAG, "Fournisseur ${type.label} en échec : ${e.reason} — ${e.message}")
-                failures += ProviderFailure(type, e.reason)
-                if (e.reason != AiFailureReason.NETWORK) allNetwork = false
+                return@withContext AiOutcome.Success(analysis, type)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                val reason = (e as? AiException)?.reason ?: AiFailureReason.UNKNOWN
+                Log.w(TAG, "Fournisseur ${type.label} en échec : $reason — ${e.message}")
+                failures += ProviderFailure(type, reason)
+                if (reason != AiFailureReason.NETWORK) allNetwork = false
                 // On passe au fournisseur suivant quel que soit le motif.
             }
         }
-        return AiOutcome.AllFailed(failures, allNetwork)
+        AiOutcome.AllFailed(failures, allNetwork)
     }
 
     /**
@@ -93,9 +111,12 @@ class AiOrchestrator @Inject constructor(
             try {
                 val answer = provider.ask(prompt, key)
                 return AiAnswerOutcome.Success(answer.text, type, answer.usage)
-            } catch (e: AiException) {
-                Log.w(TAG, "Question IA — ${type.label} en échec : ${e.reason} — ${e.message}")
-                failures += ProviderFailure(type, e.reason)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                val reason = (e as? AiException)?.reason ?: AiFailureReason.UNKNOWN
+                Log.w(TAG, "Question IA — ${type.label} en échec : $reason — ${e.message}")
+                failures += ProviderFailure(type, reason)
             }
         }
         return AiAnswerOutcome.AllFailed(failures)
@@ -107,8 +128,12 @@ class AiOrchestrator @Inject constructor(
         return try {
             provider.testKey(apiKey)
             null
-        } catch (e: AiException) {
-            e.reason
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Un échec inattendu n'apprend rien sur la clé : UNKNOWN donne un verdict « invérifiable »
+            // (voir KeyHealthMonitor), qui ne condamne pas une clé peut-être valide.
+            (e as? AiException)?.reason ?: AiFailureReason.UNKNOWN
         }
     }
 

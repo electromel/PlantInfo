@@ -3,10 +3,11 @@ package ch.electromel.plantinfo.data.remote.ai
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.add
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.addJsonObject
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -66,7 +67,7 @@ class ClaudeClient @Inject constructor(
             .build()
 
         val response = HttpSupport.execute(client, request, "Claude")
-        val text = extractText(response)
+        val text = HttpSupport.parseResponse("Claude") { extractText(response) }
         return AiPrompt.parse(text).copy(usage = extractUsage(response))
     }
 
@@ -91,7 +92,8 @@ class ClaudeClient @Inject constructor(
             .post(body.toString().toRequestBody())
             .build()
         val response = HttpSupport.execute(client, request, "Claude")
-        return AiAnswer(extractText(response).trim(), extractUsage(response))
+        val text = HttpSupport.parseResponse("Claude") { extractText(response) }
+        return AiAnswer(text.trim(), extractUsage(response))
     }
 
     override suspend fun testKey(apiKey: String): Boolean {
@@ -133,9 +135,12 @@ class ClaudeClient @Inject constructor(
 
     private fun extractText(response: String): String {
         val obj = json.parseToJsonElement(response).jsonObject
-        val content = obj["content"]?.jsonArray ?: return response
+        // Sans bloc de contenu il n'y a pas de réponse : renvoyer le corps brut ferait afficher du
+        // JSON à l'utilisateur dans le Q&A, et passer un objet vide pour une identification.
+        val content = obj["content"]?.jsonArray
+            ?: throw AiException(AiFailureReason.PARSE, "Claude : réponse sans contenu")
         return content.joinToString("\n") { block ->
-            block.jsonObject["text"]?.jsonPrimitive?.content ?: ""
+            (block as? JsonObject)?.get("text")?.let { it as? JsonPrimitive }?.contentOrNull ?: ""
         }
     }
 

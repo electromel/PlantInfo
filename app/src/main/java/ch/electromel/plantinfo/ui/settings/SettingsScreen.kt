@@ -96,6 +96,9 @@ fun SettingsScreen(
 
             FreeGeminiCard(
                 enabled = state.freeGeminiOnly,
+                // Mode demandé mais sans clé Gemini : il ne retient rien, les autres IA servent.
+                inactiveNote = state.freeGeminiOnly && !state.geminiOnlyActive &&
+                    state.fallbackOrder.isNotEmpty(),
                 onToggle = viewModel::setFreeGeminiOnly,
             )
 
@@ -126,7 +129,7 @@ fun SettingsScreen(
                 FallbackOrderCard(
                     order = state.fallbackOrder,
                     onMove = viewModel::moveFallback,
-                    enabled = !state.freeGeminiOnly,
+                    enabled = !state.geminiOnlyActive,
                 )
             }
 
@@ -371,6 +374,7 @@ private fun RelaunchSetupButton(onRelaunch: () -> Unit) {
 @Composable
 private fun FreeGeminiCard(
     enabled: Boolean,
+    inactiveNote: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
     SectionCard(title = stringResource(R.string.settings_free_gemini_title)) {
@@ -387,6 +391,13 @@ private fun FreeGeminiCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 )
+                if (inactiveNote) {
+                    Text(
+                        stringResource(R.string.settings_free_gemini_inactive),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
             }
             Spacer(Modifier.width(12.dp))
             Switch(checked = enabled, onCheckedChange = onToggle)

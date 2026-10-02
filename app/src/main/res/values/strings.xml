@@ -332,6 +332,7 @@
     <string name="settings_free_gemini_title">Free AI (Gemini only)</string>
     <string name="settings_free_gemini_body">Uses Gemini only, for identification and questions.</string>
     <string name="settings_free_gemini_note">Other providers (Claude, GPT, DeepSeek, Mistral…) are ignored: their APIs are paid for (a Claude Pro or ChatGPT Plus subscription does not include API credits). Only turn this off once you have topped up the account of one of them.</string>
+    <string name="settings_free_gemini_inactive">No Gemini key is stored, so your other AI keys are used for now.</string>
     <string name="settings_key_stored">Key saved</string>
     <string name="settings_key_absent">No key saved</string>
     <string name="settings_key_broken">This key no longer works: %1$s.</string>

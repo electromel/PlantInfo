@@ -3,9 +3,12 @@ package ch.electromel.plantinfo.data.remote.ai
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -117,7 +120,8 @@ class OpenAiCompatibleClient(
             }
         }
         val response = post(body, apiKey)
-        return AiPrompt.parse(extractText(response)).copy(usage = extractUsage(response))
+        val text = HttpSupport.parseResponse(config.label) { extractText(response) }
+        return AiPrompt.parse(text).copy(usage = extractUsage(response))
     }
 
     override suspend fun ask(prompt: String, apiKey: String): AiAnswer {
@@ -129,7 +133,8 @@ class OpenAiCompatibleClient(
             }
         }
         val response = post(body, apiKey)
-        return AiAnswer(extractText(response).trim(), extractUsage(response))
+        val text = HttpSupport.parseResponse(config.label) { extractText(response) }
+        return AiAnswer(text.trim(), extractUsage(response))
     }
 
     override suspend fun testKey(apiKey: String): Boolean {
@@ -165,16 +170,36 @@ class OpenAiCompatibleClient(
         return usageFromJson(config.model, usage)
     }
 
-    private fun extractText(response: String): String {
-        val obj = json.parseToJsonElement(response).jsonObject
-        return obj["choices"]?.jsonArray?.firstOrNull()
-            ?.jsonObject?.get("message")?.jsonObject?.get("content")?.jsonPrimitive?.content
-            ?: response
-    }
+    private fun extractText(response: String): String = textOfCompletion(response, config.label)
 
     internal companion object {
         const val ANALYZE_MAX_TOKENS = 16_000
         const val ASK_MAX_TOKENS = 4_000
+
+        /**
+         * Texte de la première réponse d'un « chat completions ». `content` est une chaîne chez la
+         * plupart des fournisseurs, mais certains (Mistral en mode raisonnement, des modèles servis
+         * par OpenRouter) le rendent en **liste de blocs** `[{"type":"text","text":"…"}]` ; `null`
+         * quand le modèle n'a rien produit. Aucun de ces cas ne doit faire lever une exception
+         * brute, ni passer le corps entier de la réponse pour du texte.
+         */
+        fun textOfCompletion(response: String, label: String): String {
+            val message = (Json.parseToJsonElement(response).jsonObject["choices"] as? JsonArray)
+                ?.firstOrNull()?.let { it as? JsonObject }?.get("message") as? JsonObject
+            val text = when (val content = message?.get("content")) {
+                is JsonArray -> content.mapNotNull { block ->
+                    when (block) {
+                        is JsonObject -> (block["text"] as? JsonPrimitive)?.contentOrNull
+                        is JsonPrimitive -> block.contentOrNull
+                        else -> null
+                    }
+                }.joinToString("\n")
+                is JsonPrimitive -> content.contentOrNull
+                else -> null
+            }
+            return text?.takeIf { it.isNotBlank() }
+                ?: throw AiException(AiFailureReason.PARSE, "$label : réponse sans texte")
+        }
 
         /**
          * Jetons facturés d'après le bloc `usage`. La sortie vaut `total_tokens − prompt_tokens`

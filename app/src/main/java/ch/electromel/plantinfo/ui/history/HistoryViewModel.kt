@@ -93,7 +93,7 @@ class HistoryViewModel @Inject constructor(
     fun setDateRange(range: DateRange) = _filters.update { it.copy(dateRange = range) }
 
     fun deleteAll() {
-        viewModelScope.launch { repository.deleteAll(items.value) }
+        viewModelScope.launch { repository.deleteAll() }
     }
 
     fun delete(entity: IdentificationEntity) {

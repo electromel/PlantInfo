@@ -7,6 +7,7 @@ import ch.electromel.plantinfo.domain.model.PropagationMethod
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.SpeciesUse
 import ch.electromel.plantinfo.domain.model.UseDomain
+import ch.electromel.plantinfo.util.GeoUtils
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
@@ -35,11 +36,13 @@ object AiPrompt {
                 "- ${it.scientificName} (${it.commonName ?: "nom commun inconnu"}) : score ${it.score}/100"
             }
         }
+        // Le lieu est arrondi à ~1 km avant de quitter l'appareil (voir GeoUtils.APPROXIMATE_DECIMALS) :
+        // la région, le climat et l'altitude suffisent à juger la plausibilité d'une espèce.
         val geo = input.gps?.let {
             buildString {
-                append("Latitude ${it.latitude}, longitude ${it.longitude}")
+                val (lat, lng) = GeoUtils.approximateCoordinates(it.latitude, it.longitude).split(", ")
+                append("Latitude $lat, longitude $lng (position arrondie à environ 1 km)")
                 it.altitude?.let { a -> append(", altitude ${a.toInt()} m") }
-                it.accuracyMeters?.let { acc -> append(" (précision GPS ~${acc.toInt()} m)") }
             }
         } ?: "Position GPS non disponible."
 
@@ -162,6 +165,13 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
             json.decodeFromString<AiResponseDto>(jsonText)
         } catch (e: Exception) {
             throw AiException(AiFailureReason.PARSE, "JSON IA invalide : ${e.message}", e)
+        }
+        // Un objet JSON valide n'est pas pour autant une identification. Sans espèce, la fiche serait
+        // enregistrée comme un succès (« Espèce inconnue », score 0) et écarterait un candidat
+        // Pl@ntNet pourtant bon, sans que le repli passe au fournisseur suivant. Une réponse bloquée
+        // ou un `{}` doivent compter comme un échec.
+        if (dto.scientificName.isNullOrBlank()) {
+            throw AiException(AiFailureReason.PARSE, "Réponse IA sans nom d'espèce.")
         }
         return dto.toDomain()
     }

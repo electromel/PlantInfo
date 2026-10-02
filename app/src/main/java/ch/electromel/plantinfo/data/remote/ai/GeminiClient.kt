@@ -3,8 +3,11 @@ package ch.electromel.plantinfo.data.remote.ai
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -53,7 +56,8 @@ class GeminiClient @Inject constructor(
             .build()
 
         val response = HttpSupport.execute(client, request, "Gemini")
-        return AiPrompt.parse(extractText(response)).copy(usage = extractUsage(response))
+        val text = HttpSupport.parseResponse("Gemini") { extractText(response) }
+        return AiPrompt.parse(text).copy(usage = extractUsage(response))
     }
 
     override suspend fun ask(prompt: String, apiKey: String): AiAnswer {
@@ -73,7 +77,8 @@ class GeminiClient @Inject constructor(
             .post(body.toString().toRequestBody())
             .build()
         val response = HttpSupport.execute(client, request, "Gemini")
-        return AiAnswer(extractText(response).trim(), extractUsage(response))
+        val text = HttpSupport.parseResponse("Gemini") { extractText(response) }
+        return AiAnswer(text.trim(), extractUsage(response))
     }
 
     override suspend fun testKey(apiKey: String): Boolean {
@@ -115,11 +120,21 @@ class GeminiClient @Inject constructor(
 
     private fun extractText(response: String): String {
         val obj = json.parseToJsonElement(response).jsonObject
+        // Une demande bloquée (filtre de sécurité) n'a aucun candidat, seulement `promptFeedback`.
+        // Renvoyer le corps brut ferait passer ce JSON pour une réponse : on le dit plutôt, pour que
+        // le repli passe au fournisseur suivant.
         val parts = obj["candidates"]?.jsonArray?.firstOrNull()
             ?.jsonObject?.get("content")?.jsonObject?.get("parts")?.jsonArray
-            ?: return response
-        return parts.joinToString("\n") { it.jsonObject["text"]?.jsonPrimitive?.content ?: "" }
+            ?: throw AiException(AiFailureReason.PARSE, "Gemini : aucune réponse (${blockReason(obj)})")
+        return parts.joinToString("\n") {
+            (it as? JsonObject)?.get("text")?.let { t -> t as? JsonPrimitive }?.contentOrNull ?: ""
+        }
     }
+
+    private fun blockReason(response: JsonObject): String =
+        (response["promptFeedback"] as? JsonObject)?.get("blockReason")
+            ?.let { it as? JsonPrimitive }?.contentOrNull
+            ?.let { "bloquée : $it" } ?: "aucun candidat"
 
     private companion object {
         // Alias « latest » : suit le dernier modèle Flash et conserve un quota gratuit, contrairement

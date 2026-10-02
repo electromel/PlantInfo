@@ -25,7 +25,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [IdentificationEntity::class, SpeciesRangeCacheEntity::class],
     version = 9,
-    exportSchema = false,
+    exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class PlantInfoDatabase : RoomDatabase() {
@@ -110,5 +110,18 @@ abstract class PlantInfoDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE identifications ADD COLUMN photoSuggestionsJson TEXT")
             }
         }
+
+        /**
+         * Toutes les migrations, dans l'ordre : **la** liste que la base enregistre (voir
+         * `DatabaseModule`) et que `MigrationTest` rejoue. Une migration ajoutée sans l'être ici
+         * n'est pas enregistrée : les tests échouent, plutôt que l'application chez un utilisateur
+         * qui met à jour. À chaque nouvelle version : incrémenter `version`, ajouter la migration
+         * ici, relancer la construction (le schéma est exporté dans `app/schemas`) et ajouter la
+         * ligne correspondante dans `tools/derive_room_schemas.py`.
+         */
+        val MIGRATIONS: Array<Migration> = arrayOf(
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
+            MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9,
+        )
     }
 }

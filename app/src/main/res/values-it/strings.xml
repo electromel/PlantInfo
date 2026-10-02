@@ -328,6 +328,7 @@
     <string name="settings_free_gemini_title">IA gratuita (solo Gemini)</string>
     <string name="settings_free_gemini_body">Usa solo Gemini per l\'identificazione e le domande.</string>
     <string name="settings_free_gemini_note">Gli altri fornitori (Claude, GPT, DeepSeek, Mistral…) vengono ignorati: le loro API sono a pagamento (un abbonamento Claude Pro o ChatGPT Plus non include crediti API). Disattivate questa opzione solo dopo aver ricaricato l\'account di uno di essi.</string>
+    <string name="settings_free_gemini_inactive">Nessuna chiave Gemini salvata: per ora vengono usate le altre chiavi IA.</string>
     <string name="settings_key_stored">Chiave salvata</string>
     <string name="settings_key_absent">Nessuna chiave salvata</string>
     <string name="settings_key_broken">Questa chiave non funziona più: %1$s.</string>

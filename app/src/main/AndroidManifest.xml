@@ -10,11 +10,15 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Lecture de la géolocalisation inscrite dans l'EXIF des photos importées.
+    <!-- Lecture de la géolocalisation inscrite dans l'EXIF des photos importées. Ces permissions ne
+         sont demandées qu'au bouton Galerie (voir CaptureScreen), jamais à l'ouverture de l'app.
          ACCESS_MEDIA_LOCATION n'est accordable qu'avec une permission d'accès aux médias :
          READ_MEDIA_IMAGES (Android 13+) ou READ_EXTERNAL_STORAGE (≤ Android 12). -->
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Android 14+ : accès partiel (« photos sélectionnées »). Sans cette déclaration, l'utilisateur
+         ne peut qu'autoriser toutes les photos ou refuser. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />

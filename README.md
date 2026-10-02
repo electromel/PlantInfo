@@ -13,9 +13,10 @@ diagnostic de santé, informations, géolocalisation, questions à l'IA et histo
    complémentaire. Pour une photo importée, le géotag EXIF du fichier prime sur la position courante.
 3. Pipeline hybride :
    - **Pl@ntNet** identifie les candidats taxonomiques (plantes/arbres).
-   - Une **IA générative multimodale** (Claude → Gemini → GPT, avec repli automatique) valide/corrige,
-     identifie les champignons, évalue l'état de santé, enrichit et calcule un **score d'exactitude
-     sur 100**.
+   - Une **IA générative multimodale** (neuf fournisseurs au choix : Claude, Gemini, GPT, DeepSeek,
+     Grok, Qwen, Kimi, Mistral, OpenRouter — repli automatique dans l'ordre réglé, seuls ceux dont une
+     clé est saisie sont contactés) valide/corrige, identifie les champignons, évalue l'état de santé,
+     enrichit et calcule un **score d'exactitude sur 100**.
 4. Le résultat s'affiche (score, avertissements, comestibilité, habitat, santé, dimensions à
    maturité, calendrier d'entretien, usages, symbolique, alternatives, carte) et est enregistré dans
    l'historique local.
@@ -36,11 +37,12 @@ diagnostic de santé, informations, géolocalisation, questions à l'IA et histo
 | Clés API | `EncryptedSharedPreferences` (Android Keystore) — chiffrées au repos |
 | Carte | osmdroid (OpenStreetMap, libre) + occurrences GBIF |
 | File hors-ligne | WorkManager |
-| minSdk / targetSdk | 29 (Android 10) / 35 |
+| minSdk / targetSdk | 29 (Android 10) / 36 |
 
 Toutes les données personnelles (photos, GPS, historique) **restent sur l'appareil** (LPD/CH). Seuls
-les appels ponctuels aux API externes (Pl@ntNet, IA, GBIF, tuiles OSM) transmettent une photo et des
-coordonnées, sans conservation côté application.
+les appels ponctuels aux API externes (Pl@ntNet, IA, GBIF, tuiles OSM) transmettent une photo ou un
+lieu — ce dernier **arrondi à environ 1 km** et jamais à Pl@ntNet —, sans conservation côté
+application. Le détail, en cinq langues, est dans [`docs/privacy-policy.html`](docs/privacy-policy.html).
 
 ## Clés API nécessaires
 
@@ -55,10 +57,12 @@ numérotée, piège classique) et un test de validité immédiat.
 | **Gemini** (Google) | Description, santé, champignons, Q&A | Gratuit dans le palier gratuit | https://aistudio.google.com/apikey |
 | Claude (Anthropic) | Même rôle, alternative | Payant à l'usage | https://console.anthropic.com/settings/keys |
 | GPT (OpenAI) | Même rôle, alternative | Payant à l'usage | https://platform.openai.com/api-keys |
+| DeepSeek, Grok, Qwen, Kimi, Mistral, OpenRouter | Même rôle, alternatives | Selon le fournisseur | Assistant de configuration (« + » dans les Paramètres) |
 
 Un abonnement Claude Pro ou ChatGPT Plus **n'inclut aucun crédit API** : le compte développeur se
-crédite séparément. Le mode **« IA gratuite (Gemini seul) »**, actif par défaut, ignore Claude et GPT
-pour éviter de consommer des crédits par inadvertance.
+crédite séparément. Le mode **« IA gratuite (Gemini seul) »**, actif par défaut, ignore les autres IA
+payantes pour éviter de consommer des crédits par inadvertance — mais seulement **si une clé Gemini
+est saisie** : sans elle, la clé d'un autre fournisseur est utilisée.
 
 Sans clé IA, l'app affiche le résultat **Pl@ntNet brut** avec un message explicite.
 
@@ -73,8 +77,8 @@ invalide.
 
 Copier `dev-keys.properties.example` en `dev-keys.properties` (racine, **non versionné**) et y mettre
 ses clés. Elles sont injectées dans `BuildConfig` et servent à **pré-remplir** les paramètres au
-premier lancement (sans jamais écraser une clé saisie manuellement). Voir le commentaire en tête de
-`app/build.gradle.kts` pour restreindre cela au build `debug` en cas de publication future.
+premier lancement (sans jamais écraser une clé saisie manuellement). Elles ne sont injectées que dans
+le build `debug` : l'application publiée ne contient aucune clé.
 
 ## Build & installation
 
@@ -83,8 +87,7 @@ Prérequis : **Android Studio** (Ladybug ou plus récent). Le daemon Gradle exig
 le JBR livré avec Android Studio convient — `C:\Program Files\Android\Android Studio\jbr`.
 
 1. Ouvrir le dossier du projet dans Android Studio → il génère le wrapper Gradle et synchronise.
-   - Le binaire `gradle/wrapper/gradle-wrapper.jar` n'est pas versionné ; en ligne de commande,
-     le régénérer une fois avec un Gradle local (`gradle wrapper --gradle-version 9.1.0`).
+   - Le wrapper Gradle (`gradlew`, `gradle/wrapper/gradle-wrapper.jar`) est versionné.
 2. Créer `local.properties` avec le chemin du SDK (`sdk.dir=...`) — Android Studio le crée
    automatiquement.
 3. (Optionnel) Renseigner `dev-keys.properties`.
@@ -97,12 +100,13 @@ le JBR livré avec Android Studio convient — `C:\Program Files\Android\Android
    & .\gradlew.bat "-Dorg.gradle.java.installations.paths=$jbr" assembleDebug
    ```
    APK produit dans `app/build/outputs/apk/debug/`.
-5. **Installation par side-loading** sur un appareil Android 10+ (APK direct), ou via une piste de
-   test interne (Google Play Internal Testing / Firebase App Distribution). Pas de publication
-   publique prévue.
+5. **Installation** sur un appareil Android 10+ : APK debug en side-loading (identifiant
+   `ch.electromel.plantinfo.debug`, il cohabite avec la version du Play Store), ou publication via la
+   Google Play Console — voir [`docs/play-store-inscription.md`](docs/play-store-inscription.md).
 
-Les tests sont des tests JVM (`src/test`, JUnit4 + MockK). Il n'y a pas de lint configuré au-delà des
-warnings du compilateur Kotlin et d'AGP.
+**Qualité** : les tests JVM (`src/test`, JUnit4 + MockK) et le lint (`:app:lintDebug`) tournent en CI
+(`.github/workflows/ci.yml`). Les tests de migration Room (`src/androidTest`) se lancent à la main sur
+un appareil — voir `CLAUDE.md`, section « Tests ».
 
 ## Structure
 
@@ -112,7 +116,7 @@ app/src/main/java/ch/electromel/plantinfo/
 │   ├── db/       Room (entité, DAO, base, migrations, convertisseurs)
 │   ├── keys/     ApiKeyStore chiffré, guides d'obtention, surveillance de validité
 │   ├── prefs/    Réglages en clair (seuils de sécurité, accueil vu)
-│   ├── remote/   Pl@ntNet + clients IA (Claude/Gemini/GPT) + orchestrateur + GBIF
+│   ├── remote/   Pl@ntNet + clients IA (Claude, Gemini, compatibles OpenAI) + orchestrateur + GBIF
 │   └── repo/     IdentificationRepository, HistoryRepository, PlantQaRepository, mappers
 ├── domain/       Modèles, ConfidenceEngine (fusion des scores), listes de sécurité, tarifs IA
 ├── di/           Modules Hilt (réseau, base)
@@ -138,19 +142,24 @@ app/src/main/java/ch/electromel/plantinfo/
 ## Limites connues
 
 - La **notification** de résultat différé ouvre l'app, sans deep-link direct vers la fiche.
-- Le **guidage des photos complémentaires** est indiqué sur la fiche mais le flux « ajouter la photo
-  demandée et relancer » n'est pas encore intégré.
 - L'**alerte espèce protégée** combine le jugement de l'IA et une **liste de référence Suisse
   indicative et non exhaustive** (`ProtectedSpeciesChecker`) — la réglementation cantonale/fédérale
   fait foi.
-- L'**aire de répartition** est une enveloppe convexe approximative des occurrences GBIF (avertissement
-  affiché), pas une limite scientifique/légale.
+- L'**aire de répartition** est une enveloppe convexe approximative de 300 occurrences GBIF (observations
+  et spécimens récoltés ; jardins, collections vivantes et fossiles exclus), pas une limite
+  scientifique/légale. Un nom que GBIF ne connaît pas n'affiche pas l'aire de son genre. Un échantillon
+  plus large demanderait de paginer GBIF en profondeur, ce qui peut dépasser la minute.
 - Le **coût affiché** est une estimation au tarif public du modèle : les paliers gratuits, les
   remises de cache et les tarifs d'introduction ne sont pas modélisés. La table de tarifs
   (`domain/model/TokenUsage.kt`) est tenue à la main et doit être relue quand un fournisseur change
   ses prix ou quand on change de modèle.
-- Modèles IA par défaut : `claude-sonnet-5`, `gemini-flash-latest`, `gpt-4o` (modifiables dans le
-  code des clients `data/remote/ai/`).
+- Modèles IA par défaut : voir `data/remote/ai/` (`ClaudeClient`, `GeminiClient`,
+  `CompatibleProviderConfig`) ; chaque modèle doit avoir son tarif dans `AiPricing.rates`.
+- Le stockage des clés repose sur `androidx.security:security-crypto`, déclaré obsolète par Google :
+  encore fonctionnel, à remplacer le jour où il sera retiré (voir `CLAUDE.md`).
+- Les dépendances de plateforme (Kotlin 2.0.21, Compose BoM 2024.12, Hilt, Room 2.6, OkHttp 4.12…) ont
+  du retard sur leurs dernières versions : leur mise à jour est une migration à part entière (Kotlin,
+  KSP, Hilt et Room doivent avancer ensemble ; AGP 9 casse KSP), pas un simple bump.
 
 ## Emplacement du projet
 

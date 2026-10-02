@@ -29,6 +29,10 @@ object ToxicSpeciesChecker {
         "hedera", "wisteria", "robinia", "rhododendron", "kalmia", "euphorbia", "mercurialis",
         "chelidonium", "ranunculus", "anemone", "senecio", "jacobaea", "narcissus", "galanthus",
         "leucojum", "hyacinthus", "scilla", "iris", "lupinus", "physalis", "toxicodendron",
+        // Arbustes et vivaces de jardin souvent photographiés (graines, baies, feuillage toxiques)
+        "aesculus", "buxus", "euonymus", "lantana", "cytisus", "aethusa", "pieris", "cestrum",
+        "nicotiana", "caltha", "pulsatilla", "ornithogalum", "hyacinthoides", "clivia",
+        "hippeastrum", "amaryllis", "pteridium", "abrus", "jatropha", "cycas", "zamia",
         // Plantes d'intérieur fréquemment photographiées (oxalates de calcium)
         "dieffenbachia", "philodendron", "monstera", "spathiphyllum", "epipremnum", "alocasia",
         "caladium", "zantedeschia", "anthurium", "syngonium",
@@ -42,7 +46,7 @@ object ToxicSpeciesChecker {
     private val toxicFungusGenera = setOf(
         "amanita", "galerina", "lepiota", "cortinarius", "gyromitra", "inocybe", "clitocybe",
         "entoloma", "omphalotus", "hypholoma", "paxillus", "conocybe", "pholiotina", "scleroderma",
-        "chlorophyllum", "rubroboletus",
+        "chlorophyllum", "rubroboletus", "hebeloma", "verpa", "psilocybe",
     )
 
     // Binômes toxiques appartenant à un genre par ailleurs comestible ou inoffensif.
@@ -51,6 +55,12 @@ object ToxicSpeciesChecker {
         "sambucus ebulus", "aethusa cynapium", "prunus laurocerasus", "cytisus laburnum",
         "tricholoma equestre", "boletus satanas", "russula emetica", "agaricus xanthodermus",
         "lyophyllum connatum", "armillaria mellea", // toxique crue ou mal cuite
+        // Sosies de comestibles courants : la confusion est précisément ce qui intoxique.
+        "tricholoma pardinum", "tricholoma tigrinum", // « tricholome tigré », confondu avec les gris
+        "coprinopsis atramentaria", // coprin noir d'encre : grave avec de l'alcool, même 3 jours après
+        "boletus luridus", "suillellus luridus", "neoboletus luridiformis", // toxiques crus ou mal cuits
+        "lactarius torminosus", "lactarius helvus", "russula nobilis", "ramaria formosa",
+        "pholiota squarrosa", "helvella crispa", "helvella lacunosa", "mycena pura",
     )
 
     /** true si l'espèce figure dans la liste indicative des espèces toxiques pour l'humain. */

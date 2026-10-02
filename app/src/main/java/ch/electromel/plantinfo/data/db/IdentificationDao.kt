@@ -29,6 +29,10 @@ interface IdentificationDao {
     @Query("SELECT * FROM identifications WHERE id = :id")
     suspend fun getById(id: Long): IdentificationEntity?
 
+    /** Toutes les fiches, sans filtre : pour savoir quelles photos supprimer avec l'historique. */
+    @Query("SELECT * FROM identifications")
+    suspend fun getAll(): List<IdentificationEntity>
+
     @Query("SELECT * FROM identifications WHERE id = :id")
     fun observeById(id: Long): Flow<IdentificationEntity?>
 

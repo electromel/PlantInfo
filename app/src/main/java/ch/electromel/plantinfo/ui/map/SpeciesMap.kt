@@ -36,6 +36,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.CopyrightOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polygon
 
@@ -225,6 +226,10 @@ private fun drawOverlays(
         }
         map.overlays.add(marker)
     }
+
+    // Attribution obligatoire des tuiles OpenStreetMap (licence ODbL) : osmdroid ne l'affiche pas de
+    // lui-même. Ajoutée en dernier pour rester au-dessus de l'aire et du marqueur.
+    map.overlays.add(CopyrightOverlay(map.context))
 
     map.invalidate()
 }

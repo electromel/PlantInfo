@@ -6,6 +6,7 @@ import ch.electromel.plantinfo.data.db.SpeciesRangeDao
 import ch.electromel.plantinfo.data.remote.gbif.GbifClient
 import ch.electromel.plantinfo.domain.model.LatLng
 import ch.electromel.plantinfo.domain.model.SpeciesRange
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import java.util.concurrent.TimeUnit
@@ -48,6 +49,8 @@ class RangeRepository @Inject constructor(
             val range = gbifClient.fetchRange(key, gbifKey)
             dao.upsert(range.toEntity())
             range
+        } catch (e: CancellationException) {
+            throw e // l'écran a été quitté : ne pas le prendre pour une panne de GBIF
         } catch (e: Exception) {
             Log.w(TAG, "GBIF indisponible pour $key : ${e.message}")
             dao.get(key)?.toRange() ?: SpeciesRange(scientificName, emptyList(), hasData = false)

@@ -170,4 +170,62 @@ class AiPromptTest {
         assertTrue(analysis.propagation.isEmpty())
         assertNull(analysis.symbolism)
     }
+
+    @Test
+    fun `un objet JSON sans espece n'est pas une identification`() {
+        // Réponse bloquée, objet vide, espèce blanche : avant, chacun donnait un « succès » sans nom.
+        listOf(
+            "{}",
+            """{"confidence": 90}""",
+            """{"scientificName": "", "confidence": 90}""",
+            """{"scientificName": "   ", "commonName": "Rose"}""",
+            """{"scientificName": null}""",
+            """{"promptFeedback":{"blockReason":"SAFETY"}}""",
+        ).forEach { reply ->
+            try {
+                AiPrompt.parse(reply)
+                org.junit.Assert.fail("« $reply » devait être refusée")
+            } catch (e: AiException) {
+                assertEquals(reply, AiFailureReason.PARSE, e.reason)
+            }
+        }
+    }
+
+    @Test
+    fun `le texte autour du JSON reste toleré`() {
+        val analysis = AiPrompt.parse(
+            """
+            Voici le résultat :
+            ```json
+            {"scientificName": "Quercus robur", "confidence": 90}
+            ```
+            """.trimIndent(),
+        )
+
+        assertEquals("Quercus robur", analysis.scientificName)
+    }
+
+    @Test
+    fun `le lieu du prompt est arrondi a environ un kilometre`() {
+        val input = AiAnalysisInput(
+            images = emptyList(),
+            plantNetCandidates = emptyList(),
+            gps = ch.electromel.plantinfo.domain.model.GpsLocation(46.123456, 6.149876, 412.7, 8f),
+            language = AppLanguage.FRENCH,
+        )
+
+        val prompt = AiPrompt.buildInstruction(input, today = LocalDate.of(2026, 5, 1))
+
+        assertTrue(prompt.contains("Latitude 46.12, longitude 6.15"))
+        assertTrue(prompt.contains("altitude 412 m"))
+        assertTrue("la position exacte ne doit pas figurer", !prompt.contains("46.1234"))
+        assertTrue(!prompt.contains("6.1498"))
+    }
+
+    @Test
+    fun `sans position le prompt le dit`() {
+        val input = AiAnalysisInput(emptyList(), emptyList(), gps = null, language = AppLanguage.FRENCH)
+
+        assertTrue(AiPrompt.buildInstruction(input).contains("Position GPS non disponible."))
+    }
 }

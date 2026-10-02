@@ -9,7 +9,9 @@ import ch.electromel.plantinfo.domain.model.SpeciesCandidate
 import ch.electromel.plantinfo.domain.model.isToxic
 import ch.electromel.plantinfo.util.StringProvider
 import ch.electromel.plantinfo.util.ImageStorage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,13 +37,21 @@ class HistoryRepository @Inject constructor(
 
     /** Supprime une entrée et ses photos associées du stockage interne. */
     suspend fun delete(entity: IdentificationEntity) {
-        entity.photoPaths.forEach { imageStorage.delete(it) }
+        withContext(Dispatchers.IO) { entity.photoPaths.forEach { imageStorage.delete(it) } }
         dao.delete(entity)
     }
 
-    /** Supprime tout l'historique (avec confirmation côté UI) et les photos correspondantes. */
-    suspend fun deleteAll(entities: List<IdentificationEntity>) {
-        entities.forEach { e -> e.photoPaths.forEach { imageStorage.delete(it) } }
+    /**
+     * Supprime tout l'historique (avec confirmation côté UI) et les photos correspondantes.
+     *
+     * Les photos à effacer sont celles de **toutes** les fiches en base, relues ici, et non celles de
+     * la liste affichée : avec un filtre actif (favoris, recherche, période) l'écran n'en montre
+     * qu'une partie, alors que `deleteAll()` vide toute la table — les photos des fiches masquées
+     * restaient sinon sur l'appareil, sans plus aucun moyen de les atteindre depuis l'application.
+     */
+    suspend fun deleteAll() {
+        val photos = dao.getAll().flatMap { it.photoPaths }
+        withContext(Dispatchers.IO) { photos.forEach { imageStorage.delete(it) } }
         dao.deleteAll()
     }
 

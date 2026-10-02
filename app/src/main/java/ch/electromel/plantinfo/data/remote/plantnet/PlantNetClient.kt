@@ -1,13 +1,15 @@
 package ch.electromel.plantinfo.data.remote.plantnet
 
 import ch.electromel.plantinfo.data.remote.ai.AiImage
+import ch.electromel.plantinfo.data.remote.fetch
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -39,12 +41,16 @@ class PlantNetClient @Inject constructor(
     /**
      * @param images photos à identifier
      * @param organs indices d'organe alignés sur les images (valeurs Pl@ntNet : leaf, flower, …)
+     * @param language code de langue des noms vernaculaires (`fr`, `en`, `de`, `it`, `es`) : celle
+     *   de l'application, pour qu'un résultat Pl@ntNet brut ne soit pas dans une autre langue que
+     *   l'interface.
      */
     suspend fun identify(
         images: List<AiImage>,
         organs: List<String>,
         apiKey: String,
-    ): PlantNetResult = withContext(Dispatchers.IO) {
+        language: String,
+    ): PlantNetResult {
         val bodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
         images.forEachIndexed { i, img ->
             val mediaType = img.mimeType.toMediaType()
@@ -54,38 +60,26 @@ class PlantNetClient @Inject constructor(
             val organ = organs.getOrElse(i) { "auto" }
             bodyBuilder.addFormDataPart("organs", organ)
         }
-        // lang=fr : noms vernaculaires en français plutôt que le défaut anglais de l'API.
         val request = Request.Builder()
-            .url("https://my-api.plantnet.org/v2/identify/all?api-key=$apiKey&nb-results=5&lang=fr")
+            .url(
+                identifyUrl(apiKey)
+                    .newBuilder()
+                    .addQueryParameter("nb-results", "5")
+                    .addQueryParameter("lang", language)
+                    .build(),
+            )
             .post(bodyBuilder.build())
             .build()
 
-        try {
-            client.newCall(request).execute().use { response ->
-                val raw = response.body?.string().orEmpty()
-                if (!response.isSuccessful) {
-                    val err = when (response.code) {
-                        401, 403 -> PlantNetError.INVALID_KEY
-                        404 -> PlantNetError.NO_MATCH
-                        429 -> PlantNetError.QUOTA
-                        in 500..599 -> PlantNetError.SERVER
-                        else -> PlantNetError.UNKNOWN
-                    }
-                    return@withContext PlantNetResult(emptyList(), err)
-                }
-                val dto = json.decodeFromString<PlantNetResponse>(raw)
-                val candidates = dto.results.orEmpty().mapNotNull { r ->
-                    val sci = r.species?.scientificNameWithoutAuthor ?: return@mapNotNull null
-                    SpeciesCandidate(
-                        scientificName = sci,
-                        commonName = r.species.commonNames?.firstOrNull(),
-                        score = ((r.score ?: 0.0) * 100).toInt().coerceIn(0, 100),
-                        gbifKey = r.gbif?.id?.contentOrNull?.toLongOrNull(),
-                        iucnCategory = r.iucn?.category?.takeIf { it.isNotBlank() },
-                    )
-                }
-                PlantNetResult(candidates, if (candidates.isEmpty()) PlantNetError.NO_MATCH else null)
+        return try {
+            val reply = client.fetch(request)
+            if (!reply.isSuccessful) {
+                return PlantNetResult(emptyList(), errorForStatus(reply.code))
             }
+            val candidates = parseCandidates(reply.body)
+            PlantNetResult(candidates, if (candidates.isEmpty()) PlantNetError.NO_MATCH else null)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: IOException) {
             PlantNetResult(emptyList(), PlantNetError.NETWORK)
         } catch (e: Exception) {
@@ -98,22 +92,53 @@ class PlantNetClient @Inject constructor(
      * on interprète le code HTTP d'un appel léger (401/403 → clé invalide ; 400 « image manquante »
      * ou autre → clé acceptée). Renvoie null si la clé semble valide, sinon le motif d'erreur.
      */
-    suspend fun testKey(apiKey: String): PlantNetError? = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url("https://my-api.plantnet.org/v2/identify/all?api-key=$apiKey")
-            .get()
-            .build()
-        try {
-            client.newCall(request).execute().use { response ->
-                when (response.code) {
-                    401, 403 -> PlantNetError.INVALID_KEY
-                    429 -> PlantNetError.QUOTA
-                    in 500..599 -> PlantNetError.SERVER
-                    else -> null // 400/405 = clé acceptée mais requête incomplète → OK
-                }
+    suspend fun testKey(apiKey: String): PlantNetError? {
+        val request = Request.Builder().url(identifyUrl(apiKey)).get().build()
+        return try {
+            when (client.fetch(request).code) {
+                401, 403 -> PlantNetError.INVALID_KEY
+                429 -> PlantNetError.QUOTA
+                in 500..599 -> PlantNetError.SERVER
+                else -> null // 400/405 = clé acceptée mais requête incomplète → OK
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: IOException) {
             PlantNetError.NETWORK
+        }
+    }
+
+    internal companion object {
+        /**
+         * URL de base portant la clé. Construite par `HttpUrl` et non par interpolation : une clé
+         * collée avec un caractère réservé (`&`, `#`, espace) casserait sinon la requête, voire en
+         * injecterait un paramètre.
+         */
+        fun identifyUrl(apiKey: String): HttpUrl =
+            "https://my-api.plantnet.org/v2/identify/all".toHttpUrl().newBuilder()
+                .addQueryParameter("api-key", apiKey)
+                .build()
+
+        fun errorForStatus(code: Int): PlantNetError = when (code) {
+            401, 403 -> PlantNetError.INVALID_KEY
+            404 -> PlantNetError.NO_MATCH
+            429 -> PlantNetError.QUOTA
+            in 500..599 -> PlantNetError.SERVER
+            else -> PlantNetError.UNKNOWN
+        }
+    }
+
+    internal fun parseCandidates(raw: String): List<SpeciesCandidate> {
+        val dto = json.decodeFromString<PlantNetResponse>(raw)
+        return dto.results.orEmpty().mapNotNull { r ->
+            val sci = r.species?.scientificNameWithoutAuthor ?: return@mapNotNull null
+            SpeciesCandidate(
+                scientificName = sci,
+                commonName = r.species.commonNames?.firstOrNull(),
+                score = ((r.score ?: 0.0) * 100).toInt().coerceIn(0, 100),
+                gbifKey = r.gbif?.id?.contentOrNull?.toLongOrNull(),
+                iucnCategory = r.iucn?.category?.takeIf { it.isNotBlank() },
+            )
         }
     }
 

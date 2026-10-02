@@ -328,6 +328,7 @@
     <string name="settings_free_gemini_title">Kostenlose KI (nur Gemini)</string>
     <string name="settings_free_gemini_body">Verwendet für Bestimmung und Fragen ausschliesslich Gemini.</string>
     <string name="settings_free_gemini_note">Andere Anbieter (Claude, GPT, DeepSeek, Mistral…) werden übergangen: Ihre APIs sind kostenpflichtig (ein Claude-Pro- oder ChatGPT-Plus-Abo enthält kein API-Guthaben). Schalten Sie diese Option erst aus, wenn Sie das Konto eines dieser Anbieter aufgeladen haben.</string>
+    <string name="settings_free_gemini_inactive">Es ist kein Gemini-Schlüssel hinterlegt: Vorerst werden Ihre anderen KI-Schlüssel verwendet.</string>
     <string name="settings_key_stored">Schlüssel gespeichert</string>
     <string name="settings_key_absent">Kein Schlüssel gespeichert</string>
     <string name="settings_key_broken">Dieser Schlüssel funktioniert nicht mehr: %1$s.</string>

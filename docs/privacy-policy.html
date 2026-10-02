@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Politique de confidentialité — PlantInfo</title>
+<title>PlantInfo — Politique de confidentialité · Privacy policy · Datenschutz · Privacy · Privacidad</title>
 <style>
   body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height: 1.6; color: #1b211b; }
   h1 { font-size: 1.7rem; }
@@ -11,12 +11,25 @@
   code { background: #eef; padding: 0 .3em; border-radius: 3px; }
   .meta { color: #666; font-size: .9rem; }
   ul { padding-left: 1.2rem; }
+  nav { margin: 1rem 0 2rem; padding: .6rem 0; border-bottom: 1px solid #cfd8cf; }
+  nav a { margin-right: 1rem; font-weight: 600; color: #2e7d32; text-decoration: none; }
+  section + section { margin-top: 4rem; padding-top: 2rem; border-top: 3px solid #cfd8cf; }
 </style>
 </head>
 <body>
 
+<nav aria-label="Language">
+  <a href="#fr" hreflang="fr">Français</a>
+  <a href="#en" hreflang="en">English</a>
+  <a href="#de" hreflang="de">Deutsch</a>
+  <a href="#it" hreflang="it">Italiano</a>
+  <a href="#es" hreflang="es">Español</a>
+</nav>
+
+<!-- ============================== FRANÇAIS ============================== -->
+<section id="fr" lang="fr">
 <h1>Politique de confidentialité — PlantInfo</h1>
-<p class="meta">Dernière mise à jour : 12 juillet 2026</p>
+<p class="meta">Dernière mise à jour : 1<sup>er</sup> octobre 2026</p>
 
 <p>
   <strong>PlantInfo</strong> (« l'application ») est une application Android d'identification de plantes,
@@ -25,45 +38,65 @@
   traite et comment.
 </p>
 
-<h2>Principe général : un traitement 100 % local</h2>
+<h2>Principe général : un traitement local</h2>
 <p>
   L'application ne crée aucun compte utilisateur, n'affiche aucune publicité et n'intègre aucun outil de
-  suivi (analytics) ou de traçage. Toutes vos données (photos, historique, notes, position) sont stockées
-  <strong>uniquement sur votre appareil</strong>. Elles ne sont transmises qu'aux services tiers strictement
-  nécessaires au fonctionnement, et seulement au moment où vous lancez une identification ou posez une
-  question (voir ci-dessous).
+  suivi (analytics) ou de traçage. Vos données (photos, historique, notes, position) sont stockées
+  <strong>uniquement sur votre appareil</strong>, dans l'espace privé de l'application ; la sauvegarde
+  automatique Android est désactivée pour elle. Elles ne sont transmises à des services tiers que
+  <strong>lorsque vous lancez une identification ou posez une question</strong>, comme décrit ci-dessous.
 </p>
 
 <h2>Données traitées</h2>
 <ul>
   <li><strong>Photos</strong> que vous prenez ou importez pour identifier une espèce.</li>
-  <li><strong>Position géographique (GPS)</strong>, si vous l'autorisez : utilisée comme critère
-      complémentaire d'identification et pour situer la prise de vue sur la carte. Pour une photo importée,
-      la position peut aussi provenir des métadonnées EXIF du fichier.</li>
+  <li><strong>Position géographique</strong>, si vous l'autorisez : utilisée comme critère complémentaire
+      d'identification et pour situer la prise de vue sur la carte. Pour une photo importée, la position peut
+      provenir des métadonnées EXIF du fichier.</li>
   <li><strong>Questions</strong> que vous posez à l'IA au sujet d'une plante identifiée.</li>
   <li><strong>Notes personnelles</strong> que vous ajoutez à une fiche.</li>
   <li><strong>Clés API</strong> que vous saisissez dans les paramètres : elles sont chiffrées au repos via
       l'Android Keystore et ne quittent votre appareil que pour authentifier vos appels aux services
-      correspondants.</li>
+      correspondants. Une clé identifie <em>votre</em> compte auprès du fournisseur concerné.</li>
 </ul>
 
-<h2>Services tiers</h2>
+<h2>Ce qui est envoyé, et à qui</h2>
 <p>
-  Lorsque vous lancez une identification ou posez une question, les données strictement nécessaires sont
-  envoyées, de façon ponctuelle et chiffrée (HTTPS), aux services suivants :
+  Les données strictement nécessaires sont envoyées, de façon chiffrée (HTTPS), aux services suivants.
+  Comme pour toute requête sur Internet, ces services voient aussi l'adresse IP de votre appareil.
 </p>
 <ul>
-  <li><strong>Pl@ntNet</strong> — la photo est envoyée pour obtenir des candidats taxonomiques.</li>
-  <li><strong>Fournisseur d'IA que vous configurez</strong> (Google Gemini, Anthropic Claude ou OpenAI GPT)
-      — la ou les photos, le lieu approximatif et le contexte de l'espèce sont envoyés pour l'analyse et les
-      réponses aux questions. Par défaut, seule l'option gratuite (Google Gemini) est utilisée.</li>
-  <li><strong>GBIF</strong> — le nom scientifique de l'espèce est envoyé pour récupérer sa zone de
-      répartition connue.</li>
-  <li><strong>OpenStreetMap</strong> — utilisé pour afficher les fonds de carte.</li>
+  <li><strong>Pl@ntNet</strong> — la ou les photos, et pour chacune l'organe indiqué (feuille, fleur…),
+      pour obtenir des candidats taxonomiques. Aucune position n'est envoyée à Pl@ntNet.</li>
+  <li><strong>Le ou les fournisseurs d'IA pour lesquels vous avez saisi une clé</strong> — au choix Google
+      Gemini, Anthropic Claude, OpenAI GPT, DeepSeek, xAI Grok, Alibaba Cloud Qwen, Moonshot AI Kimi,
+      Mistral AI ou OpenRouter (qui relaie la requête à un modèle tiers). Pour une identification sont envoyés :
+      la ou les photos, les candidats proposés par Pl@ntNet, la <strong>date du jour</strong>, la langue de
+      l'application et, si elle est connue, la <strong>position de la prise de vue arrondie à environ 1 km</strong>
+      (deux décimales) avec son altitude. Pour une question : votre texte, les informations de la fiche et ce
+      même lieu arrondi. <strong>Par défaut, seul Google Gemini (offre gratuite) est utilisé</strong> ; un fournisseur
+      que vous n'avez pas configuré n'est jamais contacté.
+      Certains de ces fournisseurs sont installés hors de Suisse et de l'Union européenne (par exemple aux
+      États-Unis, en Chine ou à Singapour) et appliquent leur propre politique de confidentialité.</li>
+  <li><strong>Vérification des clés</strong> — au plus une fois par jour, l'application envoie à chaque
+      fournisseur dont vous avez saisi une clé une requête minimale (le mot « ping ») pour vous prévenir si la
+      clé ne fonctionne plus. Aucune photo ni position n'y figure.</li>
+  <li><strong>GBIF</strong> — le nom scientifique (ou l'identifiant taxonomique) de l'espèce, pour récupérer
+      sa zone de répartition connue.</li>
+  <li><strong>OpenStreetMap</strong> — les fonds de carte sont téléchargés depuis les serveurs
+      d'OpenStreetMap : la zone affichée est donc connue de ce service.</li>
 </ul>
 <p>
   Ces services traitent ces données selon leurs propres politiques de confidentialité. L'application ne leur
-  transmet aucun identifiant de compte ni donnée permettant de vous identifier personnellement.
+  transmet aucun nom, adresse électronique ni identifiant de compte autre que la clé API que vous avez vous-même
+  créée chez eux.
+</p>
+
+<h2>Partage et export</h2>
+<p>
+  Le partage d'une fiche et l'export PDF sont déclenchés par vous, et vous choisissez le destinataire. Le texte
+  partagé et le PDF contiennent le lieu de la prise de vue : avec la précision complète, sauf pour une espèce
+  signalée comme protégée, dont le lieu est alors arrondi à environ 1 km.
 </p>
 
 <h2>Aucune vente ni partage à des fins commerciales</h2>
@@ -75,23 +108,24 @@
 <h2>Conservation et suppression</h2>
 <p>
   L'historique et les photos restent sur votre appareil aussi longtemps que vous le souhaitez. Vous pouvez
-  supprimer une fiche individuelle, ou l'intégralité de l'historique, à tout moment depuis l'application. La
-  désinstallation de l'application supprime toutes les données locales associées.
+  supprimer une fiche, ou l'intégralité de l'historique, à tout moment depuis l'application : les photos
+  correspondantes sont alors effacées. La désinstallation supprime toutes les données locales.
 </p>
 
 <h2>Permissions demandées</h2>
+<p>Chaque permission est demandée au moment où elle sert, et l'application reste utilisable si vous la refusez.</p>
 <ul>
-  <li><strong>Caméra</strong> : prendre une photo à identifier.</li>
-  <li><strong>Localisation</strong> : améliorer l'identification et situer la prise de vue (facultatif).</li>
-  <li><strong>Accès aux photos / médias</strong> : importer une photo existante et lire son éventuel géotag.</li>
-  <li><strong>Notifications</strong> : vous informer quand une identification mise en attente hors-ligne
-      aboutit.</li>
+  <li><strong>Caméra</strong> : à l'ouverture de l'appareil photo, pour prendre une photo à identifier.</li>
+  <li><strong>Localisation</strong> : à l'ouverture de l'appareil photo, pour améliorer l'identification et situer la
+      prise de vue (facultatif).</li>
+  <li><strong>Accès aux photos et à leur localisation</strong> : au bouton « Galerie », uniquement pour lire le
+      géotag d'une photo importée (facultatif : sans lui, l'import fonctionne sans le lieu).</li>
+  <li><strong>Notifications</strong> : au lancement d'une identification, pour vous informer quand une
+      identification mise en attente hors-ligne aboutit (facultatif).</li>
 </ul>
 
 <h2>Enfants</h2>
-<p>
-  L'application n'est pas destinée aux enfants et ne collecte pas sciemment de données les concernant.
-</p>
+<p>L'application n'est pas destinée aux enfants et ne collecte pas sciemment de données les concernant.</p>
 
 <h2>Avertissement d'usage</h2>
 <p>
@@ -105,6 +139,443 @@
   Pour toute question relative à cette politique de confidentialité, contactez :
   <br><strong>reynard.michel@gmail.com</strong>
 </p>
+</section>
+
+<!-- ============================== ENGLISH ============================== -->
+<section id="en" lang="en">
+<h1>Privacy policy — PlantInfo</h1>
+<p class="meta">Last updated: 1 October 2026</p>
+
+<p>
+  <strong>PlantInfo</strong> (“the app”) is an Android app that identifies plants, trees and mushrooms from a
+  photo, with a health assessment, information, a distribution map and questions to an artificial intelligence.
+  This policy explains what data the app processes and how.
+</p>
+
+<h2>General principle: local processing</h2>
+<p>
+  The app creates no user account, shows no advertising and contains no analytics or tracking tool. Your data
+  (photos, history, notes, location) is stored <strong>only on your device</strong>, in the app's private space;
+  Android automatic backup is disabled for it. It is sent to third-party services only
+  <strong>when you start an identification or ask a question</strong>, as described below.
+</p>
+
+<h2>Data processed</h2>
+<ul>
+  <li><strong>Photos</strong> you take or import to identify a species.</li>
+  <li><strong>Location</strong>, if you allow it: used as an additional identification criterion and to place the
+      photo on the map. For an imported photo, the location may come from the file's EXIF metadata.</li>
+  <li><strong>Questions</strong> you ask the AI about an identified plant.</li>
+  <li><strong>Personal notes</strong> you add to an entry.</li>
+  <li><strong>API keys</strong> you enter in the settings: they are encrypted at rest with the Android Keystore
+      and leave your device only to authenticate your calls to the matching services. A key identifies
+      <em>your</em> account with the provider concerned.</li>
+</ul>
+
+<h2>What is sent, and to whom</h2>
+<p>
+  Only the data that is strictly necessary is sent, encrypted (HTTPS), to the services below. As with any
+  Internet request, these services also see your device's IP address.
+</p>
+<ul>
+  <li><strong>Pl@ntNet</strong> — the photo(s) and, for each, the plant part you indicated (leaf, flower…), to
+      obtain taxonomic candidates. No location is sent to Pl@ntNet.</li>
+  <li><strong>The AI provider(s) for which you entered a key</strong> — Google Gemini, Anthropic Claude, OpenAI
+      GPT, DeepSeek, xAI Grok, Alibaba Cloud Qwen, Moonshot AI Kimi, Mistral AI or OpenRouter (which relays the
+      request to a third-party model). For an identification the following is sent: the photo(s), the candidates
+      proposed by Pl@ntNet, <strong>today's date</strong>, the app language and, when known, the
+      <strong>capture location rounded to about 1 km</strong> (two decimals) with its altitude. For a question:
+      your text, the entry's information and that same rounded location. <strong>By default only Google Gemini
+      (free tier) is used</strong>; a provider you have not configured is never contacted. Some of these providers are
+      based outside Switzerland and the European Union (for example in the United States, China or Singapore) and
+      apply their own privacy policies.</li>
+  <li><strong>Key checks</strong> — at most once a day, the app sends each provider you entered a key for a
+      minimal request (the word “ping”) to warn you when a key stops working. No photo or location is included.</li>
+  <li><strong>GBIF</strong> — the species' scientific name (or taxon identifier), to retrieve its known
+      distribution.</li>
+  <li><strong>OpenStreetMap</strong> — map tiles are downloaded from OpenStreetMap's servers, so the displayed
+      area is known to that service.</li>
+</ul>
+<p>
+  These services process this data under their own privacy policies. The app sends them no name, e-mail address
+  or account identifier other than the API key you created with them yourself.
+</p>
+
+<h2>Sharing and export</h2>
+<p>
+  Sharing an entry and exporting a PDF are triggered by you, and you choose the recipient. The shared text and the
+  PDF contain the capture location: at full precision, except for a species flagged as protected, whose location is
+  then rounded to about 1 km.
+</p>
+
+<h2>No sale or commercial sharing</h2>
+<p>
+  Your data is not sold, rented or shared for advertising or profiling. The only transfers are the technical ones
+  described above.
+</p>
+
+<h2>Retention and deletion</h2>
+<p>
+  History and photos stay on your device as long as you wish. You can delete one entry, or the whole history, at
+  any time from the app: the matching photos are then erased. Uninstalling removes all local data.
+</p>
+
+<h2>Permissions requested</h2>
+<p>Each permission is requested when it is needed, and the app remains usable if you refuse it.</p>
+<ul>
+  <li><strong>Camera</strong>: when you open the camera, to take a photo to identify.</li>
+  <li><strong>Location</strong>: when you open the camera, to improve identification and place the photo (optional).</li>
+  <li><strong>Access to photos and their location</strong>: at the “Gallery” button, only to read the geotag of an
+      imported photo (optional: without it, import works without the location).</li>
+  <li><strong>Notifications</strong>: when you start an identification, to tell you when an identification queued
+      while offline completes (optional).</li>
+</ul>
+
+<h2>Children</h2>
+<p>The app is not intended for children and does not knowingly collect data about them.</p>
+
+<h2>Usage warning</h2>
+<p>
+  Identifications are automatic and may contain errors. Never eat a wild plant or mushroom on the sole basis of this
+  app: some edible species have dangerous look-alikes. When in doubt, consult a qualified expert.
+</p>
+
+<h2>Contact</h2>
+<p>
+  For any question about this privacy policy, contact:
+  <br><strong>reynard.michel@gmail.com</strong>
+</p>
+</section>
+
+<!-- ============================== DEUTSCH ============================== -->
+<section id="de" lang="de">
+<h1>Datenschutzerklärung — PlantInfo</h1>
+<p class="meta">Letzte Aktualisierung: 1. Oktober 2026</p>
+
+<p>
+  <strong>PlantInfo</strong> („die App“) ist eine Android-App, die Pflanzen, Bäume und Pilze anhand eines Fotos
+  bestimmt, mit Gesundheitsbeurteilung, Informationen, Verbreitungskarte und Fragen an eine künstliche Intelligenz.
+  Diese Erklärung beschreibt, welche Daten die App verarbeitet und wie.
+</p>
+
+<h2>Grundsatz: lokale Verarbeitung</h2>
+<p>
+  Die App legt kein Benutzerkonto an, zeigt keine Werbung und enthält keine Analyse- oder Tracking-Werkzeuge. Ihre
+  Daten (Fotos, Verlauf, Notizen, Standort) werden <strong>ausschliesslich auf Ihrem Gerät</strong> im privaten
+  Bereich der App gespeichert; die automatische Android-Sicherung ist dafür deaktiviert. An Drittdienste werden sie
+  nur übermittelt, <strong>wenn Sie eine Bestimmung starten oder eine Frage stellen</strong>, wie unten beschrieben.
+</p>
+
+<h2>Verarbeitete Daten</h2>
+<ul>
+  <li><strong>Fotos</strong>, die Sie aufnehmen oder importieren, um eine Art zu bestimmen.</li>
+  <li><strong>Standort</strong>, wenn Sie ihn erlauben: als zusätzliches Bestimmungskriterium und um die Aufnahme auf
+      der Karte zu verorten. Bei einem importierten Foto kann der Standort aus den EXIF-Metadaten stammen.</li>
+  <li><strong>Fragen</strong>, die Sie der KI zu einer bestimmten Pflanze stellen.</li>
+  <li><strong>Persönliche Notizen</strong>, die Sie zu einem Eintrag hinzufügen.</li>
+  <li><strong>API-Schlüssel</strong>, die Sie in den Einstellungen eingeben: Sie werden mit dem Android Keystore
+      verschlüsselt gespeichert und verlassen Ihr Gerät nur, um Ihre Aufrufe bei den jeweiligen Diensten zu
+      authentifizieren. Ein Schlüssel identifiziert <em>Ihr</em> Konto beim betreffenden Anbieter.</li>
+</ul>
+
+<h2>Was gesendet wird, und an wen</h2>
+<p>
+  Nur die unbedingt nötigen Daten werden verschlüsselt (HTTPS) an die folgenden Dienste gesendet. Wie bei jeder
+  Internetanfrage sehen diese Dienste auch die IP-Adresse Ihres Geräts.
+</p>
+<ul>
+  <li><strong>Pl@ntNet</strong> — das Foto bzw. die Fotos und je Foto das angegebene Pflanzenorgan (Blatt, Blüte …),
+      um taxonomische Kandidaten zu erhalten. Pl@ntNet erhält keinen Standort.</li>
+  <li><strong>Der oder die KI-Anbieter, für die Sie einen Schlüssel eingegeben haben</strong> — Google Gemini,
+      Anthropic Claude, OpenAI GPT, DeepSeek, xAI Grok, Alibaba Cloud Qwen, Moonshot AI Kimi, Mistral AI oder
+      OpenRouter (leitet die Anfrage an ein Drittmodell weiter). Für eine Bestimmung werden gesendet: die Fotos, die von
+      Pl@ntNet vorgeschlagenen Kandidaten, das <strong>heutige Datum</strong>, die Sprache der App und, falls bekannt,
+      der <strong>auf etwa 1 km gerundete Aufnahmestandort</strong> (zwei Dezimalstellen) samt Höhe. Für eine Frage:
+      Ihr Text, die Angaben des Eintrags und derselbe gerundete Standort. <strong>Standardmässig wird nur Google Gemini
+      (kostenloses Angebot) verwendet</strong>; ein nicht eingerichteter Anbieter wird nie kontaktiert. Einige dieser
+      Anbieter haben ihren Sitz ausserhalb der Schweiz und der Europäischen Union (zum Beispiel in den USA, in China
+      oder in Singapur) und wenden ihre eigenen Datenschutzbestimmungen an.</li>
+  <li><strong>Schlüsselprüfung</strong> — höchstens einmal täglich sendet die App jedem Anbieter, für den Sie einen
+      Schlüssel eingegeben haben, eine minimale Anfrage (das Wort „ping“), um Sie zu warnen, wenn ein Schlüssel nicht
+      mehr funktioniert. Es sind weder Foto noch Standort enthalten.</li>
+  <li><strong>GBIF</strong> — der wissenschaftliche Name (oder die Taxon-Kennung) der Art, um ihr bekanntes
+      Verbreitungsgebiet abzurufen.</li>
+  <li><strong>OpenStreetMap</strong> — die Kartenkacheln werden von den Servern von OpenStreetMap geladen; der
+      angezeigte Ausschnitt ist diesem Dienst daher bekannt.</li>
+</ul>
+<p>
+  Diese Dienste verarbeiten die Daten nach ihren eigenen Datenschutzbestimmungen. Die App übermittelt ihnen weder
+  Namen, E-Mail-Adresse noch Konto-Kennung ausser dem API-Schlüssel, den Sie selbst bei ihnen erstellt haben.
+</p>
+
+<h2>Teilen und Export</h2>
+<p>
+  Das Teilen eines Eintrags und der PDF-Export werden von Ihnen ausgelöst, und Sie wählen den Empfänger. Der geteilte
+  Text und das PDF enthalten den Aufnahmestandort: in voller Genauigkeit, ausser bei einer als geschützt markierten
+  Art, deren Standort dann auf etwa 1 km gerundet wird.
+</p>
+
+<h2>Kein Verkauf, keine kommerzielle Weitergabe</h2>
+<p>
+  Ihre Daten werden weder verkauft noch vermietet noch zu Werbe- oder Profilierungszwecken weitergegeben. Die einzigen
+  Übermittlungen sind die oben beschriebenen technischen.
+</p>
+
+<h2>Aufbewahrung und Löschung</h2>
+<p>
+  Verlauf und Fotos bleiben so lange auf Ihrem Gerät, wie Sie möchten. Sie können jederzeit einen Eintrag oder den
+  gesamten Verlauf in der App löschen: Die zugehörigen Fotos werden dabei gelöscht. Beim Deinstallieren werden alle
+  lokalen Daten entfernt.
+</p>
+
+<h2>Angeforderte Berechtigungen</h2>
+<p>Jede Berechtigung wird dann angefragt, wenn sie gebraucht wird; die App bleibt auch bei einer Ablehnung nutzbar.</p>
+<ul>
+  <li><strong>Kamera</strong>: beim Öffnen der Kamera, um ein Foto zur Bestimmung aufzunehmen.</li>
+  <li><strong>Standort</strong>: beim Öffnen der Kamera, um die Bestimmung zu verbessern und die Aufnahme zu verorten
+      (optional).</li>
+  <li><strong>Zugriff auf Fotos und deren Standort</strong>: bei der Schaltfläche „Galerie“, nur um den Geotag eines
+      importierten Fotos zu lesen (optional: ohne ihn funktioniert der Import ohne Standort).</li>
+  <li><strong>Benachrichtigungen</strong>: beim Start einer Bestimmung, um Sie zu informieren, wenn eine offline
+      zurückgestellte Bestimmung abgeschlossen ist (optional).</li>
+</ul>
+
+<h2>Kinder</h2>
+<p>Die App richtet sich nicht an Kinder und erhebt wissentlich keine Daten von ihnen.</p>
+
+<h2>Nutzungshinweis</h2>
+<p>
+  Die Bestimmungen erfolgen automatisch und können Fehler enthalten. Verzehren Sie niemals eine wilde Pflanze oder
+  einen wilden Pilz allein auf Grundlage dieser App: Manche essbaren Arten haben gefährliche Doppelgänger. Fragen Sie
+  im Zweifel eine qualifizierte Fachperson.
+</p>
+
+<h2>Kontakt</h2>
+<p>
+  Bei Fragen zu dieser Datenschutzerklärung wenden Sie sich an:
+  <br><strong>reynard.michel@gmail.com</strong>
+</p>
+</section>
+
+<!-- ============================== ITALIANO ============================== -->
+<section id="it" lang="it">
+<h1>Informativa sulla privacy — PlantInfo</h1>
+<p class="meta">Ultimo aggiornamento: 1° ottobre 2026</p>
+
+<p>
+  <strong>PlantInfo</strong> («l'app») è un'app Android che identifica piante, alberi e funghi a partire da una
+  foto, con valutazione dello stato di salute, informazioni, mappa di distribuzione e domande a un'intelligenza
+  artificiale. Questa informativa spiega quali dati l'app tratta e come.
+</p>
+
+<h2>Principio generale: trattamento locale</h2>
+<p>
+  L'app non crea alcun account utente, non mostra pubblicità e non integra strumenti di analisi o tracciamento. I
+  tuoi dati (foto, cronologia, note, posizione) sono memorizzati <strong>solo sul tuo dispositivo</strong>, nello
+  spazio privato dell'app; il backup automatico di Android è disattivato per essa. Vengono inviati a servizi di terzi
+  solo <strong>quando avvii un'identificazione o poni una domanda</strong>, come descritto di seguito.
+</p>
+
+<h2>Dati trattati</h2>
+<ul>
+  <li><strong>Foto</strong> che scatti o importi per identificare una specie.</li>
+  <li><strong>Posizione</strong>, se la autorizzi: usata come criterio complementare di identificazione e per
+      collocare lo scatto sulla mappa. Per una foto importata, la posizione può provenire dai metadati EXIF del file.</li>
+  <li><strong>Domande</strong> che poni all'IA su una pianta identificata.</li>
+  <li><strong>Note personali</strong> che aggiungi a una scheda.</li>
+  <li><strong>Chiavi API</strong> che inserisci nelle impostazioni: sono cifrate a riposo tramite l'Android Keystore
+      e lasciano il dispositivo solo per autenticare le tue chiamate ai servizi corrispondenti. Una chiave identifica
+      <em>il tuo</em> account presso il fornitore interessato.</li>
+</ul>
+
+<h2>Cosa viene inviato, e a chi</h2>
+<p>
+  Solo i dati strettamente necessari vengono inviati, in forma cifrata (HTTPS), ai servizi seguenti. Come per ogni
+  richiesta su Internet, questi servizi vedono anche l'indirizzo IP del dispositivo.
+</p>
+<ul>
+  <li><strong>Pl@ntNet</strong> — la o le foto e, per ciascuna, l'organo indicato (foglia, fiore…), per ottenere
+      candidati tassonomici. A Pl@ntNet non viene inviata alcuna posizione.</li>
+  <li><strong>Il o i fornitori di IA per cui hai inserito una chiave</strong> — Google Gemini, Anthropic Claude,
+      OpenAI GPT, DeepSeek, xAI Grok, Alibaba Cloud Qwen, Moonshot AI Kimi, Mistral AI o OpenRouter (che inoltra la
+      richiesta a un modello di terzi). Per un'identificazione vengono inviati: la o le foto, i candidati proposti da
+      Pl@ntNet, la <strong>data odierna</strong>, la lingua dell'app e, se nota, la <strong>posizione dello scatto
+      arrotondata a circa 1 km</strong> (due decimali) con la sua altitudine. Per una domanda: il tuo testo, le
+      informazioni della scheda e lo stesso luogo arrotondato. <strong>Per impostazione predefinita si usa solo Google
+      Gemini (offerta gratuita)</strong>; un fornitore che non hai configurato non viene mai contattato. Alcuni di
+      questi fornitori hanno sede fuori dalla Svizzera e dall'Unione europea (ad esempio negli Stati Uniti, in Cina o a
+      Singapore) e applicano la propria informativa sulla privacy.</li>
+  <li><strong>Verifica delle chiavi</strong> — al massimo una volta al giorno l'app invia a ogni fornitore di cui hai
+      inserito una chiave una richiesta minima (la parola «ping») per avvisarti quando una chiave smette di
+      funzionare. Non contiene né foto né posizione.</li>
+  <li><strong>GBIF</strong> — il nome scientifico (o l'identificativo tassonomico) della specie, per recuperarne
+      l'area di distribuzione nota.</li>
+  <li><strong>OpenStreetMap</strong> — le tessere della mappa sono scaricate dai server di OpenStreetMap: l'area
+      visualizzata è quindi nota a questo servizio.</li>
+</ul>
+<p>
+  Questi servizi trattano i dati secondo le proprie informative sulla privacy. L'app non trasmette loro alcun nome,
+  indirizzo e-mail o identificativo di account diverso dalla chiave API che hai creato tu stesso presso di loro.
+</p>
+
+<h2>Condivisione ed esportazione</h2>
+<p>
+  La condivisione di una scheda e l'esportazione in PDF sono avviate da te e scegli tu il destinatario. Il testo
+  condiviso e il PDF contengono il luogo dello scatto: con la precisione completa, tranne per una specie segnalata
+  come protetta, il cui luogo è allora arrotondato a circa 1 km.
+</p>
+
+<h2>Nessuna vendita né condivisione commerciale</h2>
+<p>
+  I tuoi dati non sono venduti, affittati né condivisi a fini pubblicitari o di profilazione. Gli unici trasferimenti
+  sono quelli tecnici descritti sopra.
+</p>
+
+<h2>Conservazione ed eliminazione</h2>
+<p>
+  La cronologia e le foto restano sul tuo dispositivo finché lo desideri. Puoi eliminare una scheda, o l'intera
+  cronologia, in qualsiasi momento dall'app: le foto corrispondenti vengono cancellate. La disinstallazione elimina
+  tutti i dati locali.
+</p>
+
+<h2>Autorizzazioni richieste</h2>
+<p>Ogni autorizzazione è richiesta nel momento in cui serve e l'app resta utilizzabile se la rifiuti.</p>
+<ul>
+  <li><strong>Fotocamera</strong>: all'apertura della fotocamera, per scattare una foto da identificare.</li>
+  <li><strong>Posizione</strong>: all'apertura della fotocamera, per migliorare l'identificazione e collocare lo
+      scatto (facoltativa).</li>
+  <li><strong>Accesso alle foto e alla loro posizione</strong>: al pulsante «Galleria», solo per leggere il geotag di
+      una foto importata (facoltativa: senza di essa l'importazione funziona senza il luogo).</li>
+  <li><strong>Notifiche</strong>: all'avvio di un'identificazione, per informarti quando un'identificazione messa in
+      coda offline si conclude (facoltativa).</li>
+</ul>
+
+<h2>Minori</h2>
+<p>L'app non è destinata ai minori e non raccoglie consapevolmente dati che li riguardano.</p>
+
+<h2>Avvertenza d'uso</h2>
+<p>
+  Le identificazioni sono automatiche e possono contenere errori. Non consumare mai una pianta o un fungo selvatico
+  sulla sola base di questa app: alcune specie commestibili hanno sosia pericolosi. In caso di dubbio, rivolgiti a un
+  esperto qualificato.
+</p>
+
+<h2>Contatto</h2>
+<p>
+  Per qualsiasi domanda su questa informativa sulla privacy, contatta:
+  <br><strong>reynard.michel@gmail.com</strong>
+</p>
+</section>
+
+<!-- ============================== ESPAÑOL ============================== -->
+<section id="es" lang="es">
+<h1>Política de privacidad — PlantInfo</h1>
+<p class="meta">Última actualización: 1 de octubre de 2026</p>
+
+<p>
+  <strong>PlantInfo</strong> («la aplicación») es una aplicación Android que identifica plantas, árboles y hongos a
+  partir de una foto, con diagnóstico de salud, información, mapa de distribución y preguntas a una inteligencia
+  artificial. Esta política explica qué datos trata la aplicación y cómo.
+</p>
+
+<h2>Principio general: tratamiento local</h2>
+<p>
+  La aplicación no crea ninguna cuenta de usuario, no muestra publicidad y no incluye herramientas de análisis ni de
+  seguimiento. Sus datos (fotos, historial, notas, ubicación) se guardan <strong>únicamente en su dispositivo</strong>,
+  en el espacio privado de la aplicación; la copia de seguridad automática de Android está desactivada para ella. Solo
+  se envían a servicios de terceros <strong>cuando usted inicia una identificación o hace una pregunta</strong>, como
+  se describe a continuación.
+</p>
+
+<h2>Datos tratados</h2>
+<ul>
+  <li><strong>Fotos</strong> que usted toma o importa para identificar una especie.</li>
+  <li><strong>Ubicación</strong>, si la autoriza: se usa como criterio complementario de identificación y para situar
+      la foto en el mapa. En una foto importada, la ubicación puede proceder de los metadatos EXIF del archivo.</li>
+  <li><strong>Preguntas</strong> que usted hace a la IA sobre una planta identificada.</li>
+  <li><strong>Notas personales</strong> que añade a una ficha.</li>
+  <li><strong>Claves API</strong> que introduce en los ajustes: se cifran en reposo con el Android Keystore y solo
+      salen de su dispositivo para autenticar sus llamadas a los servicios correspondientes. Una clave identifica
+      <em>su</em> cuenta en el proveedor de que se trate.</li>
+</ul>
+
+<h2>Qué se envía, y a quién</h2>
+<p>
+  Solo se envían los datos estrictamente necesarios, cifrados (HTTPS), a los servicios siguientes. Como en cualquier
+  solicitud por Internet, estos servicios también ven la dirección IP de su dispositivo.
+</p>
+<ul>
+  <li><strong>Pl@ntNet</strong> — la o las fotos y, para cada una, el órgano indicado (hoja, flor…), para obtener
+      candidatos taxonómicos. A Pl@ntNet no se envía ninguna ubicación.</li>
+  <li><strong>El o los proveedores de IA para los que ha introducido una clave</strong> — Google Gemini, Anthropic
+      Claude, OpenAI GPT, DeepSeek, xAI Grok, Alibaba Cloud Qwen, Moonshot AI Kimi, Mistral AI u OpenRouter (que
+      reenvía la solicitud a un modelo de terceros). Para una identificación se envían: la o las fotos, los candidatos
+      propuestos por Pl@ntNet, la <strong>fecha de hoy</strong>, el idioma de la aplicación y, si se conoce, la
+      <strong>ubicación de la foto redondeada a unos 1 km</strong> (dos decimales) con su altitud. Para una pregunta:
+      su texto, la información de la ficha y esa misma ubicación redondeada. <strong>De forma predeterminada solo se
+      usa Google Gemini (oferta gratuita)</strong>; un proveedor que no ha configurado nunca se contacta. Algunos de
+      estos proveedores están establecidos fuera de Suiza y de la Unión Europea (por ejemplo en Estados Unidos, China o
+      Singapur) y aplican su propia política de privacidad.</li>
+  <li><strong>Comprobación de claves</strong> — como máximo una vez al día, la aplicación envía a cada proveedor del
+      que usted ha introducido una clave una solicitud mínima (la palabra «ping») para avisarle si una clave deja de
+      funcionar. No incluye ninguna foto ni ubicación.</li>
+  <li><strong>GBIF</strong> — el nombre científico (o el identificador taxonómico) de la especie, para obtener su
+      área de distribución conocida.</li>
+  <li><strong>OpenStreetMap</strong> — los mapas se descargan de los servidores de OpenStreetMap; la zona mostrada es,
+      por tanto, conocida por ese servicio.</li>
+</ul>
+<p>
+  Estos servicios tratan estos datos según sus propias políticas de privacidad. La aplicación no les transmite ningún
+  nombre, correo electrónico ni identificador de cuenta distinto de la clave API que usted mismo ha creado con ellos.
+</p>
+
+<h2>Compartir y exportar</h2>
+<p>
+  Compartir una ficha y exportar el PDF los inicia usted, y usted elige el destinatario. El texto compartido y el PDF
+  contienen la ubicación de la foto: con la precisión completa, salvo en una especie señalada como protegida, cuya
+  ubicación se redondea entonces a unos 1 km.
+</p>
+
+<h2>Ninguna venta ni cesión comercial</h2>
+<p>
+  Sus datos no se venden, alquilan ni ceden con fines publicitarios o de elaboración de perfiles. Las únicas
+  transferencias son las técnicas descritas arriba.
+</p>
+
+<h2>Conservación y eliminación</h2>
+<p>
+  El historial y las fotos permanecen en su dispositivo todo el tiempo que desee. Puede eliminar una ficha, o todo el
+  historial, en cualquier momento desde la aplicación: las fotos correspondientes se borran. Al desinstalar la
+  aplicación se eliminan todos los datos locales.
+</p>
+
+<h2>Permisos solicitados</h2>
+<p>Cada permiso se solicita en el momento en que hace falta, y la aplicación sigue siendo utilizable si lo rechaza.</p>
+<ul>
+  <li><strong>Cámara</strong>: al abrir la cámara, para tomar una foto que identificar.</li>
+  <li><strong>Ubicación</strong>: al abrir la cámara, para mejorar la identificación y situar la foto (opcional).</li>
+  <li><strong>Acceso a las fotos y a su ubicación</strong>: en el botón «Galería», solo para leer la geoetiqueta de una
+      foto importada (opcional: sin él, la importación funciona sin el lugar).</li>
+  <li><strong>Notificaciones</strong>: al iniciar una identificación, para avisarle cuando termina una identificación
+      puesta en cola sin conexión (opcional).</li>
+</ul>
+
+<h2>Menores</h2>
+<p>La aplicación no está destinada a menores y no recopila a sabiendas datos que les conciernan.</p>
+
+<h2>Advertencia de uso</h2>
+<p>
+  Las identificaciones son automáticas y pueden contener errores. No consuma nunca una planta o un hongo silvestre
+  basándose únicamente en esta aplicación: algunas especies comestibles tienen dobles peligrosos. En caso de duda,
+  consulte a un experto cualificado.
+</p>
+
+<h2>Contacto</h2>
+<p>
+  Para cualquier pregunta sobre esta política de privacidad, contacte con:
+  <br><strong>reynard.michel@gmail.com</strong>
+</p>
+</section>
 
 </body>
 </html>

@@ -59,6 +59,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -105,13 +108,24 @@ fun CaptureScreen(
                 PackageManager.PERMISSION_GRANTED,
         )
     }
-    val cameraPermLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { cameraGranted = it }
+    // Chaque permission est demandée au moment où elle sert, avec la raison sous les yeux, et non
+    // toutes à l'ouverture de l'application : l'ouverture de la caméra pour la caméra et la
+    // localisation, le bouton Galerie pour l'accès aux photos, « Identifier » pour les notifications.
+    // Une fois refusée, une permission n'est redemandée qu'à la prochaine ouverture de l'écran.
+    fun isGranted(permission: String) =
+        ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
 
-    val permissionLauncher = rememberLauncherForActivityResult(
+    var locationAsked by rememberSaveable { mutableStateOf(false) }
+    var mediaAsked by rememberSaveable { mutableStateOf(false) }
+    var notificationsAsked by rememberSaveable { mutableStateOf(false) }
+
+    val cameraPermLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
-    ) { /* les résultats sont lus à la demande via checkSelfPermission */ }
+    ) { cameraGranted = isGranted(Manifest.permission.CAMERA) }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { /* le résultat est lu à la demande par NotificationHelper */ }
 
     // Import via le sélecteur de documents (SAF) : contrairement au sélecteur de photos, il fournit
     // un Uri résoluble vers MediaStore, ce qui permet — avec ACCESS_MEDIA_LOCATION — de lire le
@@ -120,26 +134,48 @@ fun CaptureScreen(
         ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? -> uri?.let { viewModel.addGalleryPhoto(it) } }
 
-    // Au premier affichage : demander caméra + localisation + accès aux médias (READ_MEDIA_IMAGES /
-    // READ_EXTERNAL_STORAGE) + géolocalisation des médias (ACCESS_MEDIA_LOCATION, nécessaire pour lire
-    // le géotag EXIF des photos importées ; elle n'est accordable qu'avec un accès média).
-    LaunchedEffect(Unit) {
-        if (!cameraGranted) cameraPermLauncher.launch(Manifest.permission.CAMERA)
-        val perms = buildList {
-            add(Manifest.permission.ACCESS_FINE_LOCATION)
-            add(Manifest.permission.ACCESS_COARSE_LOCATION)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                add(Manifest.permission.READ_MEDIA_IMAGES)
-            } else {
-                add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
-            add(Manifest.permission.ACCESS_MEDIA_LOCATION)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                // Notifier l'utilisateur quand une identification différée (file hors-ligne) aboutit.
-                add(Manifest.permission.POST_NOTIFICATIONS)
+    // Les accès médias ne servent qu'à lire le géotag : refusés, l'import fonctionne quand même, sans
+    // le lieu de la photo. Le sélecteur s'ouvre donc dans tous les cas, une fois la demande close.
+    val mediaPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { galleryLauncher.launch(arrayOf("image/*")) }
+
+    val openCamera = {
+        cameraActive = true
+        val needed = buildList {
+            if (!cameraGranted) add(Manifest.permission.CAMERA)
+            // La position sert à la prise de vue qui va suivre : on la demande avec la caméra.
+            if (!locationAsked && !isGranted(Manifest.permission.ACCESS_FINE_LOCATION) &&
+                !isGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
+            ) {
+                add(Manifest.permission.ACCESS_FINE_LOCATION)
+                add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                locationAsked = true
             }
         }
-        permissionLauncher.launch(perms.toTypedArray())
+        if (needed.isNotEmpty()) cameraPermLauncher.launch(needed.toTypedArray())
+    }
+
+    val openGallery = {
+        val needed = mediaPermissions().filterNot(::isGranted)
+        if (needed.isEmpty() || mediaAsked) {
+            galleryLauncher.launch(arrayOf("image/*"))
+        } else {
+            mediaAsked = true
+            mediaPermLauncher.launch(needed.toTypedArray())
+        }
+    }
+
+    val identify = {
+        // Les notifications annoncent le résultat d'une identification mise en file hors-ligne : on
+        // les demande quand l'utilisateur lance une identification, là où elles prennent un sens.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationsAsked &&
+            !isGranted(Manifest.permission.POST_NOTIFICATIONS)
+        ) {
+            notificationsAsked = true
+            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        viewModel.identify()
     }
 
     // Navigation vers le résultat quand l'identification aboutit.
@@ -175,14 +211,11 @@ fun CaptureScreen(
                         modifier = Modifier.fillMaxSize(),
                     )
                     cameraActive -> CameraPermissionPlaceholder {
-                        cameraPermLauncher.launch(Manifest.permission.CAMERA)
+                        cameraPermLauncher.launch(arrayOf(Manifest.permission.CAMERA))
                     }
                     else -> PhotoBoard(
                         photos = state.photos,
-                        onOpenCamera = {
-                            cameraActive = true
-                            if (!cameraGranted) cameraPermLauncher.launch(Manifest.permission.CAMERA)
-                        },
+                        onOpenCamera = openCamera,
                         onOrganChange = viewModel::setOrgan,
                         onRemove = viewModel::removePhoto,
                         onPhotoClick = { fullscreenPhoto = it },
@@ -209,10 +242,10 @@ fun CaptureScreen(
             CaptureControls(
                 state = state,
                 showThumbnails = cameraActive,
-                onGallery = { galleryLauncher.launch(arrayOf("image/*")) },
+                onGallery = openGallery,
                 onOrganChange = viewModel::setOrgan,
                 onRemove = viewModel::removePhoto,
-                onIdentify = viewModel::identify,
+                onIdentify = identify,
                 onPhotoClick = { fullscreenPhoto = it },
             )
         }
@@ -327,16 +360,12 @@ private fun LargePhotoCard(
                     .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
                     .clickable { onClick() },
             )
-            Icon(
-                Icons.Filled.Cancel,
+            OverlayIconButton(
+                icon = Icons.Filled.Cancel,
                 contentDescription = stringResource(R.string.capture_remove_photo),
-                tint = Color.White,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                    .size(28.dp)
-                    .clickable { onRemove() },
+                onClick = onRemove,
+                modifier = Modifier.align(Alignment.TopEnd),
+                visualSize = 28.dp,
             )
         }
         OrganSelector(organ = organ, onOrganChange = onOrganChange)
@@ -372,17 +401,14 @@ private fun CameraPreview(
             modifier = Modifier.fillMaxSize(),
         )
         // Fermer la caméra sans prendre de photo.
-        Icon(
-            Icons.Filled.Close,
+        OverlayIconButton(
+            icon = Icons.Filled.Close,
             contentDescription = stringResource(R.string.capture_close_camera),
-            tint = Color.White,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(12.dp)
-                .background(Color.Black.copy(alpha = 0.55f), CircleShape)
-                .padding(6.dp)
-                .size(24.dp)
-                .clickable { onClose() },
+            onClick = onClose,
+            modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+            visualSize = 36.dp,
+            containerAlpha = 0.55f,
+            iconPadding = 6.dp,
         )
         // Obturateur : anneau blanc + disque intérieur, style appareil photo classique.
         Box(
@@ -520,31 +546,81 @@ private fun PhotoThumb(
     onClick: () -> Unit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box {
+        // 96 dp pour une vignette de 84 : la zone tactile du bouton « retirer » fait 48 dp, et déborde
+        // sur le coin de la photo plutôt que d'en réduire la partie cliquable.
+        Box(Modifier.size(96.dp)) {
             AsyncImage(
                 model = File(path),
                 contentDescription = stringResource(R.string.capture_photo_tap_to_zoom),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .align(Alignment.BottomStart)
                     .size(84.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
                     .clickable { onClick() },
             )
-            Icon(
-                Icons.Filled.Cancel,
+            OverlayIconButton(
+                icon = Icons.Filled.Cancel,
                 contentDescription = stringResource(R.string.capture_remove_photo),
-                tint = Color.White,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                    .size(22.dp)
-                    .clickable { onRemove() },
+                onClick = onRemove,
+                modifier = Modifier.align(Alignment.TopEnd),
+                visualSize = 22.dp,
             )
         }
         OrganSelector(organ = organ, onOrganChange = onOrganChange)
     }
+}
+
+/**
+ * Bouton rond posé sur une photo ou sur l'aperçu de la caméra : une pastille de [visualSize] dp, mais
+ * une zone tactile de **48 dp**, le minimum recommandé (Material, WCAG 2.5.8). Les pastilles
+ * d'origine, de 22 à 36 dp, se manquaient au doigt et se confondaient avec la photo qu'elles couvrent.
+ */
+@Composable
+private fun OverlayIconButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    visualSize: Dp = 28.dp,
+    containerAlpha: Float = 0.5f,
+    iconPadding: Dp = 0.dp,
+) {
+    Box(
+        modifier
+            .size(48.dp)
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            icon,
+            contentDescription = contentDescription,
+            tint = Color.White,
+            modifier = Modifier
+                .size(visualSize)
+                .background(Color.Black.copy(alpha = containerAlpha), CircleShape)
+                .padding(iconPadding),
+        )
+    }
+}
+
+/**
+ * Accès demandés au bouton Galerie : l'accès aux images et la géolocalisation des médias, qui ne
+ * servent qu'à lire le géotag EXIF d'une photo importée. Android 14 ajoute l'accès **partiel** (« photos
+ * sélectionnées ») : sans lui l'utilisateur n'aurait que « tout autoriser » ou « refuser ».
+ */
+private fun mediaPermissions(): List<String> = buildList {
+    when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+            add(Manifest.permission.READ_MEDIA_IMAGES)
+            add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+        }
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> add(Manifest.permission.READ_MEDIA_IMAGES)
+        else -> add(Manifest.permission.READ_EXTERNAL_STORAGE)
+    }
+    add(Manifest.permission.ACCESS_MEDIA_LOCATION)
 }
 
 /** Menu déroulant du type d'organe photographié, partagé entre vignettes et photos en grand. */

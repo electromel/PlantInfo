@@ -15,7 +15,7 @@ import ch.electromel.plantinfo.data.remote.ai.summary
 import ch.electromel.plantinfo.data.remote.plantnet.PlantNetClient
 import ch.electromel.plantinfo.data.remote.plantnet.PlantNetError
 import ch.electromel.plantinfo.domain.ConfidenceEngine
-import ch.electromel.plantinfo.domain.ProtectedSpeciesChecker
+import ch.electromel.plantinfo.domain.SafetyFlags
 import ch.electromel.plantinfo.domain.model.FailureKind
 import ch.electromel.plantinfo.domain.model.GpsLocation
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
@@ -23,11 +23,12 @@ import ch.electromel.plantinfo.domain.model.IdentificationRequest
 import ch.electromel.plantinfo.domain.model.IdentificationResult
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
-import ch.electromel.plantinfo.domain.model.iucnStatus
 import ch.electromel.plantinfo.util.AppLocales
 import ch.electromel.plantinfo.util.StringProvider
 import ch.electromel.plantinfo.util.ImageStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -83,7 +84,10 @@ class IdentificationRepository @Inject constructor(
         photoPath: String,
         organ: PhotoOrgan,
     ): IdentificationOutcome {
-        val withPhoto = entity.copy(photoPaths = entity.photoPaths + photoPath)
+        // Repartir de la ligne telle qu'elle est en base, pas de l'instantané de l'écran : une note
+        // ou un favori modifiés entre-temps ne doivent pas être écrasés par cette mise à jour.
+        val latest = dao.getById(entity.id) ?: entity
+        val withPhoto = latest.copy(photoPaths = latest.photoPaths + photoPath)
         dao.update(withPhoto)
         // L'organe de la nouvelle photo est connu (c'est celui qui a été demandé) : Pl@ntNet en tient
         // compte. Les organes des photos précédentes ne sont pas persistés, d'où l'heuristique.
@@ -108,11 +112,17 @@ class IdentificationRepository @Inject constructor(
         )
         return when (val pipeline = runPipeline(request)) {
             is Pipeline.Ok -> {
-                val flagged = withProtectedFlag(pipeline.result)
-                val updated = flagged
-                    .toEntity(gps, entity.photoPaths, flagged.aiProvider, entity.dateTime)
-                    .copy(id = entity.id, isFavorite = entity.isFavorite, notes = entity.notes)
-                dao.update(updated)
+                val flagged = SafetyFlags.reinforce(pipeline.result)
+                // L'analyse dure de quelques secondes à plus d'une minute : pendant ce temps
+                // l'utilisateur a pu modifier la note ou le favori, ou supprimer la fiche. On relit
+                // donc la ligne **après** l'analyse plutôt que de réécrire l'instantané de départ.
+                val current = dao.getById(entity.id)
+                if (current != null) {
+                    val updated = flagged
+                        .toEntity(gps, entity.photoPaths, flagged.aiProvider, entity.dateTime)
+                        .copy(id = entity.id, isFavorite = current.isFavorite, notes = current.notes)
+                    dao.update(updated)
+                }
                 IdentificationOutcome.Success(entity.id, flagged, pipeline.infoMessage)
             }
             is Pipeline.Ko -> {
@@ -136,9 +146,13 @@ class IdentificationRepository @Inject constructor(
     }
 
     private suspend fun runPipeline(request: IdentificationRequest): Pipeline {
-        val images = request.photoPaths.map {
-            AiImage(imageStorage.readBytes(it), "image/jpeg")
+        // Lecture disque hors du thread principal : l'appelant est le plus souvent un ViewModel.
+        val images = withContext(Dispatchers.IO) {
+            request.photoPaths.map { AiImage(imageStorage.readBytes(it), "image/jpeg") }
         }
+        // Langue de l'application au moment de l'identification : celle des noms Pl@ntNet comme de
+        // la fiche rédigée par l'IA.
+        val language = AppLocales.current(context)
 
         // --- Étape 1 : Pl@ntNet ---
         val plantNetKey = keyStore.getKey(ApiProvider.PLANTNET)
@@ -152,20 +166,19 @@ class IdentificationRepository @Inject constructor(
             )
         }
         val plantNetResult = if (plantNetKey != null) {
-            plantNetClient.identify(images, request.organs.map { it.plantnetValue }, plantNetKey)
+            plantNetClient.identify(images, request.organs.map { it.plantnetValue }, plantNetKey, language.tag)
         } else {
             null
         }
         val candidates: List<SpeciesCandidate> = plantNetResult?.candidates ?: emptyList()
 
         // --- Étape 2 : IA générative (avec repli) ---
-        // La fiche est rédigée dans la langue de l'application au moment de l'identification.
         val aiOutcome = aiOrchestrator.analyze(
             AiAnalysisInput(
                 images = images,
                 plantNetCandidates = candidates,
                 gps = request.gps,
-                language = AppLocales.current(context),
+                language = language,
             ),
         )
 
@@ -203,24 +216,8 @@ class IdentificationRepository @Inject constructor(
         }
     }
 
-    /**
-     * Croisement avec la liste de référence Suisse **et** le statut UICN rapporté par Pl@ntNet :
-     * renforce le drapeau « espèce protégée » renvoyé par l'IA (§2.4) sans jamais le désactiver.
-     *
-     * Une espèce menacée au sens UICN n'est pas juridiquement protégée pour autant (le statut est
-     * mondial, la protection est cantonale/fédérale) ; on l'assimile ici volontairement, l'objectif
-     * du drapeau étant de déconseiller la cueillette. Le statut UICN reste par ailleurs affiché tel
-     * quel, pour ne pas travestir les deux notions.
-     */
-    private fun withProtectedFlag(result: IdentificationResult): IdentificationResult {
-        if (result.isProtected) return result
-        val listed = ProtectedSpeciesChecker.isProtected(result.scientificName)
-        val threatened = result.iucnStatus?.threatened == true
-        return if (listed || threatened) result.copy(isProtected = true) else result
-    }
-
     private suspend fun persist(result: IdentificationResult, request: IdentificationRequest): Long {
-        val flagged = withProtectedFlag(result)
+        val flagged = SafetyFlags.reinforce(result)
         val entity = flagged.toEntity(
             gps = request.gps,
             photoPaths = request.photoPaths,

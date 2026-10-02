@@ -43,6 +43,11 @@ data class SettingsUiState(
      */
     val fallbackOrder: List<AiProviderType> = emptyList(),
     val freeGeminiOnly: Boolean = true,
+    /**
+     * Le mode « Gemini seul » écarte-t-il réellement les autres IA ? Faux sans clé Gemini : il n'a
+     * alors rien à faire de plus (voir `usableAiProviders`), et l'écran ne doit pas dire le contraire.
+     */
+    val geminiOnlyActive: Boolean = false,
     val toxicAlert: ToxicAlertThresholds = ToxicAlertThresholds(),
     val rechecking: Boolean = false,
 )
@@ -76,6 +81,7 @@ class SettingsViewModel @Inject constructor(
         addable = addableProviders(),
         fallbackOrder = activeFallbackOrder(),
         freeGeminiOnly = keyStore.freeGeminiOnly(),
+        geminiOnlyActive = keyStore.state.value.geminiOnlyActive,
         toxicAlert = safetySettings.current(),
     ).withProblems()
 
@@ -101,6 +107,7 @@ class SettingsViewModel @Inject constructor(
                 addable = addableProviders(),
                 fallbackOrder = activeFallbackOrder(),
                 freeGeminiOnly = keyStore.freeGeminiOnly(),
+                geminiOnlyActive = keyStore.state.value.geminiOnlyActive,
             ).withProblems()
         }
     }
@@ -142,7 +149,9 @@ class SettingsViewModel @Inject constructor(
     /** Active/désactive le mode « Gemini gratuit seul » (ignore Claude et GPT payants). */
     fun setFreeGeminiOnly(enabled: Boolean) {
         keyStore.setFreeGeminiOnly(enabled)
-        _state.update { it.copy(freeGeminiOnly = enabled) }
+        _state.update {
+            it.copy(freeGeminiOnly = enabled, geminiOnlyActive = keyStore.state.value.geminiOnlyActive)
+        }
     }
 
     fun onInputChange(provider: ApiProvider, text: String) {

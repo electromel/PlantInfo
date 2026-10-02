@@ -76,11 +76,18 @@ Rappel de ce que fait vraiment l'app (c'est la seule base honnête pour ce formu
 - l'historique, les photos et les clés API restent sur l'appareil (Room + stockage privé +
   `EncryptedSharedPreferences`) ;
 - **aucun serveur de l'éditeur** : rien n'est envoyé à Electromel, il n'y a pas de compte ;
-- à chaque identification, la photo part chez **Pl@ntNet** puis chez le **fournisseur d'IA** choisi
-  (Gemini par défaut) ; les coordonnées de prise de vue partent avec elle, et une requête va chez
-  **GBIF** pour l'aire de répartition, plus les tuiles **OpenStreetMap** pour la carte ;
+- à chaque identification, la photo part chez **Pl@ntNet** (sans aucune position) puis chez le
+  **fournisseur d'IA** que l'utilisateur a configuré (Gemini par défaut ; neuf possibles, dont certains
+  hors de Suisse et de l'UE) ; le lieu de prise de vue part avec elle chez le fournisseur d'IA seul,
+  **arrondi à environ 1 km** (deux décimales). **GBIF** ne reçoit que le nom de l'espèce, et les tuiles
+  **OpenStreetMap** révèlent la zone de carte affichée ;
+- une fois par jour au plus, une requête minimale (« ping », sans photo ni lieu) vérifie chaque clé
+  saisie auprès de son fournisseur ;
 - ces envois ne surviennent **que sur action de l'utilisateur** (appui sur « Identifier » ou sur
-  « Demander ») et ne sont pas conservés côté éditeur.
+  « Demander ») — hors la vérification quotidienne des clés — et ne sont pas conservés côté éditeur ;
+- le partage et l'export PDF d'une fiche, déclenchés par l'utilisateur vers le destinataire de son choix,
+  contiennent le lieu à pleine précision (arrondi pour une espèce protégée) : ce n'est pas un partage
+  par l'éditeur.
 
 Réponses recommandées :
 
@@ -95,8 +102,8 @@ Types de données à déclarer :
 | Type | Collectée | Partagée | Obligatoire | Finalité |
 | --- | --- | --- | --- | --- |
 | **Photos** | Oui | Oui (Pl@ntNet, fournisseur d'IA) | Oui | Fonctionnalité de l'app |
-| **Position approximative** | Oui | Oui (Pl@ntNet, fournisseur d'IA, GBIF) | Non (l'app fonctionne sans) | Fonctionnalité de l'app |
-| **Position précise** | Oui | Oui (mêmes destinataires) | Non | Fonctionnalité de l'app |
+| **Position approximative** | Oui | Oui (fournisseur d'IA seul : lieu arrondi à ~1 km, soit moins de 3 km²) | Non (l'app fonctionne sans) | Fonctionnalité de l'app |
+| **Position précise** | Oui (GPS, EXIF) | **Non** : elle reste sur l'appareil ; seule sa version arrondie part | Non | Fonctionnalité de l'app |
 | **Autres actions utilisateur** (la question libre posée à l'IA) | Oui | Oui (fournisseur d'IA) | Non | Fonctionnalité de l'app |
 
 Pour chacun, cocher **« Traitement éphémère »** : les données transitent pour produire la réponse et
@@ -119,7 +126,19 @@ Ce que le manifeste demande, et la justification à donner si la Console la réc
 | --- | --- |
 | `CAMERA` | Photographier la plante à identifier. |
 | `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` | Critère d'identification complémentaire et centrage de la carte. Au premier plan uniquement. |
-| `ACCESS_MEDIA_LOCATION` + `READ_MEDIA_IMAGES` | Lire le géotag EXIF d'une photo importée, avant compression. |
+| `ACCESS_MEDIA_LOCATION` + `READ_MEDIA_IMAGES` + `READ_MEDIA_VISUAL_USER_SELECTED` | Lire le géotag EXIF d'une photo importée, avant compression. Demandées au bouton Galerie seulement ; refusées, le sélecteur de documents s'ouvre quand même (vérifié sur un Pixel 7a, Android 17) — la lecture du géotag, elle, n'a pas été testée sans permission. `READ_MEDIA_VISUAL_USER_SELECTED` permet l'accès partiel d'Android 14+. |
+
+Chaque autorisation est demandée **au moment où elle sert** (caméra et position à l'ouverture de
+l'appareil photo, photos au bouton Galerie, notifications au lancement d'une identification), jamais
+à l'ouverture de l'application.
+
+> **Point de vigilance.** La politique Play sur les autorisations photo et vidéo réserve
+> `READ_MEDIA_IMAGES` aux apps dont la fonction centrale est l'accès aux médias ; pour un import
+> ponctuel, Google attend le sélecteur de photos. L'app importe déjà par le sélecteur de documents, et
+> la permission ne sert qu'à lire le géotag. Si la Console demande une déclaration, la justification
+> ci-dessus est la bonne ; si elle la refuse, la permission peut être retirée : l'import lui-même
+> n'en dépend pas, mais le lieu des photos importées serait probablement perdu. **À valider sur un
+> appareil avec une photo géotaggée avant de la retirer** — ce n'est pas vérifié.
 | `POST_NOTIFICATIONS` | Prévenir quand une identification mise en file hors-ligne a abouti. |
 | `INTERNET` / `ACCESS_NETWORK_STATE` | Appels aux API d'identification. |
 
