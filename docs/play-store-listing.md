@@ -59,16 +59,15 @@ AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
-### Notes de version — 0.6.0 (versionCode 7)
+### Notes de version — 0.6.1 (versionCode 8)
 
-(469 caractères.)
+(396 caractères.)
 
 ```
 Nouveautés :
-• Nouvelle section « Multiplier la plante » : semis, bouturage, division… avec la marche à suivre et la bonne période.
-• Identification incertaine : l'application propose les photos qui aideraient à trancher, en tenant compte de la saison, et réanalyse la fiche en un appui.
-• Six nouvelles IA au choix : DeepSeek, Grok, Qwen, Kimi, Mistral et OpenRouter.
-• Paramètres : seules vos clés enregistrées sont affichées ; « Ajouter une clé » propose les autres.
+• Carte : la zone d'observation s'affiche en hexagones translucides qui laissent voir les contours des terres ; le cadrage réunit votre lieu et l'aire de répartition.
+• Plus de fiabilité : requêtes réseau annulables, reprises des identifications en attente bornées, récupération si le stockage chiffré des clés est invalide.
+• Vos clés API sont masquées dans les journaux techniques.
 ```
 
 ---
@@ -122,14 +121,13 @@ WARNING
 Identifications are automatic and can be wrong. Never eat a wild plant or mushroom on the strength of this app alone: some edible species have dangerous look-alikes. If in doubt, consult a mycologist or a qualified expert.
 ```
 
-### Notes de version — 0.6.0
+### Notes de version — 0.6.1
 
 ```
 What's new:
-• New "Propagate the plant" section: seeds, cuttings, division… with how to do it and the right time.
-• Uncertain identification: the app suggests the photos that would settle it, taking the season into account, and re-analyses the record in one tap.
-• Six more AIs to choose from: DeepSeek, Grok, Qwen, Kimi, Mistral and OpenRouter.
-• Settings: only the keys you have saved are shown; "Add a key" offers the others.
+• Map: the observation area is drawn as translucent hexagons that keep coastlines visible; the view frames your location together with the species range.
+• More reliable: network requests cancel cleanly, queued identifications retry a limited number of times, and the app recovers if the encrypted key storage becomes invalid.
+• Your API keys are masked in technical logs.
 ```
 
 ---
@@ -183,14 +181,13 @@ WARNUNG
 Die Bestimmungen erfolgen automatisch und können falsch sein. Essen Sie niemals eine wilde Pflanze oder einen Pilz allein auf Grundlage dieser App: Manche essbaren Arten haben gefährliche Doppelgänger. Ziehen Sie im Zweifelsfall eine Pilzfachperson oder eine andere fachkundige Person bei.
 ```
 
-### Notes de version — 0.6.0
+### Notes de version — 0.6.1
 
 ```
 Neu:
-• Neuer Abschnitt «Pflanze vermehren»: Aussaat, Stecklinge, Teilung… mit Anleitung und passendem Zeitpunkt.
-• Unsichere Bestimmung: Die App schlägt Fotos vor, die Klarheit schaffen würden, berücksichtigt die Jahreszeit und analysiert den Eintrag mit einem Tippen neu.
-• Sechs weitere KIs zur Wahl: DeepSeek, Grok, Qwen, Kimi, Mistral und OpenRouter.
-• Einstellungen: Nur Ihre gespeicherten Schlüssel werden angezeigt; «Schlüssel hinzufügen» bietet die übrigen an.
+• Karte: Das Beobachtungsgebiet erscheint als durchscheinende Sechsecke, die Küstenlinien sichtbar lassen; der Ausschnitt zeigt Ihren Standort und das Verbreitungsgebiet.
+• Zuverlässiger: Netzwerkanfragen lassen sich sauber abbrechen, wartende Bestimmungen werden begrenzt wiederholt, und die App erholt sich bei ungültigem Schlüsselspeicher.
+• Ihre API-Schlüssel werden in technischen Protokollen maskiert.
 ```
 
 ---
@@ -244,14 +241,13 @@ AVVERTENZA
 Le identificazioni sono automatiche e possono contenere errori. Non consumate mai una pianta o un fungo selvatico basandovi solo su questa app: alcune specie commestibili hanno sosia pericolosi. In caso di dubbio, rivolgetevi a un micologo o a un esperto qualificato.
 ```
 
-### Notes de version — 0.6.0
+### Notes de version — 0.6.1
 
 ```
 Novità:
-• Nuova sezione «Moltiplicare la pianta»: semina, talea, divisione… con le istruzioni e il periodo giusto.
-• Identificazione incerta: l'app propone le foto che aiuterebbero a decidere, tenendo conto della stagione, e rianalizza la scheda con un tocco.
-• Sei nuove IA tra cui scegliere: DeepSeek, Grok, Qwen, Kimi, Mistral e OpenRouter.
-• Impostazioni: sono mostrate solo le chiavi salvate; «Aggiungi una chiave» propone le altre.
+• Mappa: l'area di osservazione è disegnata con esagoni traslucidi che lasciano vedere le coste; l'inquadratura riunisce la tua posizione e l'areale.
+• Più affidabile: richieste di rete annullabili, nuovi tentativi limitati per le identificazioni in coda, ripristino se l'archivio cifrato delle chiavi non è valido.
+• Le tue chiavi API sono mascherate nei log tecnici.
 ```
 
 ---
@@ -305,19 +301,28 @@ ADVERTENCIA
 Las identificaciones son automáticas y pueden contener errores. No consuma nunca una planta o una seta silvestre basándose solo en esta aplicación: algunas especies comestibles tienen dobles peligrosos. En caso de duda, consulte a un micólogo o a una persona experta.
 ```
 
-### Notes de version — 0.6.0
+### Notes de version — 0.6.1
 
 ```
 Novedades:
-• Nueva sección «Multiplicar la planta»: siembra, esquejes, división… con el procedimiento y la época adecuada.
-• Identificación incierta: la aplicación propone las fotos que ayudarían a decidir, teniendo en cuenta la estación, y vuelve a analizar la ficha con un toque.
-• Seis IA más para elegir: DeepSeek, Grok, Qwen, Kimi, Mistral y OpenRouter.
-• Ajustes: solo se muestran las claves guardadas; «Añadir una clave» propone las demás.
+• Mapa: la zona de observación se dibuja con hexágonos translúcidos que dejan ver las costas; el encuadre reúne su ubicación y el área de distribución.
+• Más fiable: solicitudes de red cancelables, reintentos limitados de las identificaciones en cola y recuperación si el almacén cifrado de claves no es válido.
+• Sus claves API se enmascaran en los registros técnicos.
 ```
 
 ---
 
 ## Historique des notes de version
+
+### 0.6.0 (versionCode 7), du 2026.09.28
+
+```
+Nouveautés :
+• Nouvelle section « Multiplier la plante » : semis, bouturage, division… avec la marche à suivre et la bonne période.
+• Identification incertaine : l'application propose les photos qui aideraient à trancher, en tenant compte de la saison, et réanalyse la fiche en un appui.
+• Six nouvelles IA au choix : DeepSeek, Grok, Qwen, Kimi, Mistral et OpenRouter.
+• Paramètres : seules vos clés enregistrées sont affichées ; « Ajouter une clé » propose les autres.
+```
 
 ### 0.5.0 (versionCode 6), du 2026.09.21
 
