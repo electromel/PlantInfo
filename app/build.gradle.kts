@@ -52,8 +52,9 @@ android {
         // 5 = bundle 0.5.0 du 2026.09.21, refusé par la Console : ciblait encore l'API 35.
         // 6 = bundle 0.5.0 reconstruit le 2026.09.21 en ciblant l'API 36.
         // 7 = bundle 0.6.0 du 2026.09.28 (multiplication, photos pour trancher, six IA de plus).
-        // 8 = bundle 0.6.1 du 2026.10.02 (carte en hexagones, audit de robustesse).
-        versionCode = 8
+        // 8 = bundle 0.6.1 du 2026.10.02 (carte en hexagones, audit de robustesse). Refuse : code deja pris sur la Console.
+        // 9 = bundle 0.6.1 reconstruit le 2026.10.02.
+        versionCode = 9
         versionName = "0.6.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
