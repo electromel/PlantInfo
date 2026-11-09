@@ -74,4 +74,7 @@ data class IdentificationEntity(
 
     // Espèce validée manuellement par l'utilisateur parmi les hypothèses (§2.4).
     val userConfirmed: Boolean = false,
+
+    // v11 : nom saisi quand la fiche a été créée par son nom (null = identifiée depuis une photo).
+    val queriedName: String? = null,
 )

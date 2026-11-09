@@ -71,6 +71,7 @@ fun IdentificationResult.toEntity(
     usageOutputTokens = usage?.outputTokens,
     alternativesJson = json.encodeToString(candidateListSerializer, alternatives),
     sourcesDisagree = sourcesDisagree,
+    queriedName = queriedName,
 )
 
 /** Reconstruit un résultat de domaine depuis une entité (pour l'affichage résultat/détail). */
@@ -125,6 +126,7 @@ fun IdentificationEntity.toResult(): IdentificationResult {
         sourcesDisagree = sourcesDisagree,
         photoSuggestions = photoSuggestions,
         usage = usage,
+        queriedName = queriedName,
     )
 }
 

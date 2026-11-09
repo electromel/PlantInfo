@@ -23,10 +23,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *        (photoSuggestionsJson).
  * - v10 : clé taxonomique GBIF dans le cache de répartition (usageKey), pour afficher les tuiles
  *        de densité de l'espèce.
+ * - v11 : nom saisi pour une fiche créée « par son nom » (queriedName).
  */
 @Database(
     entities = [IdentificationEntity::class, SpeciesRangeCacheEntity::class],
-    version = 10,
+    version = 11,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -118,6 +119,13 @@ abstract class PlantInfoDatabase : RoomDatabase() {
         val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE species_range_cache ADD COLUMN usageKey INTEGER")
+            }
+        }
+
+        // Nullable : toute fiche existante a été identifiée depuis une photo, donc sans nom saisi.
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE identifications ADD COLUMN queriedName TEXT")
             }
         }
     }

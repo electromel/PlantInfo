@@ -33,6 +33,9 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -205,6 +208,7 @@ fun CaptureScreen(
                 state = state,
                 showThumbnails = cameraActive,
                 onGallery = { galleryLauncher.launch(arrayOf("image/*")) },
+                onByName = viewModel::identifyByName,
                 onOrganChange = viewModel::setOrgan,
                 onRemove = viewModel::removePhoto,
                 onIdentify = viewModel::identify,
@@ -441,11 +445,19 @@ private fun CaptureControls(
     state: CaptureUiState,
     showThumbnails: Boolean,
     onGallery: () -> Unit,
+    onByName: (String) -> Unit,
     onOrganChange: (Int, PhotoOrgan) -> Unit,
     onRemove: (Int) -> Unit,
     onIdentify: () -> Unit,
     onPhotoClick: (String) -> Unit,
 ) {
+    var nameDialog by rememberSaveable { mutableStateOf(false) }
+    if (nameDialog) {
+        ByNameDialog(
+            onConfirm = { nameDialog = false; onByName(it) },
+            onDismiss = { nameDialog = false },
+        )
+    }
     Column(
         Modifier
             .fillMaxWidth()
@@ -478,6 +490,11 @@ private fun CaptureControls(
                 Icon(Icons.Filled.PhotoLibrary, null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.capture_gallery))
+            }
+            TextButton(onClick = { nameDialog = true }, enabled = !state.identifying) {
+                Icon(Icons.Filled.Search, null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.capture_by_name))
             }
             Spacer(Modifier.weight(1f))
             Button(
@@ -559,4 +576,37 @@ private fun OrganSelector(organ: PhotoOrgan, onOrganChange: (PhotoOrgan) -> Unit
             }
         }
     }
+}
+
+/** Saisie du nom d'une plante à ajouter sans photo : celle-ci est cherchée sur le web. */
+@Composable
+private fun ByNameDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
+    var name by rememberSaveable { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.name_dialog_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.name_dialog_hint)) },
+                    singleLine = true,
+                )
+                Text(
+                    stringResource(R.string.name_dialog_privacy),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(name) }, enabled = name.isNotBlank()) {
+                Text(stringResource(R.string.name_dialog_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.name_dialog_cancel)) }
+        },
+    )
 }

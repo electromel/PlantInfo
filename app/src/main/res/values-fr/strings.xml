@@ -58,6 +58,16 @@
     <string name="capture_camera_permission_body">Autorisez la caméra pour photographier une plante.</string>
     <string name="capture_camera_permission_action">Autoriser la caméra</string>
     <string name="capture_gallery">Galerie</string>
+    <string name="capture_by_name">Par nom</string>
+    <string name="name_dialog_title">Ajouter une plante par son nom</string>
+    <string name="name_dialog_hint">Nom de la plante (commun ou scientifique)</string>
+    <string name="name_dialog_privacy">Le nom saisi est envoyé à Wikipédia pour trouver une photo. La fiche est ensuite établie comme les autres, sans évaluation de santé ni lieu de prise de vue.</string>
+    <string name="name_dialog_confirm">Chercher</string>
+    <string name="name_dialog_cancel">Annuler</string>
+    <string name="name_offline">Vous êtes hors-ligne : impossible de chercher une photo sur le web.</string>
+    <string name="name_no_photo">Aucune photo trouvée sur le web pour « %1$s ». Essayez un autre nom, ou le nom scientifique.</string>
+    <string name="name_unknown">« %1$s » ne correspond à aucune plante, arbre ou champignon connu.</string>
+    <string name="fiche_by_name_note">Fiche créée à partir du nom « %1$s » : la photo vient du web (Wikipédia), d\'où l\'absence d\'évaluation de santé et de lieu de prise de vue.</string>
     <string name="capture_analyzing">Analyse…</string>
     <string name="capture_identify">Identifier</string>
     <string name="capture_identify_n_photos">Identifier (%1$d photos)</string>

@@ -61,6 +61,16 @@
     <string name="capture_camera_permission_body">Allow camera access to photograph a plant.</string>
     <string name="capture_camera_permission_action">Allow the camera</string>
     <string name="capture_gallery">Gallery</string>
+    <string name="capture_by_name">By name</string>
+    <string name="name_dialog_title">Add a plant by name</string>
+    <string name="name_dialog_hint">Plant name (common or scientific)</string>
+    <string name="name_dialog_privacy">The name you type is sent to Wikipedia to find a photo. The sheet is then built like any other, without a condition assessment or a shooting location.</string>
+    <string name="name_dialog_confirm">Search</string>
+    <string name="name_dialog_cancel">Cancel</string>
+    <string name="name_offline">You are offline: a photo cannot be searched for on the web.</string>
+    <string name="name_no_photo">No photo found on the web for « %1$s ». Try another name, or the scientific name.</string>
+    <string name="name_unknown">« %1$s » does not match any known plant, tree or mushroom.</string>
+    <string name="fiche_by_name_note">Sheet created from the name « %1$s »: the photo comes from the web (Wikipedia), so there is no condition assessment or shooting location.</string>
     <string name="capture_analyzing">Analysing…</string>
     <string name="capture_identify">Identify</string>
     <string name="capture_identify_n_photos">Identify (%1$d photos)</string>

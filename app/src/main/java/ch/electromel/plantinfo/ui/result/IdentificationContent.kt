@@ -265,6 +265,15 @@ fun IdentificationContent(
             )
         }
 
+        // Fiche créée par son nom : dire pourquoi ni santé ni lieu ne figurent sur la fiche.
+        result.queriedName?.let {
+            Text(
+                stringResource(R.string.fiche_by_name_note, it),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
         // Détail des scores (masqué si l'espèce validée manuellement, ou replié si confiance > 50).
         if (!entity.userConfirmed && showScoreDetails) {
             SectionCard(stringResource(R.string.fiche_score_section), Modifier.fillMaxWidth()) {

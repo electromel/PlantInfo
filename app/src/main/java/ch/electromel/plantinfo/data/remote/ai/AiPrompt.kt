@@ -45,6 +45,23 @@ object AiPrompt {
 
         val language = input.language
 
+        // Fiche demandée par son nom : la photo est une illustration trouvée sur le web.
+        val byName = input.queriedName?.let { raw ->
+            val name = raw.replace('"', ' ')
+            """
+
+FICHE DEMANDÉE PAR SON NOM : l'utilisateur a saisi « $name » (nom commun ou
+scientifique, dans n'importe quelle langue). L'image jointe est une illustration de cette espèce
+trouvée sur le web, PAS une plante de l'utilisateur. Identifie l'espèce que désigne ce nom, en
+priorité sur l'image (si elle ne correspond manifestement pas, fie-toi au nom). Donne le nom
+scientifique exact de l'espèce et le nom commun usuel dans la langue de réponse. Pour cette fiche,
+IGNORE les consignes 3 et 12 : aucune évaluation de santé (health.status = "", isHealthy = true,
+recommendations = []) et photoSuggestions = []. Aucun lieu de prise de vue : ne tire rien du lieu.
+Si le nom est ambigu (plusieurs espèces), retiens la plus courante et mets les autres en
+alternatives. Si le nom ne désigne aucune plante, aucun arbre ni aucun champignon connu, réponds
+avec confidence = 0 et scientificName = ""."""
+        }.orEmpty()
+
         return """
 Tu es un expert en botanique et mycologie. Analyse la ou les photo(s) fournie(s) d'une plante,
 d'un arbre ou d'un champignon et produis une identification.
@@ -61,6 +78,7 @@ $plantNet
 - Lieu de la prise de vue : $geo
   Utilise la région, l'altitude et le climat comme critères complémentaires de plausibilité.
 - Date du jour : ${today.format(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.FRENCH))}.
+$byName
 
 Consignes :
 1. Croise ta propre analyse visuelle avec les résultats Pl@ntNet : valide, corrige ou complète.

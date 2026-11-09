@@ -30,6 +30,7 @@ object DatabaseModule {
                 PlantInfoDatabase.MIGRATION_7_8,
                 PlantInfoDatabase.MIGRATION_8_9,
                 PlantInfoDatabase.MIGRATION_9_10,
+                PlantInfoDatabase.MIGRATION_10_11,
             )
             .build()
 

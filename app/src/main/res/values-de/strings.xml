@@ -57,6 +57,16 @@
     <string name="capture_camera_permission_body">Erlauben Sie den Zugriff auf die Kamera, um eine Pflanze zu fotografieren.</string>
     <string name="capture_camera_permission_action">Kamera erlauben</string>
     <string name="capture_gallery">Galerie</string>
+    <string name="capture_by_name">Nach Name</string>
+    <string name="name_dialog_title">Pflanze nach Namen hinzufügen</string>
+    <string name="name_dialog_hint">Pflanzenname (Trivial- oder wissenschaftlicher Name)</string>
+    <string name="name_dialog_privacy">Der eingegebene Name wird an Wikipedia gesendet, um ein Foto zu finden. Das Datenblatt wird dann wie jedes andere erstellt, ohne Zustandsbewertung und ohne Aufnahmeort.</string>
+    <string name="name_dialog_confirm">Suchen</string>
+    <string name="name_dialog_cancel">Abbrechen</string>
+    <string name="name_offline">Sie sind offline: Ein Foto kann im Web nicht gesucht werden.</string>
+    <string name="name_no_photo">Kein Foto im Web für « %1$s » gefunden. Versuchen Sie einen anderen Namen oder den wissenschaftlichen Namen.</string>
+    <string name="name_unknown">« %1$s » entspricht keiner bekannten Pflanze, keinem Baum und keinem Pilz.</string>
+    <string name="fiche_by_name_note">Datenblatt aus dem Namen « %1$s » erstellt: Das Foto stammt aus dem Web (Wikipedia), daher gibt es keine Zustandsbewertung und keinen Aufnahmeort.</string>
     <string name="capture_analyzing">Analyse…</string>
     <string name="capture_identify">Bestimmen</string>
     <string name="capture_identify_n_photos">Bestimmen (%1$d Fotos)</string>

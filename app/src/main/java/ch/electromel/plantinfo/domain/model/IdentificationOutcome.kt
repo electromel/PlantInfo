@@ -5,6 +5,8 @@ data class IdentificationRequest(
     val photoPaths: List<String>,
     val organs: List<PhotoOrgan>,
     val gps: GpsLocation?,
+    /** Nom saisi quand la fiche est demandée par son nom : la photo vient alors du web. */
+    val queriedName: String? = null,
 )
 
 /** Issue du pipeline d'identification. */
@@ -35,4 +37,5 @@ enum class FailureKind {
     NETWORK,        // hors-ligne / timeout
     SERVER,         // erreurs serveur
     NO_RESULT,      // aucun candidat, aucune analyse
+    NO_PHOTO,       // identification par nom : aucune photo trouvée sur le web
 }

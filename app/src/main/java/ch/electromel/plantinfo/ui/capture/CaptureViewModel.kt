@@ -137,6 +137,21 @@ class CaptureViewModel @Inject constructor(
         }
     }
 
+    /** Fiche créée à partir d'un nom saisi : photo cherchée sur le web, puis pipeline habituel. */
+    fun identifyByName(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty() || _state.value.identifying) return
+        _state.update { it.copy(identifying = true, error = null, info = null) }
+        viewModelScope.launch {
+            when (val outcome = repository.identifyByName(trimmed)) {
+                is IdentificationOutcome.Success ->
+                    _state.update { it.copy(identifying = false, navigateToId = outcome.id) }
+                is IdentificationOutcome.Failure ->
+                    _state.update { it.copy(identifying = false, error = outcome.message) }
+            }
+        }
+    }
+
     /** Réinitialise après navigation vers le résultat, pour une prochaine identification. */
     fun onNavigated() {
         _state.value = CaptureUiState()

@@ -61,7 +61,7 @@ class IdentificationWorker @AssistedInject constructor(
         } else {
             null
         }
-        return IdentificationRequest(photoPaths, organs, gps)
+        return IdentificationRequest(photoPaths, organs, gps, inputData.getString(KEY_NAME))
     }
 
     companion object {
@@ -75,5 +75,6 @@ class IdentificationWorker @AssistedInject constructor(
         const val KEY_LNG = "lng"
         const val KEY_ALT = "alt"
         const val KEY_ACC = "acc"
+        const val KEY_NAME = "queriedName"
     }
 }

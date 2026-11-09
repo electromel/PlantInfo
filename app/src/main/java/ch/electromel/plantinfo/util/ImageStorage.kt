@@ -42,6 +42,18 @@ class ImageStorage @Inject constructor(
         writeJpeg(oriented)
     }
 
+    /** Décode, redimensionne et enregistre une image téléchargée (octets JPEG/PNG/WebP). */
+    suspend fun saveFromBytes(bytes: ByteArray): String? = withContext(Dispatchers.IO) {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        val options = BitmapFactory.Options().apply {
+            inSampleSize = calculateInSampleSize(bounds.outWidth, bounds.outHeight)
+        }
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+            ?: return@withContext null
+        writeJpeg(scaleDown(bitmap))
+    }
+
     /** Enregistre une photo déjà décodée (issue de CameraX). */
     suspend fun saveFromBitmap(bitmap: Bitmap): String = withContext(Dispatchers.IO) {
         writeJpeg(scaleDown(bitmap))

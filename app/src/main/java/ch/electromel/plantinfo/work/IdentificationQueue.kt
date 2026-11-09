@@ -31,6 +31,7 @@ class IdentificationQueue @Inject constructor(
                 request.organs.map { it.name }.toTypedArray(),
             )
             .putBoolean(IdentificationWorker.KEY_HAS_GPS, request.gps != null)
+            .putString(IdentificationWorker.KEY_NAME, request.queriedName)
         request.gps?.let { gps ->
             builder.putDouble(IdentificationWorker.KEY_LAT, gps.latitude)
             builder.putDouble(IdentificationWorker.KEY_LNG, gps.longitude)

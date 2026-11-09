@@ -14,6 +14,7 @@ import ch.electromel.plantinfo.data.remote.ai.AiOutcome
 import ch.electromel.plantinfo.data.remote.ai.summary
 import ch.electromel.plantinfo.data.remote.plantnet.PlantNetClient
 import ch.electromel.plantinfo.data.remote.plantnet.PlantNetError
+import ch.electromel.plantinfo.data.remote.web.WebPhotoClient
 import ch.electromel.plantinfo.domain.ConfidenceEngine
 import ch.electromel.plantinfo.domain.ProtectedSpeciesChecker
 import ch.electromel.plantinfo.domain.model.FailureKind
@@ -50,6 +51,7 @@ class IdentificationRepository @Inject constructor(
     private val plantNetClient: PlantNetClient,
     private val aiOrchestrator: AiOrchestrator,
     private val imageStorage: ImageStorage,
+    private val webPhotoClient: WebPhotoClient,
     private val dao: IdentificationDao,
     private val strings: StringProvider,
     @ApplicationContext private val context: Context,
@@ -62,6 +64,31 @@ class IdentificationRepository @Inject constructor(
             }
             is Pipeline.Ko -> pipeline.failure
         }
+
+    /**
+     * Crée une fiche à partir d'un simple nom : une photo est cherchée sur le web, puis le pipeline
+     * habituel s'applique, sans lieu de prise de vue ni évaluation de santé (la photo n'est pas celle
+     * d'un sujet de l'utilisateur). Hors-ligne, pas de mise en file : rien n'est encore enregistré.
+     */
+    suspend fun identifyByName(name: String): IdentificationOutcome {
+        val photo = try {
+            webPhotoClient.findPhoto(name, AppLocales.current(context))
+        } catch (e: java.io.IOException) {
+            return IdentificationOutcome.Failure(FailureKind.NETWORK, strings.get(R.string.name_offline))
+        }
+        val path = photo?.let { imageStorage.saveFromBytes(it.bytes) }
+            ?: return IdentificationOutcome.Failure(FailureKind.NO_PHOTO, strings.get(R.string.name_no_photo, name))
+        val request = IdentificationRequest(
+            photoPaths = listOf(path),
+            organs = listOf(PhotoOrgan.HABIT),
+            gps = null,
+            queriedName = name,
+        )
+        val outcome = identifyAndSave(request)
+        // Sans fiche enregistrée, la photo téléchargée n'a plus d'utilité.
+        if (outcome is IdentificationOutcome.Failure) imageStorage.delete(path)
+        return outcome
+    }
 
     /**
      * Relance le pipeline complet sur une fiche déjà enregistrée (ex. IA inaccessible lors de la
@@ -105,6 +132,7 @@ class IdentificationRepository @Inject constructor(
             photoPaths = entity.photoPaths,
             organs = organs,
             gps = gps,
+            queriedName = entity.queriedName,
         )
         return when (val pipeline = runPipeline(request)) {
             is Pipeline.Ok -> {
@@ -167,6 +195,7 @@ class IdentificationRepository @Inject constructor(
                 plantNetCandidates = candidates,
                 gps = request.gps,
                 language = AppLocales.current(context),
+                queriedName = request.queriedName,
             ),
         )
 
@@ -174,13 +203,23 @@ class IdentificationRepository @Inject constructor(
             is AiOutcome.Success -> {
                 val result = ConfidenceEngine.combineWithAi(aiOutcome.analysis, candidates)
                     .copy(aiProvider = aiOutcome.provider)
-                Pipeline.Ok(result, infoMessage = null)
+                    .forQueriedName(request.queriedName)
+                if (request.queriedName != null && result.scientificName.isBlank()) {
+                    Pipeline.Ko(
+                        IdentificationOutcome.Failure(
+                            FailureKind.NO_RESULT,
+                            strings.get(R.string.name_unknown, request.queriedName),
+                        ),
+                    )
+                } else {
+                    Pipeline.Ok(result, infoMessage = null)
+                }
             }
 
             AiOutcome.NoProvidersConfigured -> {
                 if (candidates.isNotEmpty()) {
                     Pipeline.Ok(
-                        ConfidenceEngine.plantNetOnly(candidates),
+                        ConfidenceEngine.plantNetOnly(candidates).forQueriedName(request.queriedName),
                         infoMessage = strings.get(R.string.id_no_ai_key),
                     )
                 } else {
@@ -191,7 +230,7 @@ class IdentificationRepository @Inject constructor(
             is AiOutcome.AllFailed -> {
                 if (candidates.isNotEmpty()) {
                     Pipeline.Ok(
-                        ConfidenceEngine.plantNetOnly(candidates),
+                        ConfidenceEngine.plantNetOnly(candidates).forQueriedName(request.queriedName),
                         infoMessage = strings.get(
                             R.string.id_ai_unavailable,
                             aiOutcome.failures.summary(strings),
@@ -213,6 +252,10 @@ class IdentificationRepository @Inject constructor(
      * du drapeau étant de déconseiller la cueillette. Le statut UICN reste par ailleurs affiché tel
      * quel, pour ne pas travestir les deux notions.
      */
+    /** Fiche par nom : ni santé ni photo à demander (la photo n'est pas celle de l'utilisateur). */
+    private fun IdentificationResult.forQueriedName(name: String?): IdentificationResult =
+        if (name == null) this else copy(health = null, photoSuggestions = emptyList(), queriedName = name)
+
     private fun withProtectedFlag(result: IdentificationResult): IdentificationResult {
         if (result.isProtected) return result
         val listed = ProtectedSpeciesChecker.isProtected(result.scientificName)

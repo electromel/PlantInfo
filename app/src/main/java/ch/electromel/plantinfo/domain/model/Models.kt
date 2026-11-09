@@ -226,6 +226,9 @@ data class IdentificationResult(
     // Jetons consommés par l'appel IA de cette identification (null si aucune IA n'a répondu, ou si
     // le fournisseur ne rapporte pas d'usage). Sert à afficher le coût de l'analyse (§3.x).
     val usage: TokenUsage? = null,
+    // Nom saisi par l'utilisateur quand la fiche a été créée « par son nom » (photo trouvée sur le
+    // web, ni santé ni lieu de prise de vue) ; null pour une fiche issue d'une photo prise par lui.
+    val queriedName: String? = null,
 ) {
     companion object {
         /** Seuil sous lequel on invite à fournir une photo complémentaire (§2.4). */

@@ -31,6 +31,11 @@ data class AiAnalysisInput(
      * l'historique, changer de langue plus tard ne la retraduit pas.
      */
     val language: AppLanguage,
+    /**
+     * Nom saisi par l'utilisateur quand la fiche est demandée par son nom. L'image est alors une
+     * illustration trouvée sur le web, pas un sujet vivant : ni diagnostic de santé, ni lieu.
+     */
+    val queriedName: String? = null,
 )
 
 /**
