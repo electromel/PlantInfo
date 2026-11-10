@@ -189,6 +189,9 @@ fun HistoryScreen(
         // Avec un filtre actif, l'écran ne montre qu'une partie de l'historique : on demande ce
         // qu'il faut supprimer plutôt que de le deviner.
         val filtered = filters.isActive
+        val cancelButton: @Composable () -> Unit = {
+            TextButton(onClick = { confirmDeleteAll = false }) { Text(stringResource(R.string.action_cancel)) }
+        }
         AlertDialog(
             onDismissRequest = { confirmDeleteAll = false },
             title = {
@@ -222,11 +225,12 @@ fun HistoryScreen(
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
+                    // Trois actions empilées : « Annuler » rejoint la colonne, sinon la mise en
+                    // page du dialogue le superpose au dernier bouton.
+                    if (filtered) cancelButton()
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { confirmDeleteAll = false }) { Text(stringResource(R.string.action_cancel)) }
-            },
+            dismissButton = if (filtered) null else cancelButton,
         )
     }
 }
