@@ -1,5 +1,8 @@
-# Règles ProGuard/R8 par défaut. Le build release actuel ne minifie pas (isMinifyEnabled = false),
-# mais on conserve les annotations de sérialisation kotlinx au cas où la minification serait activée.
+# Règles R8 propres à l'application, en plus de celles que chaque bibliothèque embarque (Room, Hilt,
+# OkHttp, WorkManager, kotlinx.serialization). Le build release est minifié : toute règle ajoutée ici
+# se vérifie sur la variante `minified` installée sur un appareil (voir CLAUDE.md).
+#
+# Sérialisation kotlinx : les sérialiseurs générés des DTO sont atteints par réflexion.
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
 -keep,includedescriptorclasses class ch.electromel.plantinfo.**$$serializer { *; }

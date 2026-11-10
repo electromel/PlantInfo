@@ -48,6 +48,29 @@ Si `gradlew.bat`/`gradle-wrapper.jar` manquent, les régénérer avec une distri
 Il n'y a **pas de lint configuré** au-delà des warnings du compilateur Kotlin et d'AGP. Les tests
 sont des tests JVM (`src/test`, JUnit4 + MockK) — pas de tests instrumentés significatifs.
 
+### Build release : R8 et variante `minified`
+
+Le build `release` passe par **R8** (`isMinifyEnabled` + `isShrinkResources`) : Google Play mesure
+l'obscurcissement du bundle et pénalise un taux nul. Le `mapping.txt` est embarqué dans le bundle
+(`bundleRelease`), la Console désobscurcit donc les rapports de plantage sans téléversement séparé.
+
+Un défaut dû à R8 (classe retirée ou renommée à tort) **ne se voit que dans un build minifié**, et
+le build release ne s'installe pas sur le téléphone de développement. La variante `minified` est le
+build release (R8 compris) avec un identifiant distinct (`.minified`), la signature de debug et les
+clés de `dev-keys.properties` — à essayer avant chaque publication, puis à désinstaller : elle porte
+le même nom et la même icône que la version du Play Store.
+
+```powershell
+& C:\DEV\PlantInfo\gradlew.bat -p C:\DEV\PlantInfo "-Dorg.gradle.java.installations.paths=$jbr" :app:assembleMinified
+adb install -r C:\DEV\PlantInfo\app\build\outputs\apk\minified\app-minified.apk
+adb shell am start -n ch.electromel.plantinfo.minified/ch.electromel.plantinfo.MainActivity
+adb uninstall ch.electromel.plantinfo.minified
+```
+
+Parcours minimal à refaire sur cette variante : assistant de configuration (clés chiffrées lues),
+une fiche par nom (réseau, JSON, Room), carte d'une fiche (osmdroid). Une bibliothèque ajoutée qui
+utilise la réflexion peut exiger une règle dans `app/proguard-rules.pro`.
+
 ### Installer sur un appareil
 
 Le téléphone de développement porte la version **du Play Store**, signée par Google (Play App

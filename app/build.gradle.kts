@@ -125,7 +125,12 @@ android {
             buildConfigField("String", "DEFAULT_OPENROUTER_API_KEY", devKey("OPENROUTER_API_KEY"))
         }
         release {
-            isMinifyEnabled = false
+            // R8 : réduction, optimisation et obscurcissement du code, puis retrait des ressources
+            // devenues inutiles. Google Play mesure l'obscurcissement du bundle et pénalise un
+            // taux nul. Le fichier de correspondance (mapping.txt) est embarqué dans le bundle :
+            // la Console désobscurcit donc les rapports de plantage sans téléversement séparé.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -133,6 +138,30 @@ android {
             if (hasReleaseSigning) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+        // Le build release tel qu'il sera publié (R8 compris), mais installable sur le téléphone
+        // de développement : identifiant distinct et signature de debug, puisque la version du
+        // Play Store refuse toute mise à jour signée localement. Un défaut dû à R8 (classe
+        // retirée ou renommée à tort) ne se voit que dans un build minifié : c'est celui-ci
+        // qu'il faut essayer avant chaque publication. Jamais publié.
+        create("minified") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".minified"
+            versionNameSuffix = "-minified"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+
+            // Mêmes clés de développement que le build debug, pour pouvoir identifier une plante.
+            buildConfigField("String", "DEFAULT_PLANTNET_API_KEY", devKey("PLANTNET_API_KEY"))
+            buildConfigField("String", "DEFAULT_CLAUDE_API_KEY", devKey("CLAUDE_API_KEY"))
+            buildConfigField("String", "DEFAULT_GEMINI_API_KEY", devKey("GEMINI_API_KEY"))
+            buildConfigField("String", "DEFAULT_OPENAI_API_KEY", devKey("OPENAI_API_KEY"))
+            buildConfigField("String", "DEFAULT_DEEPSEEK_API_KEY", devKey("DEEPSEEK_API_KEY"))
+            buildConfigField("String", "DEFAULT_GROK_API_KEY", devKey("GROK_API_KEY"))
+            buildConfigField("String", "DEFAULT_QWEN_API_KEY", devKey("QWEN_API_KEY"))
+            buildConfigField("String", "DEFAULT_KIMI_API_KEY", devKey("KIMI_API_KEY"))
+            buildConfigField("String", "DEFAULT_MISTRAL_API_KEY", devKey("MISTRAL_API_KEY"))
+            buildConfigField("String", "DEFAULT_OPENROUTER_API_KEY", devKey("OPENROUTER_API_KEY"))
         }
     }
 
