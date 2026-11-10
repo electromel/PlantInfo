@@ -1,6 +1,7 @@
 package ch.electromel.plantinfo.data.remote.ai
 
 import android.util.Log
+import ch.electromel.plantinfo.BuildConfig
 import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.domain.model.AiProviderType
@@ -55,6 +56,13 @@ class AiOrchestrator @Inject constructor(
     private val providers: Map<AiProviderType, AiProvider> =
         (listOf(claude, gemini, openai) + additional.all).associateBy { it.type }
 
+    /**
+     * Détail d'un échec pour le journal. Le message d'une [AiException] reprend le début du corps
+     * de la réponse du fournisseur, qui peut citer un fragment de clé ou de requête : il ne sort
+     * donc que d'un build de développement. En production, le motif typé suffit au diagnostic.
+     */
+    private fun Exception.logDetail(): String = if (BuildConfig.DEBUG) " — $message" else ""
+
     suspend fun analyze(input: AiAnalysisInput): AiOutcome {
         val order = keyStore.availableAiProvidersInOrder()
         if (order.isEmpty()) return AiOutcome.NoProvidersConfigured
@@ -72,7 +80,7 @@ class AiOrchestrator @Inject constructor(
                 throw e // annulation coopérative : ce n'est pas un échec du fournisseur
             } catch (e: Exception) {
                 val reason = e.failureReason()
-                Log.w(TAG, "Fournisseur ${type.label} en échec : $reason — ${e.message}")
+                Log.w(TAG, "Fournisseur ${type.label} en échec : $reason${e.logDetail()}")
                 failures += ProviderFailure(type, reason)
                 if (reason != AiFailureReason.NETWORK) allNetwork = false
                 // On passe au fournisseur suivant quel que soit le motif.
@@ -101,7 +109,7 @@ class AiOrchestrator @Inject constructor(
                 throw e
             } catch (e: Exception) {
                 val reason = e.failureReason()
-                Log.w(TAG, "Question IA — ${type.label} en échec : $reason — ${e.message}")
+                Log.w(TAG, "Question IA — ${type.label} en échec : $reason${e.logDetail()}")
                 failures += ProviderFailure(type, reason)
             }
         }

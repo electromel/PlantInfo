@@ -20,12 +20,15 @@ import ch.electromel.plantinfo.data.remote.web.WebPhotoClient
 import ch.electromel.plantinfo.domain.ConfidenceEngine
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.ComplementaryPhotoRequest
+import ch.electromel.plantinfo.domain.model.EdibilityVerdict
 import ch.electromel.plantinfo.domain.model.FailureKind
 import ch.electromel.plantinfo.domain.model.GpsLocation
 import ch.electromel.plantinfo.domain.model.IdentificationOutcome
 import ch.electromel.plantinfo.domain.model.IdentificationRequest
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.SpeciesCandidate
+import ch.electromel.plantinfo.domain.model.edibilityVerdict
+import ch.electromel.plantinfo.domain.model.toxicFromLocalList
 import ch.electromel.plantinfo.util.AppLanguage
 import ch.electromel.plantinfo.util.AppLocales
 import ch.electromel.plantinfo.util.ImageStorage
@@ -52,8 +55,8 @@ import java.io.IOException
  * Pipeline d'identification : Pl@ntNet, IA avec repli, fusion, persistance, et tous les cas dégradés
  * exposés par [IdentificationOutcome].
  *
- * Les tests préfixés « DEFAUT CONNU » figent un comportement fautif relevé par l'audit du
- * 2026-11-10 (voir `log/2026.11.10-Audit v2 - rapport.md`) : la correction devra les inverser.
+ * Les tests préfixés « F<n> » gardent la trace des défauts relevés par l'audit du 2026-11-10 et
+ * corrigés depuis (voir `log/2026.11.10-Audit v2 - rapport.md`).
  */
 class IdentificationRepositoryTest {
 
@@ -446,26 +449,32 @@ class IdentificationRepositoryTest {
     // --- Défauts connus (audit du 2026-11-10) ---
 
     @Test
-    fun `DEFAUT CONNU F2 - une espece toxique listee sort sans mention en resultat Pl@ntNet brut`() = runBlocking {
+    fun `F2 - une espece toxique listee est dite toxique meme en resultat Pl@ntNet brut`() = runBlocking {
         keys(ai = false)
         plantNet(SpeciesCandidate("Colchicum autumnale", "Colchique d'automne", 90))
         ai(AiOutcome.NoProvidersConfigured)
 
         repository.identifyAndSave(request)
 
-        // Colchicum figure dans ToxicSpeciesChecker, qui n'est consulté que pour les alternatives.
-        // Attendu après correction : voir la décision prise sur F2 dans le rapport d'audit.
-        assertNull(inserted().toxic)
+        // Le drapeau enregistré reste celui des sources (Pl@ntNet n'en donne pas) ; le verdict est
+        // déduit à l'affichage avec la liste locale, ce qui vaut aussi pour l'historique existant.
+        val fiche = inserted().toResult()
+        assertNull(fiche.toxic)
+        assertEquals(EdibilityVerdict.TOXIC, fiche.edibilityVerdict)
+        assertTrue(fiche.toxicFromLocalList)
     }
 
     @Test
-    fun `DEFAUT CONNU F2 - l'IA peut declarer non toxique une espece listee`() = runBlocking {
+    fun `F2 - la liste locale l'emporte quand l'IA declare non toxique une espece listee`() = runBlocking {
         keys(plantNet = false)
         aiSuccess(analysis(scientific = "Colchicum autumnale", toxic = false))
 
         repository.identifyAndSave(request)
 
-        assertEquals(false, inserted().toxic)
+        val fiche = inserted().toResult()
+        assertEquals(false, fiche.toxic)
+        assertEquals(EdibilityVerdict.TOXIC, fiche.edibilityVerdict)
+        assertTrue(fiche.toxicFromLocalList)
     }
 
     @Test

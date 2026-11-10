@@ -141,6 +141,8 @@
     <string name="edibility_edible">Comestible</string>
     <string name="edibility_toxic">Toxique</string>
     <string name="edibility_inedible">Non comestible</string>
+    <string name="edibility_toxic_local_list">Cette espèce figure dans la liste indicative d\'espèces toxiques de l\'application.</string>
+    <string name="edibility_toxicity_unknown">Toxicité inconnue</string>
     <string name="maturity_height">Hauteur</string>
     <string name="maturity_diameter">Diamètre</string>
     <string name="maturity_time">Temps jusqu\'à maturité</string>
@@ -389,12 +391,14 @@
         <item>Le fournisseur d\'IA que vous choisissez</item>
         <item>GBIF</item>
         <item>OpenStreetMap</item>
+        <item>Wikipédia</item>
     </string-array>
     <string-array name="setup_external_data_sent">
         <item>les photos que vous soumettez, pour obtenir des propositions d\'espèces.</item>
         <item>les photos, les propositions de Pl@ntNet et, lorsqu\'elles sont connues, les coordonnées GPS de la prise de vue — ainsi que le texte de vos questions.</item>
         <item>le nom scientifique de l\'espèce et, quand vous ouvrez la carte d\'une fiche, la zone de carte affichée, pour montrer où elle a été observée (aucune photo).</item>
         <item>la zone de carte affichée, uniquement quand vous ouvrez la carte d\'une fiche.</item>
+        <item>le nom de plante que vous saisissez, uniquement quand vous ajoutez une plante par son nom, pour trouver une photo (aucune photo de vous, aucun lieu).</item>
     </string-array>
 
     <!-- Guides de clés API — communs -->

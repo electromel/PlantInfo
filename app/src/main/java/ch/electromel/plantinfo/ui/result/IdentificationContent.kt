@@ -59,6 +59,8 @@ import ch.electromel.plantinfo.domain.model.photoSuggestionsToShow
 import ch.electromel.plantinfo.domain.model.PhotoOrgan
 import ch.electromel.plantinfo.domain.model.costText
 import ch.electromel.plantinfo.domain.model.edibilityVerdict
+import ch.electromel.plantinfo.domain.model.toxicFromLocalList
+import ch.electromel.plantinfo.domain.model.toxicityUnknown
 import ch.electromel.plantinfo.domain.model.iucnStatus
 import ch.electromel.plantinfo.domain.model.labelRes
 import ch.electromel.plantinfo.domain.model.maturityLines
@@ -658,7 +660,9 @@ private fun ConservationSection(result: IdentificationResult) {
 private fun EdibilitySection(result: IdentificationResult) {
     val verdict = result.edibilityVerdict
     val note = result.edibilityNote?.takeIf { it.isNotBlank() }
-    if (verdict == EdibilityVerdict.UNKNOWN && note == null) return
+    val fromLocalList = result.toxicFromLocalList
+    val toxicityUnknown = result.toxicityUnknown
+    if (verdict == EdibilityVerdict.UNKNOWN && note == null && !toxicityUnknown) return
 
     if (verdict == EdibilityVerdict.TOXIC) {
         WarningBanner(
@@ -678,6 +682,15 @@ private fun EdibilitySection(result: IdentificationResult) {
             }
             Text(stringResource(textRes), style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold, color = color)
+        }
+        if (fromLocalList) {
+            // Le verdict vient de la liste de l'application, pas de l'IA : le dire, d'autant que
+            // la note de l'IA affichée dessous peut affirmer le contraire.
+            Text(stringResource(R.string.edibility_toxic_local_list), style = MaterialTheme.typography.bodyMedium)
+        }
+        if (toxicityUnknown) {
+            Text(stringResource(R.string.edibility_toxicity_unknown), style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold)
         }
         note?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
         if (verdict == EdibilityVerdict.EDIBLE) {

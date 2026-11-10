@@ -142,6 +142,7 @@ class SettingsViewModel @Inject constructor(
     /** Active/désactive le mode « Gemini gratuit seul » (ignore Claude et GPT payants). */
     fun setFreeGeminiOnly(enabled: Boolean) {
         keyStore.setFreeGeminiOnly(enabled)
+        keyHealth.onProviderSelectionChanged()
         _state.update { it.copy(freeGeminiOnly = enabled) }
     }
 

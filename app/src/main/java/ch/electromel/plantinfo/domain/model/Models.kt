@@ -284,10 +284,28 @@ data class ToxicAlertThresholds(
 /** Verdict de comestibilité synthétique dérivé des drapeaux edible/toxic (§2.4). */
 enum class EdibilityVerdict { EDIBLE, TOXIC, INEDIBLE, UNKNOWN }
 
+/**
+ * L'espèce retenue figure dans la liste locale [ToxicSpeciesChecker] alors que l'IA ne l'a pas dite
+ * toxique (elle s'est tue, a dit le contraire, ou n'a pas été consultée : fiche Pl@ntNet seule).
+ * La liste l'emporte, et l'affichage dit d'où vient le verdict.
+ *
+ * **Déduit et non persisté**, comme le conseil de fiche incomplète : la règle vaut ainsi pour tout
+ * l'historique, et une liste complétée corrige aussi les fiches déjà enregistrées.
+ */
+val IdentificationResult.toxicFromLocalList: Boolean
+    get() = toxic != true && ToxicSpeciesChecker.isToxic(scientificName)
+
+/**
+ * Ni l'IA ni la liste locale ne se prononcent sur la toxicité. À dire explicitement : une fiche
+ * muette se lirait comme « rien à signaler », ce que personne n'a vérifié.
+ */
+val IdentificationResult.toxicityUnknown: Boolean
+    get() = toxic == null && !ToxicSpeciesChecker.isToxic(scientificName)
+
 /** La toxicité prime sur la comestibilité (sécurité) ; UNKNOWN si aucune info fiable. */
 val IdentificationResult.edibilityVerdict: EdibilityVerdict
     get() = when {
-        toxic == true -> EdibilityVerdict.TOXIC
+        toxic == true || toxicFromLocalList -> EdibilityVerdict.TOXIC
         edible == true -> EdibilityVerdict.EDIBLE
         edible == false -> EdibilityVerdict.INEDIBLE
         else -> EdibilityVerdict.UNKNOWN
@@ -414,11 +432,11 @@ fun IdentificationResult.usesSummaryText(strings: StringProvider): String? =
 
 /** Résumé textuel (verdict + précisions) pour PDF/partage. null si aucune information. */
 fun IdentificationResult.edibilitySummaryText(strings: StringProvider): String? {
-    val verdict = edibilityVerdict.labelRes?.let { strings.get(it) }
-    val note = edibilityNote?.takeIf { it.isNotBlank() }
-    return when {
-        verdict != null && note != null -> "$verdict — $note"
-        verdict != null -> verdict
-        else -> note
-    }
+    // Mêmes mentions que la fiche à l'écran : un partage ne doit pas être plus rassurant qu'elle.
+    return listOfNotNull(
+        edibilityVerdict.labelRes?.let { strings.get(it) },
+        strings.get(R.string.edibility_toxic_local_list).takeIf { toxicFromLocalList },
+        strings.get(R.string.edibility_toxicity_unknown).takeIf { toxicityUnknown },
+        edibilityNote?.takeIf { it.isNotBlank() },
+    ).takeIf { it.isNotEmpty() }?.joinToString(" — ")
 }

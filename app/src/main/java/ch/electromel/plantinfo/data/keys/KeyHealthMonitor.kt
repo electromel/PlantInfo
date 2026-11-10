@@ -97,6 +97,9 @@ class KeyHealthMonitor @Inject constructor(
                     forget(provider)
                     return@forEach
                 }
+                // Une clé que le mode en cours n'utilise pas n'est pas testée d'office : l'appel
+                // serait payé pour rien. « Revérifier mes clés » (force) reste une demande explicite.
+                if (!force && isSetAside(provider)) return@forEach
                 val due = force || now - lastCheckedAt(provider) >= CHECK_INTERVAL_MS ||
                     healthOf(provider) == KeyHealth.UNKNOWN
                 if (due) record(provider, test(provider, key))
@@ -131,6 +134,22 @@ class KeyHealthMonitor @Inject constructor(
         _problems.value = readProblems()
     }
 
+    /**
+     * À appeler quand le mode « Gemini seul » change : les clés signalées en dépendent, sans
+     * qu'aucun verdict n'ait bougé.
+     */
+    fun onProviderSelectionChanged() {
+        _problems.value = readProblems()
+    }
+
+    /**
+     * Clé IA enregistrée mais écartée par le mode « Gemini seul ». Son verdict est conservé (il
+     * resservira si le mode est désactivé) mais n'est pas signalé : alerter à chaque lancement
+     * pour une clé que l'application n'utilise pas ne demande rien d'utile à l'utilisateur.
+     */
+    private fun isSetAside(provider: ApiProvider): Boolean =
+        provider.aiType != null && provider != ApiProvider.GEMINI && keyStore.freeGeminiOnly()
+
     /** Verdict d'un test de clé : l'état retenu et, s'il est mauvais, le motif à afficher. */
     data class Verdict(val health: KeyHealth, val issue: KeyIssue?)
 
@@ -143,7 +162,7 @@ class KeyHealthMonitor @Inject constructor(
     }
 
     private fun readProblems(): List<KeyProblem> = ApiProvider.entries
-        .filter { keyStore.getKey(it) != null && healthOf(it) == KeyHealth.INVALID }
+        .filter { keyStore.getKey(it) != null && healthOf(it) == KeyHealth.INVALID && !isSetAside(it) }
         .map { KeyProblem(it, KeyIssue.fromName(prefs.getString(reasonKey(it), null)) ?: KeyIssue.UNUSABLE) }
 
     private fun healthOf(provider: ApiProvider): KeyHealth =

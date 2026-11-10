@@ -144,6 +144,8 @@
     <string name="edibility_edible">Edible</string>
     <string name="edibility_toxic">Toxic</string>
     <string name="edibility_inedible">Not edible</string>
+    <string name="edibility_toxic_local_list">This species is on the app\'s indicative list of toxic species.</string>
+    <string name="edibility_toxicity_unknown">Toxicity unknown</string>
     <string name="maturity_height">Height</string>
     <string name="maturity_diameter">Spread</string>
     <string name="maturity_time">Time to maturity</string>
@@ -392,12 +394,14 @@
         <item>The AI provider you choose</item>
         <item>GBIF</item>
         <item>OpenStreetMap</item>
+        <item>Wikipedia</item>
     </string-array>
     <string-array name="setup_external_data_sent">
         <item>the photos you submit, to get species suggestions.</item>
         <item>the photos, the Pl@ntNet suggestions and, when they are known, the GPS coordinates of the shot — as well as the text of your questions.</item>
         <item>the scientific name of the species and, when you open the map of a record, the map area being displayed, to show where it has been observed (no photo).</item>
         <item>the map area being displayed, only when you open the map of a record.</item>
+        <item>the plant name you type, only when you add a plant by its name, to find a photo (no photo of yours, no location).</item>
     </string-array>
 
     <!-- API key guides — common -->

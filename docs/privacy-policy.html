@@ -16,7 +16,7 @@
 <body>
 
 <h1>Politique de confidentialité — PlantInfo</h1>
-<p class="meta">Dernière mise à jour : 5 octobre 2026</p>
+<p class="meta">Dernière mise à jour : 10 novembre 2026</p>
 
 <p>
   <strong>PlantInfo</strong> (« l'application ») est une application Android d'identification de plantes,
@@ -54,12 +54,30 @@
 </p>
 <ul>
   <li><strong>Pl@ntNet</strong> — la photo est envoyée pour obtenir des candidats taxonomiques.</li>
-  <li><strong>Fournisseur d'IA que vous configurez</strong> (Google Gemini, Anthropic Claude ou OpenAI GPT)
-      — la ou les photos, le lieu approximatif et le contexte de l'espèce sont envoyés pour l'analyse et les
-      réponses aux questions. Par défaut, seule l'option gratuite (Google Gemini) est utilisée.</li>
+  <li><strong>Fournisseur d'IA que vous configurez</strong> — la ou les photos, les coordonnées GPS de la
+      prise de vue lorsqu'elles sont connues, le contexte de l'espèce et le texte de vos questions sont
+      envoyés pour l'analyse et les réponses. Par défaut, seule l'option gratuite (Google Gemini) est
+      utilisée. Un autre fournisseur ne reçoit des données que si vous avez saisi sa clé et désactivé le
+      mode « Gemini seul » ; l'application essaie alors les fournisseurs dans l'ordre que vous avez réglé,
+      et s'arrête au premier qui répond. Les fournisseurs possibles sont :
+      <ul>
+        <li>Google Gemini, Anthropic Claude, OpenAI GPT et xAI Grok (États-Unis) ;</li>
+        <li>Mistral AI (France) ;</li>
+        <li>DeepSeek et Moonshot AI Kimi (Chine) ;</li>
+        <li>Alibaba Cloud Qwen (point d'accès international, Singapour) ;</li>
+        <li>OpenRouter (États-Unis), un intermédiaire qui transmet à son tour la demande au fournisseur du
+            modèle utilisé.</li>
+      </ul>
+      Le pays indiqué est celui du siège du fournisseur ou de son point d'accès ; le lieu réel de
+      traitement dépend de chacun d'eux et peut se trouver hors de Suisse et de l'Union européenne.</li>
+  <li><strong>Wikipédia</strong> — uniquement lorsque vous ajoutez une plante par son nom : le nom saisi
+      est envoyé pour trouver une photo de l'espèce. Aucune de vos photos ni aucune position n'est
+      transmise.</li>
   <li><strong>GBIF</strong> — le nom scientifique de l'espèce est envoyé pour récupérer sa zone de
-      répartition connue.</li>
-  <li><strong>OpenStreetMap</strong> — utilisé pour afficher les fonds de carte.</li>
+      répartition connue et, lorsque vous ouvrez la carte d'une fiche, la zone de carte affichée (aucune
+      photo).</li>
+  <li><strong>OpenStreetMap</strong> — la zone de carte affichée est envoyée pour obtenir les fonds de
+      carte, uniquement lorsque vous ouvrez la carte d'une fiche.</li>
 </ul>
 <p>
   Ces services traitent ces données selon leurs propres politiques de confidentialité. L'application ne leur
@@ -88,8 +106,9 @@
       Applications &gt; PlantInfo &gt; Stockage &gt; Effacer les données.</li>
 </ul>
 <p>
-  Les données déjà transmises à Pl@ntNet, au fournisseur d'IA que vous avez configuré, à GBIF et à
-  OpenStreetMap lors d'une identification, d'une question ou de l'affichage d'une carte sont régies par la
+  Les données déjà transmises à Pl@ntNet, au fournisseur d'IA que vous avez configuré, à Wikipédia, à GBIF
+  et à OpenStreetMap lors d'une identification, d'une question, d'un ajout par nom ou de l'affichage d'une
+  carte sont régies par la
   politique de chaque service ; l'éditeur ne peut pas les supprimer en votre nom. Pour toute question, écrivez
   à l'adresse de contact ci-dessous.
 </p>
@@ -98,7 +117,7 @@
   data (photos, history, notes, location, API keys) is stored only on your device, so there is nothing for the
   publisher to delete. You can delete a single entry or the whole history inside the app, clear API keys in
   Settings, or remove everything by uninstalling the app or using Android Settings &gt; Apps &gt; PlantInfo &gt;
-  Storage &gt; Clear data. Data you sent to Pl@ntNet, your configured AI provider, GBIF or OpenStreetMap is
+  Storage &gt; Clear data. Data you sent to Pl@ntNet, your configured AI provider, Wikipedia, GBIF or OpenStreetMap is
   governed by those services' own policies.</p>
 
 <h2>Permissions demandées</h2>

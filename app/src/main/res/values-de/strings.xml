@@ -140,6 +140,8 @@
     <string name="edibility_edible">Essbar</string>
     <string name="edibility_toxic">Giftig</string>
     <string name="edibility_inedible">Nicht essbar</string>
+    <string name="edibility_toxic_local_list">Diese Art steht auf der unverbindlichen Liste giftiger Arten der App.</string>
+    <string name="edibility_toxicity_unknown">Giftigkeit unbekannt</string>
     <string name="maturity_height">Höhe</string>
     <string name="maturity_diameter">Breite</string>
     <string name="maturity_time">Zeit bis zur Reife</string>
@@ -388,12 +390,14 @@
         <item>Der von Ihnen gewählte KI-Anbieter</item>
         <item>GBIF</item>
         <item>OpenStreetMap</item>
+        <item>Wikipedia</item>
     </string-array>
     <string-array name="setup_external_data_sent">
         <item>die Fotos, die Sie einreichen, um Artvorschläge zu erhalten.</item>
         <item>die Fotos, die Vorschläge von Pl@ntNet und, sofern bekannt, die GPS-Koordinaten der Aufnahme — sowie den Text Ihrer Fragen.</item>
         <item>den wissenschaftlichen Namen der Art und, wenn Sie die Karte eines Eintrags öffnen, den angezeigten Kartenausschnitt, um zu zeigen, wo sie beobachtet wurde (kein Foto).</item>
         <item>den angezeigten Kartenausschnitt, und zwar nur, wenn Sie die Karte eines Eintrags öffnen.</item>
+        <item>den von Ihnen eingegebenen Pflanzennamen, und zwar nur, wenn Sie eine Pflanze über ihren Namen hinzufügen, um ein Foto zu finden (keines Ihrer Fotos, kein Standort).</item>
     </string-array>
 
     <!-- Schlüssel-Anleitungen — allgemein -->
