@@ -59,6 +59,16 @@ AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
+### Notes de version — 0.7.1 (versionCode 12)
+
+```
+Améliorations :
+• Toxicité : une espèce de la liste indicative de l'application est signalée « Toxique » même sans avis de l'IA ; à défaut, la fiche indique « Toxicité inconnue ».
+• « Tout supprimer » efface aussi les photos et demande quoi supprimer quand un filtre est actif.
+• Plus fiable quand un service d'IA répond mal ; plus d'alerte pour une clé non utilisée.
+• Application nettement plus légère.
+```
+
 ### Notes de version — 0.7.0 (versionCode 11)
 
 ```
@@ -128,6 +138,16 @@ WARNING
 Identifications are automatic and can be wrong. Never eat a wild plant or mushroom on the strength of this app alone: some edible species have dangerous look-alikes. If in doubt, consult a mycologist or a qualified expert.
 ```
 
+### Notes de version — 0.7.1 (versionCode 12)
+
+```
+Improvements:
+• Toxicity: a species on the app's indicative list is flagged "Toxic" even without the AI's opinion; otherwise the record says "Toxicity unknown".
+• "Delete all" also removes the photos and asks what to delete when a filter is active.
+• More reliable when an AI service misbehaves; no more alert for a key that is not in use.
+• Much smaller app.
+```
+
 ### Notes de version — 0.7.0 (versionCode 11)
 
 ```
@@ -193,6 +213,16 @@ Die App arbeitet mit Ihren eigenen Schlüsseln (Pl@ntNet ist unerlässlich; ein 
 
 WARNUNG
 Die Bestimmungen erfolgen automatisch und können falsch sein. Essen Sie niemals eine wilde Pflanze oder einen Pilz allein auf Grundlage dieser App: Manche essbaren Arten haben gefährliche Doppelgänger. Ziehen Sie im Zweifelsfall eine Pilzfachperson oder eine andere fachkundige Person bei.
+```
+
+### Notes de version — 0.7.1 (versionCode 12)
+
+```
+Verbesserungen:
+• Giftigkeit: Eine Art auf der unverbindlichen Liste der App wird auch ohne Einschätzung der KI als „Giftig“ gekennzeichnet; sonst steht im Eintrag „Giftigkeit unbekannt“.
+• „Alles löschen“ entfernt auch die Fotos und fragt bei aktivem Filter, was gelöscht werden soll.
+• Zuverlässiger, wenn ein KI-Dienst fehlerhaft antwortet; keine Warnung mehr für einen ungenutzten Schlüssel.
+• Deutlich kleinere App.
 ```
 
 ### Notes de version — 0.7.0 (versionCode 11)
@@ -262,6 +292,16 @@ AVVERTENZA
 Le identificazioni sono automatiche e possono contenere errori. Non consumate mai una pianta o un fungo selvatico basandovi solo su questa app: alcune specie commestibili hanno sosia pericolosi. In caso di dubbio, rivolgetevi a un micologo o a un esperto qualificato.
 ```
 
+### Notes de version — 0.7.1 (versionCode 12)
+
+```
+Miglioramenti:
+• Tossicità: una specie dell'elenco indicativo dell'app è segnalata come «Tossica» anche senza il parere dell'IA; altrimenti la scheda indica «Tossicità sconosciuta».
+• «Elimina tutto» rimuove anche le foto e chiede che cosa eliminare quando è attivo un filtro.
+• Più affidabile quando un servizio di IA risponde male; nessun avviso per una chiave non utilizzata.
+• App molto più leggera.
+```
+
 ### Notes de version — 0.7.0 (versionCode 11)
 
 ```
@@ -327,6 +367,16 @@ La aplicación funciona con sus propias claves (Pl@ntNet imprescindible; una cla
 
 ADVERTENCIA
 Las identificaciones son automáticas y pueden contener errores. No consuma nunca una planta o una seta silvestre basándose solo en esta aplicación: algunas especies comestibles tienen dobles peligrosos. En caso de duda, consulte a un micólogo o a una persona experta.
+```
+
+### Notes de version — 0.7.1 (versionCode 12)
+
+```
+Mejoras:
+• Toxicidad: una especie de la lista indicativa de la aplicación se señala como «Tóxica» incluso sin la opinión de la IA; si no, la ficha indica «Toxicidad desconocida».
+• «Eliminar todo» borra también las fotos y pregunta qué eliminar cuando hay un filtro activo.
+• Más fiable cuando un servicio de IA responde mal; sin aviso por una clave que no se usa.
+• Aplicación mucho más ligera.
 ```
 
 ### Notes de version — 0.7.0 (versionCode 11)
