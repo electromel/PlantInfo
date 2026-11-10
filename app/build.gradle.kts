@@ -33,6 +33,12 @@ val keystoreProps = Properties().apply {
 }
 val hasReleaseSigning = keystoreProps.getProperty("storeFile")?.isNotBlank() == true
 
+// Schémas Room exportés (app/schemas, versionnés) : chaque version de la base y laisse sa
+// description, ce qui permet de tester une migration contre le schéma réellement publié.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "ch.electromel.plantinfo"
     compileSdk = 36

@@ -28,7 +28,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [IdentificationEntity::class, SpeciesRangeCacheEntity::class],
     version = 11,
-    exportSchema = false,
+    exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class PlantInfoDatabase : RoomDatabase() {
