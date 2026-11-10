@@ -59,7 +59,14 @@ AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
-### Notes de version — 0.6.1 (versionCode 10)
+### Notes de version — 0.7.0 (versionCode 11)
+
+```
+Nouveautés :
+• Ajoutez une plante par son nom : une photo est trouvée sur le web (Wikipédia) et la fiche est établie comme d'habitude, sans évaluation de santé ni lieu de prise de vue.
+```
+
+### Notes de version — 0.6.1
 
 (396 caractères.)
 
@@ -119,6 +126,13 @@ The app works with your own keys (Pl@ntNet is essential; an AI key for the full 
 
 WARNING
 Identifications are automatic and can be wrong. Never eat a wild plant or mushroom on the strength of this app alone: some edible species have dangerous look-alikes. If in doubt, consult a mycologist or a qualified expert.
+```
+
+### Notes de version — 0.7.0 (versionCode 11)
+
+```
+What's new:
+• Add a plant by its name: a photo is found on the web (Wikipedia) and the record is built as usual, without a condition assessment or a shooting location.
 ```
 
 ### Notes de version — 0.6.1
@@ -181,6 +195,13 @@ WARNUNG
 Die Bestimmungen erfolgen automatisch und können falsch sein. Essen Sie niemals eine wilde Pflanze oder einen Pilz allein auf Grundlage dieser App: Manche essbaren Arten haben gefährliche Doppelgänger. Ziehen Sie im Zweifelsfall eine Pilzfachperson oder eine andere fachkundige Person bei.
 ```
 
+### Notes de version — 0.7.0 (versionCode 11)
+
+```
+Neu:
+• Pflanze nach Namen hinzufügen: Ein Foto wird im Web gefunden (Wikipedia) und der Eintrag wie gewohnt erstellt, ohne Zustandsbewertung und ohne Aufnahmeort.
+```
+
 ### Notes de version — 0.6.1
 
 ```
@@ -241,6 +262,13 @@ AVVERTENZA
 Le identificazioni sono automatiche e possono contenere errori. Non consumate mai una pianta o un fungo selvatico basandovi solo su questa app: alcune specie commestibili hanno sosia pericolosi. In caso di dubbio, rivolgetevi a un micologo o a un esperto qualificato.
 ```
 
+### Notes de version — 0.7.0 (versionCode 11)
+
+```
+Novità:
+• Aggiungi una pianta per nome: una foto viene trovata sul web (Wikipedia) e la scheda è creata come al solito, senza valutazione dello stato di salute né luogo di scatto.
+```
+
 ### Notes de version — 0.6.1
 
 ```
@@ -299,6 +327,13 @@ La aplicación funciona con sus propias claves (Pl@ntNet imprescindible; una cla
 
 ADVERTENCIA
 Las identificaciones son automáticas y pueden contener errores. No consuma nunca una planta o una seta silvestre basándose solo en esta aplicación: algunas especies comestibles tienen dobles peligrosos. En caso de duda, consulte a un micólogo o a una persona experta.
+```
+
+### Notes de version — 0.7.0 (versionCode 11)
+
+```
+Novedades:
+• Añade una planta por su nombre: se encuentra una foto en la web (Wikipedia) y la ficha se elabora como siempre, sin evaluación del estado de salud ni lugar de la toma.
 ```
 
 ### Notes de version — 0.6.1
