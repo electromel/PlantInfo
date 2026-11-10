@@ -31,6 +31,10 @@ val keystoreProps = Properties().apply {
     val f = rootProject.file("keystore.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
+// Date et heure du build, pour le filigrane des builds de test (jamais en release).
+val buildStamp: String =
+    "\"" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "\""
+
 val hasReleaseSigning = keystoreProps.getProperty("storeFile")?.isNotBlank() == true
 
 // Schémas Room exportés (app/schemas, versionnés) : chaque version de la base y laisse sa
@@ -84,6 +88,10 @@ android {
         // Horodatage du build, affiché par le filigrane de la version de test. Vide en release :
         // rien n'est estampillé dans l'app publiée.
         buildConfigField("String", "BUILD_STAMP", "\"\"")
+
+        // Étiquette des builds de test, affichée par le filigrane. Vide en release : c'est ce
+        // vide qui garantit qu'aucun filigrane ne part dans l'application publiée.
+        buildConfigField("String", "TEST_BUILD_LABEL", "\"\"")
     }
 
     signingConfigs {
@@ -108,11 +116,8 @@ android {
             // Date et heure du build : c'est ce qui distingue deux installations de test du même
             // jour. Recalculé à chaque configuration Gradle, donc le BuildConfig debug se
             // recompile à chaque build — sans intérêt en release, où le champ reste vide.
-            buildConfigField(
-                "String",
-                "BUILD_STAMP",
-                "\"" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "\"",
-            )
+            buildConfigField("String", "BUILD_STAMP", buildStamp)
+            buildConfigField("String", "TEST_BUILD_LABEL", "\"DEBUG\"")
 
             // Clés de dev pré-remplies uniquement en debug (jamais dans l'app publiée).
             buildConfigField("String", "DEFAULT_PLANTNET_API_KEY", devKey("PLANTNET_API_KEY"))
@@ -152,6 +157,12 @@ android {
             versionNameSuffix = "-minified"
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += "release"
+
+            // Reconnaissable comme le build debug : nom « PlantInfo (R8) » (src/minified/res) et
+            // filigrane dans l'application. Sans cela elle se confond avec la version du Play
+            // Store, dont elle a l'icône.
+            buildConfigField("String", "BUILD_STAMP", buildStamp)
+            buildConfigField("String", "TEST_BUILD_LABEL", "\"R8\"")
 
             // Mêmes clés de développement que le build debug, pour pouvoir identifier une plante.
             buildConfigField("String", "DEFAULT_PLANTNET_API_KEY", devKey("PLANTNET_API_KEY"))

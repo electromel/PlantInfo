@@ -57,8 +57,10 @@ l'obscurcissement du bundle et pénalise un taux nul. Le `mapping.txt` est embar
 Un défaut dû à R8 (classe retirée ou renommée à tort) **ne se voit que dans un build minifié**, et
 le build release ne s'installe pas sur le téléphone de développement. La variante `minified` est le
 build release (R8 compris) avec un identifiant distinct (`.minified`), la signature de debug et les
-clés de `dev-keys.properties` — à essayer avant chaque publication, puis à désinstaller : elle porte
-le même nom et la même icône que la version du Play Store.
+clés de `dev-keys.properties` — à essayer avant chaque publication, puis à désinstaller. Elle
+s'appelle « PlantInfo (R8) » (`src/minified/res`) et affiche le filigrane « R8 » ; son icône, elle,
+est celle de la version du Play Store (pas de bandeau DEV). Le filigrane suit
+`BuildConfig.TEST_BUILD_LABEL`, vide en release.
 
 ```powershell
 & C:\DEV\PlantInfo\gradlew.bat -p C:\DEV\PlantInfo "-Dorg.gradle.java.installations.paths=$jbr" :app:assembleMinified

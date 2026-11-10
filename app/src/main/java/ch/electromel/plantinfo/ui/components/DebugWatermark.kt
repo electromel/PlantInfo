@@ -23,8 +23,9 @@ import ch.electromel.plantinfo.BuildConfig
  * laquelle est sur le téléphone. Le numéro de version ne suffit pas non plus — il ne change pas
  * entre deux builds du même jour, d'où l'horodatage (`BuildConfig.BUILD_STAMP`).
  *
- * Ne s'affiche **que** dans un build debug : la garde `BuildConfig.DEBUG` est ce qui garantit que le
- * filigrane ne partira jamais dans l'application publiée.
+ * Ne s'affiche **que** dans un build de test (debug, ou variante `minified` qui sert à essayer le
+ * build R8) : `BuildConfig.TEST_BUILD_LABEL` est vide en release, et c'est cette garde qui garantit
+ * que le filigrane ne partira jamais dans l'application publiée.
  *
  * Volontairement en bas à gauche : les barres d'actions vivent en haut, et l'étiquette y masquerait
  * un bouton. Purement décoratif, elle n'intercepte aucun geste — un appui la traverse et atteint ce
@@ -32,11 +33,11 @@ import ch.electromel.plantinfo.BuildConfig
  */
 @Composable
 fun BoxScope.DebugWatermark() {
-    if (!BuildConfig.DEBUG) return
+    val kind = BuildConfig.TEST_BUILD_LABEL.takeIf { it.isNotBlank() } ?: return
 
     val stamp = BuildConfig.BUILD_STAMP.takeIf { it.isNotBlank() }
     val label = buildString {
-        append("DEBUG ")
+        append(kind).append(" ")
         append(BuildConfig.VERSION_NAME)
         append(" (")
         append(BuildConfig.VERSION_CODE)

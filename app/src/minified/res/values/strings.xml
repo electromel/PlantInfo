@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- La variante minified (build release avec R8, installable à côté de la version publiée) a
+     l'icône de l'application du Play Store : seul ce nom la distingue dans le lanceur. -->
+<resources>
+    <string name="app_name" translatable="false">PlantInfo (R8)</string>
+</resources>
