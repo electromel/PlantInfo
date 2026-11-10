@@ -23,8 +23,23 @@ interface IdentificationDao {
     @Query("DELETE FROM identifications WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    @Delete
+    suspend fun delete(entities: List<IdentificationEntity>)
+
     @Query("DELETE FROM identifications")
     suspend fun deleteAll()
+
+    /** Toutes les fiches, sans filtre : sert à supprimer leurs photos avant de vider la table. */
+    @Query("SELECT * FROM identifications")
+    suspend fun getAll(): List<IdentificationEntity>
+
+    // Mises à jour ciblées : réécrire la ligne entière à partir d'une copie en mémoire écraserait
+    // ce qu'une réanalyse en cours vient d'enregistrer (et inversement).
+    @Query("UPDATE identifications SET isFavorite = :favorite WHERE id = :id")
+    suspend fun setFavorite(id: Long, favorite: Boolean)
+
+    @Query("UPDATE identifications SET notes = :notes WHERE id = :id")
+    suspend fun setNotes(id: Long, notes: String?)
 
     @Query("SELECT * FROM identifications WHERE id = :id")
     suspend fun getById(id: Long): IdentificationEntity?

@@ -39,7 +39,6 @@ import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.SerializationException
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -86,6 +85,7 @@ class IdentificationRepositoryTest {
         every { AppLocales.current(any()) } returns AppLanguage.FRENCH
         every { imageStorage.readBytes(any()) } returns byteArrayOf(1)
         coEvery { dao.insert(any()) } returns 42L
+        coEvery { dao.getById(any()) } returns null
     }
 
     @After
@@ -469,28 +469,32 @@ class IdentificationRepositoryTest {
     }
 
     @Test
-    fun `DEFAUT CONNU F3 - fiche par nom et IA injoignable - reessai promis mais rien n'est en file`() = runBlocking {
+    fun `fiche par nom et IA injoignable - aucun reessai promis, photo supprimee`() = runBlocking {
         keys(plantNet = false)
         webPhoto()
         aiFailed(AiFailureReason.NETWORK)
 
         val outcome = repository.identifyByName("chêne") as IdentificationOutcome.Failure
 
-        // Attendu après correction : queuedForRetry faux et un message qui ne promet aucun réessai
-        // (ou bien une vraie mise en file, photo conservée).
-        assertTrue(outcome.queuedForRetry)
-        assertEquals(strings.get(R.string.id_offline_retry_network), outcome.message)
+        assertEquals(FailureKind.NETWORK, outcome.kind)
+        assertFalse(outcome.queuedForRetry)
+        assertEquals(strings.get(R.string.name_ai_offline), outcome.message)
         verify { imageStorage.delete("/p/web.jpg") }
     }
 
     @Test
-    fun `DEFAUT CONNU F7 - une reponse Wikipedia illisible traverse le depot`() {
+    fun `un favori ou une note modifies pendant la relance ne sont pas ecrases`() = runBlocking {
         keys()
-        coEvery { webPhotos.findPhoto(any(), any()) } throws SerializationException("pas du JSON")
+        plantNet(oak)
+        aiSuccess(analysis())
+        val atStart = storedFiche()
+        // Pendant l'analyse, l'utilisateur a retiré le favori et réécrit sa note.
+        coEvery { dao.getById(7) } returns atStart.copy(isFavorite = false, notes = "note récente")
 
-        // Attendu après correction : Failure(NETWORK), comme pour une IOException.
-        val failure = runCatching { runBlocking { repository.identifyByName("chêne") } }.exceptionOrNull()
+        repository.reanalyzeAndUpdate(atStart)
 
-        assertTrue(failure is SerializationException)
+        val updated = updates().single()
+        assertFalse(updated.isFavorite)
+        assertEquals("note récente", updated.notes)
     }
 }

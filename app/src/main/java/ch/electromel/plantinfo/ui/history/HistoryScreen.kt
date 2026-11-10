@@ -186,13 +186,42 @@ fun HistoryScreen(
     }
 
     if (confirmDeleteAll) {
+        // Avec un filtre actif, l'écran ne montre qu'une partie de l'historique : on demande ce
+        // qu'il faut supprimer plutôt que de le deviner.
+        val filtered = filters.isActive
         AlertDialog(
             onDismissRequest = { confirmDeleteAll = false },
-            title = { Text(stringResource(R.string.history_delete_all_title)) },
-            text = { Text(stringResource(R.string.history_delete_all_body)) },
+            title = {
+                Text(
+                    stringResource(
+                        if (filtered) R.string.history_delete_scope_title else R.string.history_delete_all_title,
+                    ),
+                )
+            },
+            text = {
+                Text(
+                    if (filtered) stringResource(R.string.history_delete_scope_body, items.size)
+                    else stringResource(R.string.history_delete_all_body),
+                )
+            },
             confirmButton = {
-                TextButton(onClick = { viewModel.deleteAll(); confirmDeleteAll = false }) {
-                    Text(stringResource(R.string.history_delete_all), color = MaterialTheme.colorScheme.error)
+                Column(horizontalAlignment = Alignment.End) {
+                    if (filtered) {
+                        TextButton(onClick = { viewModel.deleteDisplayed(); confirmDeleteAll = false }) {
+                            Text(
+                                stringResource(R.string.history_delete_displayed),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                    TextButton(onClick = { viewModel.deleteAll(); confirmDeleteAll = false }) {
+                        Text(
+                            stringResource(
+                                if (filtered) R.string.history_delete_everything else R.string.history_delete_all,
+                            ),
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             },
             dismissButton = {

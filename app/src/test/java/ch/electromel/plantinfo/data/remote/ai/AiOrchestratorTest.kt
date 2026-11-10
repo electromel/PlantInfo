@@ -169,18 +169,48 @@ class AiOrchestratorTest {
         assertEquals(AiFailureReason.UNKNOWN, orchestrator.testKey(AiProviderType.MISTRAL, "x"))
     }
 
-    // --- Défaut connu (audit du 2026-11-10) ---
+    // --- Exceptions non typées (constat F4 de l'audit du 2026-11-10) ---
 
     @Test
-    fun `DEFAUT CONNU F4 - une exception non typee traverse l'orchestrateur sans repli`() {
+    fun `une exception non typee compte comme un echec du fournisseur et le repli continue`() = runBlocking {
         order(AiProviderType.CLAUDE, AiProviderType.GEMINI)
         coEvery { claude.analyze(any(), any()) } throws IllegalStateException("réponse illisible")
         coEvery { gemini.analyze(any(), any()) } returns analysis("Quercus robur")
 
-        // Attendu après correction : repli sur Gemini, l'échec de Claude étant classé PARSE.
+        val outcome = orchestrator.analyze(input) as AiOutcome.Success
+
+        assertEquals(AiProviderType.GEMINI, outcome.provider)
+    }
+
+    @Test
+    fun `une exception non typee seule donne un echec PARSE, jamais un plantage`() = runBlocking {
+        order(AiProviderType.GEMINI)
+        coEvery { gemini.analyze(any(), any()) } throws IllegalStateException("x")
+        coEvery { gemini.ask(any(), any()) } throws IllegalArgumentException("x")
+
+        val analysis = orchestrator.analyze(input) as AiOutcome.AllFailed
+        val answer = orchestrator.ask("q") as AiAnswerOutcome.AllFailed
+
+        assertEquals(AiFailureReason.PARSE, analysis.lastReason)
+        assertFalse(analysis.allNetwork)
+        assertEquals(AiFailureReason.PARSE, answer.failures.single().reason)
+    }
+
+    @Test
+    fun `le test d'une cle impossible a envoyer rend UNKNOWN, la cle n'est pas condamnee`() = runBlocking {
+        coEvery { gemini.testKey(any()) } throws IllegalArgumentException("Unexpected char in header")
+
+        assertEquals(AiFailureReason.UNKNOWN, orchestrator.testKey(AiProviderType.GEMINI, "clé"))
+    }
+
+    @Test
+    fun `une annulation n'est jamais avalee par le repli`() {
+        order(AiProviderType.CLAUDE, AiProviderType.GEMINI)
+        coEvery { claude.analyze(any(), any()) } throws kotlinx.coroutines.CancellationException("écran quitté")
+
         val failure = runCatching { runBlocking { orchestrator.analyze(input) } }.exceptionOrNull()
 
-        assertTrue(failure is IllegalStateException)
+        assertTrue(failure is kotlinx.coroutines.CancellationException)
         coVerify(exactly = 0) { gemini.analyze(any(), any()) }
     }
 }

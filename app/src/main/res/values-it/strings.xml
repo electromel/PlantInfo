@@ -64,6 +64,7 @@
     <string name="name_dialog_confirm">Cerca</string>
     <string name="name_dialog_cancel">Annulla</string>
     <string name="name_offline">Sei offline: impossibile cercare una foto sul web.</string>
+    <string name="name_ai_offline">Nessuna connessione: impossibile creare la scheda. Riprova più tardi.</string>
     <string name="name_no_photo">Nessuna foto trovata sul web per « %1$s ». Prova un altro nome o il nome scientifico.</string>
     <string name="name_unknown">« %1$s » non corrisponde ad alcuna pianta, albero o fungo noto.</string>
     <string name="fiche_by_name_note">Scheda creata dal nome « %1$s »: la foto proviene dal web (Wikipedia), quindi mancano la valutazione dello stato di salute e il luogo di scatto.</string>
@@ -97,6 +98,10 @@
     <string name="history_empty_body">Fotografate una pianta dalla scheda Identifica: le vostre identificazioni appariranno qui.</string>
     <string name="history_delete_all_title">Eliminare tutta la cronologia?</string>
     <string name="history_delete_all_body">L\'operazione è irreversibile ed elimina anche le foto associate.</string>
+    <string name="history_delete_scope_title">Che cosa vuoi eliminare?</string>
+    <string name="history_delete_scope_body">È attivo un filtro. Schede visualizzate: %1$d. L\'eliminazione è irreversibile e rimuove anche le foto salvate dall\'app.</string>
+    <string name="history_delete_displayed">Solo le schede visualizzate</string>
+    <string name="history_delete_everything">Tutta la cronologia</string>
     <string name="history_photo_of">Foto di %1$s</string>
     <string name="history_located">Con posizione</string>
     <string name="history_reanalyze">Rilancia l\'analisi IA</string>
@@ -272,6 +277,7 @@
 
     <!-- Esportazione PDF -->
     <string name="pdf_footer">Identificata il %1$s — PlantInfo</string>
+    <string name="pdf_export_failed">Impossibile creare il PDF. Riprova.</string>
     <string name="pdf_page_number">%1$s  (pagina %2$d)</string>
     <string name="pdf_confirmed">Identificazione confermata manualmente</string>
     <string name="pdf_score">Punteggio di attendibilità: %1$d/100</string>

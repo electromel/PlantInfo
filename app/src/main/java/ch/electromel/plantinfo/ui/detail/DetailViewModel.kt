@@ -133,6 +133,7 @@ class DetailViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching { pdfExporter.export(current) }
                 .onSuccess { shareHelper.sharePdf(it) }
+                .onFailure { _message.value = strings.get(R.string.pdf_export_failed) }
             _exporting.value = false
         }
     }

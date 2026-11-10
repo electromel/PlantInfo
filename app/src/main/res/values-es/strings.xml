@@ -64,6 +64,7 @@
     <string name="name_dialog_confirm">Buscar</string>
     <string name="name_dialog_cancel">Cancelar</string>
     <string name="name_offline">Estás sin conexión: no se puede buscar una foto en la web.</string>
+    <string name="name_ai_offline">Sin conexión: no se pudo crear la ficha. Inténtalo más tarde.</string>
     <string name="name_no_photo">No se encontró ninguna foto en la web para « %1$s ». Prueba con otro nombre o con el nombre científico.</string>
     <string name="name_unknown">« %1$s » no corresponde a ninguna planta, árbol u hongo conocido.</string>
     <string name="fiche_by_name_note">Ficha creada a partir del nombre « %1$s »: la foto procede de la web (Wikipedia), por lo que no hay evaluación del estado de salud ni lugar de la toma.</string>
@@ -97,6 +98,10 @@
     <string name="history_empty_body">Fotografíe una planta desde la pestaña Identificar: sus identificaciones aparecerán aquí.</string>
     <string name="history_delete_all_title">¿Eliminar todo el historial?</string>
     <string name="history_delete_all_body">Esta acción es irreversible y eliminará también las fotos asociadas.</string>
+    <string name="history_delete_scope_title">¿Qué quieres eliminar?</string>
+    <string name="history_delete_scope_body">Hay un filtro activo. Fichas mostradas: %1$d. La eliminación es irreversible y borra también las fotos guardadas por la aplicación.</string>
+    <string name="history_delete_displayed">Solo las fichas mostradas</string>
+    <string name="history_delete_everything">Todo el historial</string>
     <string name="history_photo_of">Foto de %1$s</string>
     <string name="history_located">Con ubicación</string>
     <string name="history_reanalyze">Repetir el análisis con IA</string>
@@ -272,6 +277,7 @@
 
     <!-- Exportación a PDF -->
     <string name="pdf_footer">Identificada el %1$s — PlantInfo</string>
+    <string name="pdf_export_failed">No se pudo crear el PDF. Inténtalo de nuevo.</string>
     <string name="pdf_page_number">%1$s  (página %2$d)</string>
     <string name="pdf_confirmed">Identificación confirmada a mano</string>
     <string name="pdf_score">Puntuación de fiabilidad: %1$d/100</string>

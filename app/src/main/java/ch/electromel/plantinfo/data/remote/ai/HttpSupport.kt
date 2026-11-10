@@ -39,6 +39,24 @@ internal object HttpSupport {
     }
 
     /**
+     * Extrait le texte utile de l'enveloppe JSON d'un fournisseur. Tout ce qui empêche de le lire —
+     * réponse qui n'est pas du JSON (page d'un portail captif servie en 200), structure inattendue,
+     * contenu absent (réponse bloquée ou tronquée) — devient une AiException(PARSE) : c'est le motif
+     * qui fait passer l'orchestrateur au fournisseur suivant.
+     */
+    inline fun extractText(providerLabel: String, extract: () -> String?): String {
+        val text = try {
+            extract()
+        } catch (e: AiException) {
+            throw e
+        } catch (e: Exception) {
+            throw AiException(AiFailureReason.PARSE, "$providerLabel : réponse illisible", e)
+        }
+        return text?.takeIf { it.isNotBlank() }
+            ?: throw AiException(AiFailureReason.PARSE, "$providerLabel : réponse sans contenu")
+    }
+
+    /**
      * Exécute une requête et renvoie le corps en texte si 2xx ; sinon lève AiException avec le motif
      * adéquat. Les erreurs réseau (timeout, pas de connexion) deviennent AiFailureReason.NETWORK.
      */

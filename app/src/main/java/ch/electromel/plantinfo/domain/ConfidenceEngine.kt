@@ -152,8 +152,15 @@ object ConfidenceEngine {
             .take(3)
     }
 
+    /**
+     * Genre + épithète, en minuscules. Le signe d'hybride (« × », ou « x » isolé) est ignoré : sans
+     * cela « Mentha × piperita » et « Mentha × gracilis » se réduisaient tous deux à « mentha × »,
+     * donc à la même espèce.
+     */
     private fun normalize(name: String): String =
-        name.trim().lowercase().split(Regex("\\s+")).take(2).joinToString(" ")
+        name.trim().lowercase().replace("×", " ").split(Regex("\\s+"))
+            .filter { it.isNotEmpty() && it != "x" }
+            .take(2).joinToString(" ")
 
     private fun namesMatch(a: String, b: String): Boolean = normalize(a) == normalize(b)
 }

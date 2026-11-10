@@ -3,7 +3,10 @@ package ch.electromel.plantinfo.data.remote.ai
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.TokenUsage
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -165,11 +168,18 @@ class OpenAiCompatibleClient(
         return usageFromJson(config.model, usage)
     }
 
-    private fun extractText(response: String): String {
+    private fun extractText(response: String): String = HttpSupport.extractText(config.label) {
         val obj = json.parseToJsonElement(response).jsonObject
-        return obj["choices"]?.jsonArray?.firstOrNull()
-            ?.jsonObject?.get("message")?.jsonObject?.get("content")?.jsonPrimitive?.content
-            ?: response
+        val content = obj["choices"]?.jsonArray?.firstOrNull()
+            ?.jsonObject?.get("message")?.jsonObject?.get("content")
+        when (content) {
+            is JsonPrimitive -> content.contentOrNull
+            // Certains fournisseurs rendent le contenu en blocs ({"type":"text","text":…}).
+            is JsonArray -> content.joinToString("\n") {
+                (it as? JsonObject)?.get("text")?.jsonPrimitive?.contentOrNull.orEmpty()
+            }
+            else -> null
+        }
     }
 
     internal companion object {

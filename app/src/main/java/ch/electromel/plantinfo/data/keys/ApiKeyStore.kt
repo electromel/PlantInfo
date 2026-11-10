@@ -67,12 +67,14 @@ class ApiKeyStore @Inject constructor(
 
     /** Retourne la clé enregistrée pour un fournisseur, ou null si aucune. */
     fun getKey(provider: ApiProvider): String? =
-        prefs.getString(provider.prefKey, null)?.takeIf { it.isNotBlank() }
+        // Nettoyée aussi à la lecture : une clé enregistrée avant ce nettoyage peut en avoir besoin.
+        prefs.getString(provider.prefKey, null)?.let(::sanitizeApiKey)?.takeIf { it.isNotEmpty() }
 
     /** Enregistre (ou efface si blank) la clé d'un fournisseur. */
     fun setKey(provider: ApiProvider, key: String) {
+        val clean = sanitizeApiKey(key)
         prefs.edit().apply {
-            if (key.isBlank()) remove(provider.prefKey) else putString(provider.prefKey, key.trim())
+            if (clean.isEmpty()) remove(provider.prefKey) else putString(provider.prefKey, clean)
             // Choix de l'utilisateur, y compris l'effacement : la valeur de dev ne revient plus.
             putBoolean(handledKey(provider), true)
         }.apply()
@@ -165,6 +167,14 @@ class ApiKeyStore @Inject constructor(
         }
     }
 }
+
+/**
+ * Ne garde d'une clé saisie que ses caractères ASCII imprimables. Une clé copiée depuis une page
+ * web arrive volontiers avec un espace insécable, un retour à la ligne ou un caractère invisible :
+ * OkHttp refuse alors de la placer dans un en-tête et lève une exception, là où l'utilisateur
+ * attend simplement que sa clé fonctionne. Aucun fournisseur n'émet de clé hors de cette plage.
+ */
+internal fun sanitizeApiKey(raw: String): String = raw.filter { it in '!'..'~' }
 
 /**
  * Faut-il pré-remplir la clé depuis dev-keys.properties ? Seulement si le fournisseur n'a jamais eu

@@ -64,6 +64,7 @@
     <string name="name_dialog_confirm">Suchen</string>
     <string name="name_dialog_cancel">Abbrechen</string>
     <string name="name_offline">Sie sind offline: Ein Foto kann im Web nicht gesucht werden.</string>
+    <string name="name_ai_offline">Keine Verbindung: Der Eintrag konnte nicht erstellt werden. Versuchen Sie es später erneut.</string>
     <string name="name_no_photo">Kein Foto im Web für « %1$s » gefunden. Versuchen Sie einen anderen Namen oder den wissenschaftlichen Namen.</string>
     <string name="name_unknown">« %1$s » entspricht keiner bekannten Pflanze, keinem Baum und keinem Pilz.</string>
     <string name="fiche_by_name_note">Datenblatt aus dem Namen « %1$s » erstellt: Das Foto stammt aus dem Web (Wikipedia), daher gibt es keine Zustandsbewertung und keinen Aufnahmeort.</string>
@@ -97,6 +98,10 @@
     <string name="history_empty_body">Fotografieren Sie eine Pflanze im Tab „Bestimmen“: Ihre Bestimmungen erscheinen hier.</string>
     <string name="history_delete_all_title">Gesamten Verlauf löschen?</string>
     <string name="history_delete_all_body">Dieser Schritt lässt sich nicht rückgängig machen und löscht auch die zugehörigen Fotos.</string>
+    <string name="history_delete_scope_title">Was möchten Sie löschen?</string>
+    <string name="history_delete_scope_body">Ein Filter ist aktiv. Angezeigte Einträge: %1$d. Das Löschen lässt sich nicht rückgängig machen und entfernt auch die von der App gespeicherten Fotos.</string>
+    <string name="history_delete_displayed">Nur die angezeigten Einträge</string>
+    <string name="history_delete_everything">Den gesamten Verlauf</string>
     <string name="history_photo_of">Foto von %1$s</string>
     <string name="history_located">Mit Standort</string>
     <string name="history_reanalyze">KI-Analyse erneut starten</string>
@@ -272,6 +277,7 @@
 
     <!-- PDF-Export -->
     <string name="pdf_footer">Bestimmt am %1$s — PlantInfo</string>
+    <string name="pdf_export_failed">Das PDF konnte nicht erstellt werden. Bitte erneut versuchen.</string>
     <string name="pdf_page_number">%1$s  (Seite %2$d)</string>
     <string name="pdf_confirmed">Bestimmung von Hand bestätigt</string>
     <string name="pdf_score">Trefferwert: %1$d/100</string>

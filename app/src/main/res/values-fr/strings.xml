@@ -65,6 +65,7 @@
     <string name="name_dialog_confirm">Chercher</string>
     <string name="name_dialog_cancel">Annuler</string>
     <string name="name_offline">Vous êtes hors-ligne : impossible de chercher une photo sur le web.</string>
+    <string name="name_ai_offline">Pas de connexion : la fiche n\'a pas pu être créée. Réessayez plus tard.</string>
     <string name="name_no_photo">Aucune photo trouvée sur le web pour « %1$s ». Essayez un autre nom, ou le nom scientifique.</string>
     <string name="name_unknown">« %1$s » ne correspond à aucune plante, arbre ou champignon connu.</string>
     <string name="fiche_by_name_note">Fiche créée à partir du nom « %1$s » : la photo vient du web (Wikipédia), d\'où l\'absence d\'évaluation de santé et de lieu de prise de vue.</string>
@@ -98,6 +99,10 @@
     <string name="history_empty_body">Photographiez une plante depuis l\'onglet Capture : vos identifications apparaîtront ici.</string>
     <string name="history_delete_all_title">Supprimer tout l\'historique ?</string>
     <string name="history_delete_all_body">Cette action est irréversible et supprimera aussi les photos associées.</string>
+    <string name="history_delete_scope_title">Que voulez-vous supprimer ?</string>
+    <string name="history_delete_scope_body">Un filtre est actif. Fiches affichées : %1$d. La suppression est irréversible et efface aussi les photos enregistrées par l\'application.</string>
+    <string name="history_delete_displayed">Seulement les fiches affichées</string>
+    <string name="history_delete_everything">Tout l\'historique</string>
     <string name="history_photo_of">Photo de %1$s</string>
     <string name="history_located">Localisée</string>
     <string name="history_reanalyze">Relancer l\'analyse IA</string>
@@ -273,6 +278,7 @@
 
     <!-- Export PDF -->
     <string name="pdf_footer">Identifié le %1$s — PlantInfo</string>
+    <string name="pdf_export_failed">Le PDF n\'a pas pu être créé. Réessayez.</string>
     <string name="pdf_page_number">%1$s  (page %2$d)</string>
     <string name="pdf_confirmed">Identification confirmée manuellement</string>
     <string name="pdf_score">Score d\'exactitude : %1$d/100</string>

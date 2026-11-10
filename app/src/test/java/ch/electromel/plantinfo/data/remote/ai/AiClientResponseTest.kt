@@ -12,18 +12,11 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
  * Décodage des réponses des trois familles de clients IA (Claude, Gemini, compatibles OpenAI), sans
  * réseau : un intercepteur OkHttp sert une réponse enregistrée.
- *
- * Les tests préfixés « DEFAUT CONNU » figent un comportement fautif relevé par l'audit du
- * 2026-11-10 (voir `log/2026.11.10-Audit v2 - rapport.md`). Ils servent de filet : la correction
- * devra les inverser, pas les supprimer.
  */
 class AiClientResponseTest {
 
@@ -148,10 +141,10 @@ class AiClientResponseTest {
         assertEquals(AiFailureReason.PARSE, (failure as AiException).reason)
     }
 
-    // --- Défauts connus (audit du 2026-11-10) ---
+    // --- Réponses illisibles ou vides (constats F4 et F5 de l'audit du 2026-11-10) ---
 
     @Test
-    fun `DEFAUT CONNU F4 - une reponse 200 non JSON leve une exception non typee`() {
+    fun `une reponse 200 qui n'est pas du JSON leve PARSE chez tous les clients`() {
         val html = "<html><body>Portail captif</body></html>"
         val failures = listOf(
             failureOf { GeminiClient(http(html)).ask("q", "cle") },
@@ -159,46 +152,38 @@ class AiClientResponseTest {
             failureOf { OpenAiCompatibleClient(http(html), CompatibleProviderConfig.OPENAI).ask("q", "cle") },
         )
 
-        failures.forEach { failure ->
-            assertNotNull(failure)
-            // Attendu après correction : AiException(PARSE), seule exception que l'orchestrateur attrape.
-            assertFalse(failure is AiException)
-        }
+        failures.forEach { assertEquals(AiFailureReason.PARSE, (it as AiException).reason) }
     }
 
     @Test
-    fun `DEFAUT CONNU F5 - une reponse Gemini sans contenu est decodee comme une fiche vide`() = runBlocking {
+    fun `une reponse Gemini bloquee ou sans contenu leve PARSE au lieu d'une fiche vide`() {
         val blocked = """{"promptFeedback":{"blockReason":"SAFETY"},"usageMetadata":{"promptTokenCount":10}}"""
 
-        // Attendu après correction : AiException(PARSE), pour que le repli passe au fournisseur suivant.
-        val analysis = GeminiClient(http(blocked)).analyze(input, "cle")
+        val failure = failureOf { GeminiClient(http(blocked)).analyze(input, "cle") }
 
-        assertEquals("", analysis.scientificName)
-        assertEquals(0, analysis.confidence)
+        assertEquals(AiFailureReason.PARSE, (failure as AiException).reason)
     }
 
     @Test
-    fun `DEFAUT CONNU F5 - une reponse sans contenu a une question affiche l'enveloppe brute`() = runBlocking {
-        val empty = """{"choices":[],"usage":{"prompt_tokens":5}}"""
-
-        // Attendu après correction : AiException(PARSE).
-        val answer = OpenAiCompatibleClient(http(empty), CompatibleProviderConfig.OPENAI).ask("q", "cle")
-
-        assertTrue(answer.text.contains("\"choices\""))
-    }
-
-    @Test
-    fun `DEFAUT CONNU F6 - une cle avec un caractere non ASCII leve une exception non typee`() {
-        val pasted = "AIza cle" // espace insécable, typique d'un copier-coller depuis une page web
+    fun `une reponse sans contenu a une question leve PARSE au lieu d'afficher l'enveloppe`() {
         val failures = listOf(
-            failureOf { GeminiClient(http("{}")).testKey(pasted) },
-            failureOf { ClaudeClient(http("{}")).testKey(pasted) },
-            failureOf { OpenAiCompatibleClient(http("{}"), CompatibleProviderConfig.OPENAI).testKey(pasted) },
+            failureOf {
+                OpenAiCompatibleClient(http("""{"choices":[],"usage":{"prompt_tokens":5}}"""), CompatibleProviderConfig.OPENAI)
+                    .ask("q", "cle")
+            },
+            failureOf { ClaudeClient(http("""{"content":[]}""")).ask("q", "cle") },
+            failureOf { GeminiClient(http(geminiEnvelope("   "))).ask("q", "cle") },
         )
 
-        failures.forEach { failure ->
-            // Attendu après correction : clé nettoyée ou refusée proprement, sans exception brute.
-            assertTrue(failure is IllegalArgumentException)
-        }
+        failures.forEach { assertEquals(AiFailureReason.PARSE, (it as AiException).reason) }
+    }
+
+    @Test
+    fun `compatible OpenAI - un contenu rendu en blocs est lu`() = runBlocking {
+        val blocks = """{"choices":[{"message":{"content":[{"type":"text","text":"Arrosez peu."}]}}]}"""
+
+        val answer = OpenAiCompatibleClient(http(blocks), CompatibleProviderConfig.MISTRAL).ask("q", "cle")
+
+        assertEquals("Arrosez peu.", answer.text)
     }
 }

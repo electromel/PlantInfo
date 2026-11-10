@@ -68,6 +68,7 @@
     <string name="name_dialog_confirm">Search</string>
     <string name="name_dialog_cancel">Cancel</string>
     <string name="name_offline">You are offline: a photo cannot be searched for on the web.</string>
+    <string name="name_ai_offline">No connection: the record could not be created. Try again later.</string>
     <string name="name_no_photo">No photo found on the web for « %1$s ». Try another name, or the scientific name.</string>
     <string name="name_unknown">« %1$s » does not match any known plant, tree or mushroom.</string>
     <string name="fiche_by_name_note">Sheet created from the name « %1$s »: the photo comes from the web (Wikipedia), so there is no condition assessment or shooting location.</string>
@@ -101,6 +102,10 @@
     <string name="history_empty_body">Photograph a plant from the Capture tab: your identifications will appear here.</string>
     <string name="history_delete_all_title">Delete the whole history?</string>
     <string name="history_delete_all_body">This cannot be undone, and the associated photos will be deleted too.</string>
+    <string name="history_delete_scope_title">What do you want to delete?</string>
+    <string name="history_delete_scope_body">A filter is active. Records shown: %1$d. Deletion cannot be undone and also removes the photos stored by the app.</string>
+    <string name="history_delete_displayed">Only the records shown</string>
+    <string name="history_delete_everything">The whole history</string>
     <string name="history_photo_of">Photo of %1$s</string>
     <string name="history_located">Located</string>
     <string name="history_reanalyze">Run the AI analysis again</string>
@@ -276,6 +281,7 @@
 
     <!-- PDF export -->
     <string name="pdf_footer">Identified on %1$s — PlantInfo</string>
+    <string name="pdf_export_failed">The PDF could not be created. Try again.</string>
     <string name="pdf_page_number">%1$s  (page %2$d)</string>
     <string name="pdf_confirmed">Identification confirmed by hand</string>
     <string name="pdf_score">Accuracy score: %1$d/100</string>

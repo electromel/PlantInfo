@@ -39,18 +39,28 @@ class HistoryRepository @Inject constructor(
         dao.delete(entity)
     }
 
-    /** Supprime tout l'historique (avec confirmation côté UI) et les photos correspondantes. */
-    suspend fun deleteAll(entities: List<IdentificationEntity>) {
-        entities.forEach { e -> e.photoPaths.forEach { imageStorage.delete(it) } }
+    /**
+     * Supprime **tout** l'historique (avec confirmation côté UI) et les photos de toutes les fiches.
+     * Les fiches sont relues en base : la liste affichée à l'écran peut être filtrée, et s'y fier
+     * laissait sur l'appareil les photos des fiches masquées par le filtre.
+     */
+    suspend fun deleteAll() {
+        dao.getAll().forEach { e -> e.photoPaths.forEach { imageStorage.delete(it) } }
         dao.deleteAll()
     }
 
+    /** Supprime les seules fiches données (celles que le filtre affiche) et leurs photos. */
+    suspend fun deleteMany(entities: List<IdentificationEntity>) {
+        entities.forEach { e -> e.photoPaths.forEach { imageStorage.delete(it) } }
+        dao.delete(entities)
+    }
+
     suspend fun setFavorite(entity: IdentificationEntity, favorite: Boolean) {
-        dao.update(entity.copy(isFavorite = favorite))
+        dao.setFavorite(entity.id, favorite)
     }
 
     suspend fun setNotes(entity: IdentificationEntity, notes: String?) {
-        dao.update(entity.copy(notes = notes))
+        dao.setNotes(entity.id, notes)
     }
 
     /**

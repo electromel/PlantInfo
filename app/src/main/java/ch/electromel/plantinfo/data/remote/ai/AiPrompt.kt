@@ -12,6 +12,7 @@ import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /**
  * Construction du prompt structuré envoyé aux modèles multimodaux et parsing de leur réponse JSON.
@@ -223,12 +224,12 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
         // l'interface qui substitue « Espèce inconnue » / « État non évalué » à un champ vide.
         commonName = commonName?.takeIf { it.isNotBlank() } ?: scientificName.orEmpty(),
         scientificName = scientificName?.takeIf { it.isNotBlank() }.orEmpty(),
-        confidence = confidence?.coerceIn(0, 100) ?: 0,
+        confidence = confidence?.roundToInt()?.coerceIn(0, 100) ?: 0,
         isFungus = isFungus ?: false,
         isProtected = isProtected ?: false,
         alternatives = alternatives.orEmpty().mapNotNull {
             val sci = it.scientificName ?: return@mapNotNull null
-            SpeciesCandidate(sci, it.commonName, (it.score ?: 0).coerceIn(0, 100), toxic = it.toxic)
+            SpeciesCandidate(sci, it.commonName, (it.score?.roundToInt() ?: 0).coerceIn(0, 100), toxic = it.toxic)
         },
         healthStatus = health?.status?.takeIf { it.isNotBlank() }.orEmpty(),
         isHealthy = health?.isHealthy ?: true,
@@ -272,7 +273,8 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
     private data class AiResponseDto(
         val commonName: String? = null,
         val scientificName: String? = null,
-        val confidence: Int? = null,
+        // Double et non Int : un modèle qui répond 87.5 ferait sinon échouer toute la fiche.
+        val confidence: Double? = null,
         val isFungus: Boolean? = null,
         val isProtected: Boolean? = null,
         val alternatives: List<AltDto>? = null,
@@ -318,7 +320,7 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, au format exac
     private data class AltDto(
         val scientificName: String? = null,
         val commonName: String? = null,
-        val score: Int? = null,
+        val score: Double? = null,
         val toxic: Boolean? = null,
     )
 

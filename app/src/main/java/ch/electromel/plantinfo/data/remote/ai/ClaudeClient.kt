@@ -131,10 +131,9 @@ class ClaudeClient @Inject constructor(
         ).takeIf { !it.isEmpty }
     }
 
-    private fun extractText(response: String): String {
+    private fun extractText(response: String): String = HttpSupport.extractText("Claude") {
         val obj = json.parseToJsonElement(response).jsonObject
-        val content = obj["content"]?.jsonArray ?: return response
-        return content.joinToString("\n") { block ->
+        obj["content"]?.jsonArray?.joinToString("\n") { block ->
             block.jsonObject["text"]?.jsonPrimitive?.content ?: ""
         }
     }

@@ -53,7 +53,11 @@ data class HistoryFilters(
     val favoritesOnly: Boolean = false,
     val withLocationOnly: Boolean = false,
     val dateRange: DateRange = DateRange.ALL,
-)
+) {
+    /** Un filtre masque une partie de l'historique : « tout supprimer » doit alors préciser sa portée. */
+    val isActive: Boolean
+        get() = query.isNotBlank() || favoritesOnly || withLocationOnly || dateRange != DateRange.ALL
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -92,8 +96,15 @@ class HistoryViewModel @Inject constructor(
 
     fun setDateRange(range: DateRange) = _filters.update { it.copy(dateRange = range) }
 
+    /** Tout l'historique, quel que soit le filtre affiché. */
     fun deleteAll() {
-        viewModelScope.launch { repository.deleteAll(items.value) }
+        viewModelScope.launch { repository.deleteAll() }
+    }
+
+    /** Seulement les fiches que le filtre en cours affiche. */
+    fun deleteDisplayed() {
+        val displayed = items.value
+        viewModelScope.launch { repository.deleteMany(displayed) }
     }
 
     fun delete(entity: IdentificationEntity) {

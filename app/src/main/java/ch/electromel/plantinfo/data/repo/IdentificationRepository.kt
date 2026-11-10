@@ -85,9 +85,17 @@ class IdentificationRepository @Inject constructor(
             queriedName = name,
         )
         val outcome = identifyAndSave(request)
+        if (outcome !is IdentificationOutcome.Failure) return outcome
         // Sans fiche enregistrée, la photo téléchargée n'a plus d'utilité.
-        if (outcome is IdentificationOutcome.Failure) imageStorage.delete(path)
-        return outcome
+        imageStorage.delete(path)
+        // Le pipeline propose une mise en file quand le réseau manque, mais une fiche par nom n'y
+        // va pas (rien n'est enregistré, la photo vient d'être supprimée) : le message ne doit
+        // donc promettre aucun réessai automatique.
+        return if (outcome.queuedForRetry) {
+            outcome.copy(message = strings.get(R.string.name_ai_offline), queuedForRetry = false)
+        } else {
+            outcome
+        }
     }
 
     /**
@@ -137,9 +145,12 @@ class IdentificationRepository @Inject constructor(
         return when (val pipeline = runPipeline(request)) {
             is Pipeline.Ok -> {
                 val flagged = withProtectedFlag(pipeline.result)
+                // Favori et notes sont relus maintenant : l'analyse a pu durer des dizaines de
+                // secondes, pendant lesquelles l'utilisateur a pu modifier l'un ou l'autre.
+                val current = dao.getById(entity.id) ?: entity
                 val updated = flagged
                     .toEntity(gps, entity.photoPaths, flagged.aiProvider, entity.dateTime)
-                    .copy(id = entity.id, isFavorite = entity.isFavorite, notes = entity.notes)
+                    .copy(id = entity.id, isFavorite = current.isFavorite, notes = current.notes)
                 dao.update(updated)
                 IdentificationOutcome.Success(entity.id, flagged, pipeline.infoMessage)
             }

@@ -63,7 +63,7 @@ class CaptureViewModel @Inject constructor(
     fun addGalleryPhoto(uri: Uri) {
         viewModelScope.launch {
             val exifLocation = imageStorage.readExifLocation(uri)
-            val path = runCatching { imageStorage.saveFromUri(uri) }.getOrNull() ?: return@launch
+            val path = savePhoto(uri) ?: return@launch
             addPhoto(path)
             if (exifLocation != null) {
                 _state.update { it.copy(gps = exifLocation, gpsFromPhoto = true) }
@@ -77,7 +77,7 @@ class CaptureViewModel @Inject constructor(
      */
     fun addCameraPhoto(uri: Uri) {
         viewModelScope.launch {
-            val path = runCatching { imageStorage.saveFromUri(uri) }.getOrNull() ?: return@launch
+            val path = savePhoto(uri) ?: return@launch
             addPhoto(path)
             if (!_state.value.gpsFromPhoto && _state.value.gps == null && !_state.value.locating) {
                 _state.update { it.copy(locating = true) }
@@ -87,6 +87,15 @@ class CaptureViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    /** Enregistre la photo ; null (et un message à l'écran) si le fichier est illisible. */
+    private suspend fun savePhoto(uri: Uri): String? {
+        val path = runCatching { imageStorage.saveFromUri(uri) }.getOrNull()
+        if (path == null) {
+            _state.update { it.copy(error = strings.get(R.string.fiche_photo_save_failed)) }
+        }
+        return path
     }
 
     private fun addPhoto(path: String) {

@@ -37,8 +37,10 @@ class ApiKeyTester @Inject constructor(
      * ainsi dès la correction.
      */
     suspend fun saveAndTest(provider: ApiProvider, key: String): KeyTestState {
-        keyStore.setKey(provider, key)
-        val verdict = test(provider, key)
+        // La clé testée est celle qui est enregistrée, donc nettoyée de la même façon.
+        val clean = sanitizeApiKey(key)
+        keyStore.setKey(provider, clean)
+        val verdict = test(provider, clean)
         keyHealth.record(provider, verdict)
         return verdict.toTestState()
     }

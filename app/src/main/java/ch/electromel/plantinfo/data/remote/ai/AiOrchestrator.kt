@@ -5,6 +5,7 @@ import ch.electromel.plantinfo.data.keys.ApiKeyStore
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.domain.model.AiProviderType
 import ch.electromel.plantinfo.domain.model.TokenUsage
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -67,10 +68,13 @@ class AiOrchestrator @Inject constructor(
             try {
                 val analysis = provider.analyze(input, key)
                 return AiOutcome.Success(analysis, type)
-            } catch (e: AiException) {
-                Log.w(TAG, "Fournisseur ${type.label} en échec : ${e.reason} — ${e.message}")
-                failures += ProviderFailure(type, e.reason)
-                if (e.reason != AiFailureReason.NETWORK) allNetwork = false
+            } catch (e: CancellationException) {
+                throw e // annulation coopérative : ce n'est pas un échec du fournisseur
+            } catch (e: Exception) {
+                val reason = e.failureReason()
+                Log.w(TAG, "Fournisseur ${type.label} en échec : $reason — ${e.message}")
+                failures += ProviderFailure(type, reason)
+                if (reason != AiFailureReason.NETWORK) allNetwork = false
                 // On passe au fournisseur suivant quel que soit le motif.
             }
         }
@@ -93,9 +97,12 @@ class AiOrchestrator @Inject constructor(
             try {
                 val answer = provider.ask(prompt, key)
                 return AiAnswerOutcome.Success(answer.text, type, answer.usage)
-            } catch (e: AiException) {
-                Log.w(TAG, "Question IA — ${type.label} en échec : ${e.reason} — ${e.message}")
-                failures += ProviderFailure(type, e.reason)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                val reason = e.failureReason()
+                Log.w(TAG, "Question IA — ${type.label} en échec : $reason — ${e.message}")
+                failures += ProviderFailure(type, reason)
             }
         }
         return AiAnswerOutcome.AllFailed(failures)
@@ -107,10 +114,20 @@ class AiOrchestrator @Inject constructor(
         return try {
             provider.testKey(apiKey)
             null
-        } catch (e: AiException) {
-            e.reason
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.failureReason(fallback = AiFailureReason.UNKNOWN)
         }
     }
+
+    /**
+     * Motif d'un échec de fournisseur. Une exception qui n'est pas une [AiException] (réponse au
+     * format inattendu, requête impossible à construire) ne doit jamais remonter jusqu'à l'écran :
+     * elle compte comme un échec de ce fournisseur, et le repli continue.
+     */
+    private fun Exception.failureReason(fallback: AiFailureReason = AiFailureReason.PARSE): AiFailureReason =
+        (this as? AiException)?.reason ?: fallback
 
     private companion object {
         const val TAG = "AiOrchestrator"

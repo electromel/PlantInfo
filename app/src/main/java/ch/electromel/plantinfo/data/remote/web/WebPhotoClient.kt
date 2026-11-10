@@ -5,6 +5,7 @@ import ch.electromel.plantinfo.util.AppLanguage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -59,7 +60,13 @@ class WebPhotoClient @Inject constructor(
             .addQueryParameter("pithumbsize", THUMB_SIZE.toString())
             .build()
         val body = get(url.toString())?.string() ?: return null
-        val pages = json.decodeFromString<QueryDto>(body).query?.pages?.values.orEmpty()
+        // Une réponse 200 qui n'est pas le JSON attendu (page d'un portail Wi-Fi captif) est un
+        // problème de réseau, pas une recherche sans résultat : l'appelant ne connaît qu'IOException.
+        val pages = try {
+            json.decodeFromString<QueryDto>(body).query?.pages?.values.orEmpty()
+        } catch (e: SerializationException) {
+            throw IOException("Réponse Wikipédia illisible", e)
+        }
         // `index` donne le rang de pertinence de la recherche ; les pages sans image sont écartées,
         // ainsi que les SVG (cartes de répartition, schémas) rendus en PNG.
         return pages.sortedBy { it.index ?: Int.MAX_VALUE }

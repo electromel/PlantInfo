@@ -113,12 +113,12 @@ class GeminiClient @Inject constructor(
         ).takeIf { !it.isEmpty }
     }
 
-    private fun extractText(response: String): String {
+    private fun extractText(response: String): String = HttpSupport.extractText("Gemini") {
         val obj = json.parseToJsonElement(response).jsonObject
-        val parts = obj["candidates"]?.jsonArray?.firstOrNull()
+        // Ni candidat ni parties : réponse bloquée (promptFeedback) ou tronquée.
+        obj["candidates"]?.jsonArray?.firstOrNull()
             ?.jsonObject?.get("content")?.jsonObject?.get("parts")?.jsonArray
-            ?: return response
-        return parts.joinToString("\n") { it.jsonObject["text"]?.jsonPrimitive?.content ?: "" }
+            ?.joinToString("\n") { it.jsonObject["text"]?.jsonPrimitive?.content ?: "" }
     }
 
     private companion object {
