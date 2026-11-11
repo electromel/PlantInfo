@@ -116,22 +116,20 @@ fun CaptureScreen(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { /* les résultats sont lus à la demande via checkSelfPermission */ }
 
-    // Import via le sélecteur de documents (SAF) : contrairement au sélecteur de photos, il fournit
-    // un Uri résoluble vers MediaStore, ce qui permet — avec ACCESS_MEDIA_LOCATION — de lire le
-    // géotag EXIF non masqué de la photo.
+    // Import via le sélecteur de documents (SAF) : il donne accès à la seule photo choisie, sans
+    // aucune permission de lecture des photos.
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? -> uri?.let { viewModel.addGalleryPhoto(it) } }
 
-    // Au premier affichage : demander caméra + localisation + géolocalisation des médias
-    // (ACCESS_MEDIA_LOCATION, nécessaire pour lire le géotag EXIF des photos importées). Aucune
-    // permission de lecture des photos : le sélecteur de documents donne accès à la photo choisie.
+    // Au premier affichage : demander caméra + localisation (+ notifications). Rien qui touche
+    // aux photos de l'appareil : ACCESS_MEDIA_LOCATION faisait apparaître, depuis Android 14, une
+    // demande d'accès aux photos et vidéos.
     LaunchedEffect(Unit) {
         if (!cameraGranted) cameraPermLauncher.launch(Manifest.permission.CAMERA)
         val perms = buildList {
             add(Manifest.permission.ACCESS_FINE_LOCATION)
             add(Manifest.permission.ACCESS_COARSE_LOCATION)
-            add(Manifest.permission.ACCESS_MEDIA_LOCATION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 // Notifier l'utilisateur quand une identification différée (file hors-ligne) aboutit.
                 add(Manifest.permission.POST_NOTIFICATIONS)

@@ -1,14 +1,10 @@
 package ch.electromel.plantinfo.util
 
-import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
-import android.provider.DocumentsContract
-import android.provider.MediaStore
-import android.provider.OpenableColumns
 import androidx.exifinterface.media.ExifInterface
 import ch.electromel.plantinfo.domain.model.GpsLocation
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -63,66 +59,14 @@ class ImageStorage @Inject constructor(
      * Extrait les coordonnées GPS inscrites dans l'EXIF d'une photo (§2.2). Pour une photo importée
      * depuis la galerie, ce lieu est celui de la prise de vue réelle — plus pertinent que la position
      * courante de l'appareil. La compression (saveFromUri) supprimant l'EXIF, on lit depuis l'Uri
-     * d'origine. Renvoie null si la photo ne contient pas de géotag.
+     * d'origine. Renvoie null si la photo ne contient pas de géotag ou si le système le masque.
      */
     suspend fun readExifLocation(uri: Uri): GpsLocation? = withContext(Dispatchers.IO) {
-        // MediaStore masque les coordonnées des images (confidentialité). Pour lire le géotag, il faut
-        // demander l'original non masqué via MediaStore.setRequireOriginal(), ce qui exige :
-        //  - la permission ACCESS_MEDIA_LOCATION (sans permission de lecture : l'accès à la photo vient du sélecteur) ;
-        //  - un Uri MediaStore. On convertit donc l'Uri « document » (SAF) en Uri MediaStore.
-        // On essaie plusieurs candidats et on retient le premier qui expose des coordonnées.
-        val candidates = LinkedHashSet<Uri>()
-        resolveMediaStoreUri(uri)?.let { candidates.add(it) }
-        mediaStoreUriByDisplayName(uri)?.let { candidates.add(it) }
-        candidates.add(uri)
-
-        for (candidate in candidates) {
-            val original = runCatching { MediaStore.setRequireOriginal(candidate) }.getOrDefault(candidate)
-            readLatLongFrom(original)?.let { return@withContext it }
-            readLatLongFrom(candidate)?.let { return@withContext it }
-        }
-        null
-    }
-
-    /** Convertit un Uri « document » de la galerie (SAF) en Uri MediaStore, si possible. */
-    private fun resolveMediaStoreUri(uri: Uri): Uri? = try {
-        if (DocumentsContract.isDocumentUri(context, uri)) {
-            val docId = DocumentsContract.getDocumentId(uri) // ex. "image:1000000034"
-            val parts = docId.split(":")
-            if (parts.size == 2 && parts[0].equals("image", ignoreCase = true)) {
-                ContentUris.withAppendedId(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, parts[1].toLong(),
-                )
-            } else null
-        } else null
-    } catch (e: Exception) {
-        null
-    }
-
-    /** Retrouve l'entrée MediaStore correspondant à l'Uri importé, par nom de fichier (repli). */
-    private fun mediaStoreUriByDisplayName(uri: Uri): Uri? = try {
-        val name = context.contentResolver.query(
-            uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null,
-        )?.use { if (it.moveToFirst()) it.getString(0) else null }
-        if (name.isNullOrBlank()) {
-            null
-        } else {
-            context.contentResolver.query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Images.Media._ID),
-                "${MediaStore.Images.Media.DISPLAY_NAME} = ?",
-                arrayOf(name),
-                null,
-            )?.use {
-                if (it.moveToFirst()) {
-                    ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, it.getLong(0))
-                } else {
-                    null
-                }
-            }
-        }
-    } catch (e: Exception) {
-        null
+        // Lecture directe du fichier remis par le sélecteur. Android peut en masquer les
+        // coordonnées (confidentialité) : les obtenir à coup sûr exigerait ACCESS_MEDIA_LOCATION,
+        // donc une demande d'accès aux photos, que l'application ne fait pas. Une photo importée
+        // peut ainsi arriver sans lieu ; ce n'est pas une erreur.
+        readLatLongFrom(uri)
     }
 
     private fun readLatLongFrom(uri: Uri): GpsLocation? = try {

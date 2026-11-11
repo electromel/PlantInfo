@@ -119,7 +119,7 @@ Ce que le manifeste demande, et la justification à donner si la Console la réc
 | --- | --- |
 | `CAMERA` | Photographier la plante à identifier. |
 | `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` | Critère d'identification complémentaire et centrage de la carte. Au premier plan uniquement. |
-| `ACCESS_MEDIA_LOCATION` + `READ_MEDIA_IMAGES` | Lire le géotag EXIF d'une photo importée, avant compression. |
+| Photos et vidéos | Aucune autorisation demandée (ni `READ_MEDIA_IMAGES`, ni `ACCESS_MEDIA_LOCATION` depuis la 0.7.1) : l'import passe par le sélecteur système. |
 | `POST_NOTIFICATIONS` | Prévenir quand une identification mise en file hors-ligne a abouti. |
 | `INTERNET` / `ACCESS_NETWORK_STATE` | Appels aux API d'identification. |
 

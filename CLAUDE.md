@@ -265,6 +265,12 @@ trois clients.
 d'une photo importée **avant compression** (la compression supprime l'EXIF). Pour une photo importée,
 le lieu du fichier prime sur la position courante (voir `ui/capture/CaptureViewModel`).
 
+**Aucune permission liée aux photos.** `ACCESS_MEDIA_LOCATION` a été retirée en 0.7.1 : depuis
+Android 14, la demander affiche « Autoriser l'accès aux photos et vidéos ». Le géotag est donc lu
+tel que le sélecteur système le fournit ; s'il le masque, la photo importée arrive sans lieu. Ne
+pas réintroduire cette permission (ni `READ_MEDIA_IMAGES`, retirée en 0.6.1) sans décision
+explicite : la Play Console demande de justifier tout accès aux photos.
+
 ## Multilangue (fr, en, de, it, es)
 
 **Aucune chaîne visible par l'utilisateur ne vit dans le code.** Tout passe par `res/values*/strings.xml` :
