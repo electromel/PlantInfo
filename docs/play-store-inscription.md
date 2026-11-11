@@ -119,7 +119,7 @@ Ce que le manifeste demande, et la justification à donner si la Console la réc
 | --- | --- |
 | `CAMERA` | Photographier la plante à identifier. |
 | `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` | Critère d'identification complémentaire et centrage de la carte. Au premier plan uniquement. |
-| Photos et vidéos | Aucune autorisation demandée (ni `READ_MEDIA_IMAGES`, ni `ACCESS_MEDIA_LOCATION` depuis la 0.7.1) : l'import passe par le sélecteur système. |
+| `ACCESS_MEDIA_LOCATION` | Lire le lieu de prise de vue (EXIF) d'une photo importée, que le système masque sans elle. Demandée au premier import seulement, après explication, facultative. Android 14+ l'affiche comme un accès « photos et vidéos ». `READ_MEDIA_IMAGES` n'est pas déclarée : l'import passe par le sélecteur système. |
 | `POST_NOTIFICATIONS` | Prévenir quand une identification mise en file hors-ligne a abouti. |
 | `INTERNET` / `ACCESS_NETWORK_STATE` | Appels aux API d'identification. |
 

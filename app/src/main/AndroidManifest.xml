@@ -10,10 +10,13 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Aucune permission liée aux photos : l'import passe par le sélecteur système, qui accorde
-         l'accès à la seule photo choisie. ACCESS_MEDIA_LOCATION a été retirée : depuis Android 14,
-         la demander affiche « Autoriser l'accès aux photos et vidéos », ce que l'application ne
-         veut pas demander (voir log/2026.11.11-Release 0.7.1.md). -->
+    <!-- Lieu de prise de vue inscrit dans l'EXIF d'une photo importée. Sans cette permission,
+         Android masque les coordonnées du fichier remis par le sélecteur (vérifié sur Pixel,
+         Android 17). Elle n'est demandée qu'au premier import, après une explication, et reste
+         facultative : depuis Android 14 le système la présente comme un accès « photos et
+         vidéos ». Aucune permission de lecture de la galerie (READ_MEDIA_IMAGES) n'est déclarée :
+         l'import passe par le sélecteur système, qui ne donne accès qu'à la photo choisie. -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
 
     <!-- Caméra -->
     <uses-permission android:name="android.permission.CAMERA" />

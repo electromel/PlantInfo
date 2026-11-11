@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.keys.ApiKeyStore
+import ch.electromel.plantinfo.data.prefs.OnboardingStore
 import ch.electromel.plantinfo.data.keys.KeysSnapshot
 import ch.electromel.plantinfo.data.repo.IdentificationRepository
 import ch.electromel.plantinfo.domain.model.GpsLocation
@@ -44,6 +45,7 @@ class CaptureViewModel @Inject constructor(
     private val queue: IdentificationQueue,
     private val strings: AppStrings,
     keyStore: ApiKeyStore,
+    private val onboarding: OnboardingStore,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CaptureUiState())
@@ -60,6 +62,11 @@ class CaptureViewModel @Inject constructor(
      * prise de vue), lue depuis l'EXIF AVANT compression. En l'absence de géotag, on n'utilise PAS
      * la position courante de l'appareil (la photo a pu être prise ailleurs) → aucune localisation.
      */
+    /** Faut-il expliquer, avant le premier import, pourquoi Android va demander l'accès aux photos ? */
+    fun shouldExplainPhotoLocation(): Boolean = !onboarding.hasExplainedPhotoLocation()
+
+    fun photoLocationExplained() = onboarding.markPhotoLocationExplained()
+
     fun addGalleryPhoto(uri: Uri) {
         viewModelScope.launch {
             val exifLocation = imageStorage.readExifLocation(uri)

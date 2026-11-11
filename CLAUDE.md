@@ -265,11 +265,13 @@ trois clients.
 d'une photo importée **avant compression** (la compression supprime l'EXIF). Pour une photo importée,
 le lieu du fichier prime sur la position courante (voir `ui/capture/CaptureViewModel`).
 
-**Aucune permission liée aux photos.** `ACCESS_MEDIA_LOCATION` a été retirée en 0.7.1 : depuis
-Android 14, la demander affiche « Autoriser l'accès aux photos et vidéos ». Le géotag est donc lu
-tel que le sélecteur système le fournit ; s'il le masque, la photo importée arrive sans lieu. Ne
-pas réintroduire cette permission (ni `READ_MEDIA_IMAGES`, retirée en 0.6.1) sans décision
-explicite : la Play Console demande de justifier tout accès aux photos.
+**Lieu d'une photo importée et permission.** Sans `ACCESS_MEDIA_LOCATION`, Android masque les
+coordonnées EXIF du fichier remis par le sélecteur : la photo arrive sans lieu (vérifié sur Pixel,
+Android 17, le 2026-11-11). Depuis Android 14, demander cette permission affiche « Autoriser l'accès
+aux photos et vidéos ». Elle n'est donc **jamais** demandée au lancement : seulement au premier appui
+sur « Galerie », après un dialogue d'explication (`import_location_*`, drapeau dans `OnboardingStore`),
+et l'import a lieu quelle que soit la réponse. `READ_MEDIA_IMAGES`, retirée en 0.6.1, ne doit pas
+revenir : la Play Console demande de justifier tout accès aux photos.
 
 ## Multilangue (fr, en, de, it, es)
 

@@ -121,10 +121,45 @@ fun CaptureScreen(
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? -> uri?.let { viewModel.addGalleryPhoto(it) } }
+    val openPicker = { galleryLauncher.launch(arrayOf("image/*")) }
+
+    // Lieu des photos importées : Android masque les coordonnées EXIF sans ACCESS_MEDIA_LOCATION,
+    // et présente cette permission comme un accès « photos et vidéos ». On ne la demande donc
+    // qu'au premier import, après avoir dit pourquoi ; quelle que soit la réponse, l'import suit.
+    var explainPhotoLocation by remember { mutableStateOf(false) }
+    val mediaLocationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { openPicker() }
+    val onGallery = {
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_MEDIA_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        if (!granted && viewModel.shouldExplainPhotoLocation()) explainPhotoLocation = true else openPicker()
+    }
+    if (explainPhotoLocation) {
+        AlertDialog(
+            onDismissRequest = { explainPhotoLocation = false },
+            title = { Text(stringResource(R.string.import_location_title)) },
+            text = { Text(stringResource(R.string.import_location_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    explainPhotoLocation = false
+                    viewModel.photoLocationExplained()
+                    mediaLocationLauncher.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
+                }) { Text(stringResource(R.string.action_continue)) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    explainPhotoLocation = false
+                    viewModel.photoLocationExplained()
+                    openPicker()
+                }) { Text(stringResource(R.string.import_location_skip)) }
+            },
+        )
+    }
 
     // Au premier affichage : demander caméra + localisation (+ notifications). Rien qui touche
-    // aux photos de l'appareil : ACCESS_MEDIA_LOCATION faisait apparaître, depuis Android 14, une
-    // demande d'accès aux photos et vidéos.
+    // aux photos de l'appareil : ACCESS_MEDIA_LOCATION, que le système présente comme un accès
+    // « photos et vidéos », n'est demandée qu'au premier import (voir onGallery).
     LaunchedEffect(Unit) {
         if (!cameraGranted) cameraPermLauncher.launch(Manifest.permission.CAMERA)
         val perms = buildList {
@@ -205,7 +240,7 @@ fun CaptureScreen(
             CaptureControls(
                 state = state,
                 showThumbnails = cameraActive,
-                onGallery = { galleryLauncher.launch(arrayOf("image/*")) },
+                onGallery = onGallery,
                 onByName = viewModel::identifyByName,
                 onOrganChange = viewModel::setOrgan,
                 onRemove = viewModel::removePhoto,

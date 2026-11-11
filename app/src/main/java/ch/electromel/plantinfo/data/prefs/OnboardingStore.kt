@@ -30,7 +30,19 @@ class OnboardingStore @Inject constructor(
         prefs.edit().putBoolean(KEY_SETUP_COMPLETED, true).apply()
     }
 
+    /**
+     * L'explication qui précède la demande d'accès au lieu des photos importées a-t-elle déjà été
+     * donnée ? Elle ne l'est qu'une fois : Android ne repose pas indéfiniment la question, et un
+     * rappel à chaque import serait du harcèlement.
+     */
+    fun hasExplainedPhotoLocation(): Boolean = prefs.getBoolean(KEY_PHOTO_LOCATION_EXPLAINED, false)
+
+    fun markPhotoLocationExplained() {
+        prefs.edit().putBoolean(KEY_PHOTO_LOCATION_EXPLAINED, true).apply()
+    }
+
     private companion object {
+        const val KEY_PHOTO_LOCATION_EXPLAINED = "photo_location_explained"
         // Clé volontairement distincte de l'ancien « welcome_seen » (simple fenêtre d'accueil) :
         // l'assistant est un parcours nouveau, il mérite d'être proposé une fois à qui avait déjà
         // fermé l'ancienne fenêtre.

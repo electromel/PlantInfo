@@ -57,6 +57,9 @@
     <string name="capture_camera_permission_body">Erlauben Sie den Zugriff auf die Kamera, um eine Pflanze zu fotografieren.</string>
     <string name="capture_camera_permission_action">Kamera erlauben</string>
     <string name="capture_gallery">Galerie</string>
+    <string name="import_location_title">Ort des importierten Fotos</string>
+    <string name="import_location_body">Um den in einem Foto gespeicherten Aufnahmeort zu lesen, verlangt Android die Berechtigung für den Zugriff auf Fotos und Videos. PlantInfo durchsucht Ihre Galerie nicht: Es wird nur das von Ihnen gewählte Foto gelesen. Wenn Sie ablehnen, wird das Foto ohne Ort importiert.</string>
+    <string name="import_location_skip">Ohne Ort importieren</string>
     <string name="capture_by_name">Nach Name</string>
     <string name="name_dialog_title">Pflanze nach Namen hinzufügen</string>
     <string name="name_dialog_hint">Pflanzenname (Trivial- oder wissenschaftlicher Name)</string>
