@@ -100,6 +100,8 @@
     <string name="history_filter_located">Localisés</string>
     <string name="history_empty_title">Aucune identification pour l\'instant</string>
     <string name="history_empty_body">Photographiez une plante depuis l\'onglet Capture : vos identifications apparaîtront ici.</string>
+    <string name="history_no_match_title">Aucune fiche ne correspond au filtre</string>
+    <string name="history_no_match_body">Modifiez ou effacez la recherche et les filtres pour retrouver vos autres fiches.</string>
     <string name="history_delete_all_title">Supprimer tout l\'historique ?</string>
     <string name="history_delete_all_body">Cette action est irréversible et supprimera aussi les photos associées.</string>
     <string name="history_delete_scope_title">Que voulez-vous supprimer ?</string>
@@ -332,6 +334,7 @@
 
     <!-- Écran Paramètres -->
     <string name="settings_title">Paramètres</string>
+    <string name="settings_version">Version %1$s (%2$d)</string>
     <string name="settings_api_keys">Clés API</string>
     <string name="settings_security">Sécurité</string>
     <string name="settings_add_key">Ajouter une clé</string>

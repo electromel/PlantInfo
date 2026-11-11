@@ -99,6 +99,8 @@
     <string name="history_filter_located">Con ubicación</string>
     <string name="history_empty_title">Todavía no hay identificaciones</string>
     <string name="history_empty_body">Fotografíe una planta desde la pestaña Identificar: sus identificaciones aparecerán aquí.</string>
+    <string name="history_no_match_title">Ninguna ficha coincide con el filtro</string>
+    <string name="history_no_match_body">Modifique o borre la búsqueda y los filtros para ver sus otras fichas.</string>
     <string name="history_delete_all_title">¿Eliminar todo el historial?</string>
     <string name="history_delete_all_body">Esta acción es irreversible y eliminará también las fotos asociadas.</string>
     <string name="history_delete_scope_title">¿Qué quieres eliminar?</string>
@@ -331,6 +333,7 @@
 
     <!-- Pantalla Ajustes -->
     <string name="settings_title">Ajustes</string>
+    <string name="settings_version">Versión %1$s (%2$d)</string>
     <string name="settings_api_keys">Claves de API</string>
     <string name="settings_security">Seguridad</string>
     <string name="settings_add_key">Añadir una clave</string>

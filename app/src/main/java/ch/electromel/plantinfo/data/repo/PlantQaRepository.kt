@@ -54,6 +54,13 @@ class PlantQaRepository @Inject constructor(
             appendLine()
             appendLine("Question de l'utilisateur : \"${question.trim()}\"")
             appendLine()
+            // La réponse est affichée telle quelle : du Markdown y apparaîtrait en clair (###, **).
+            appendLine(
+                "Réponds en texte simple, sans aucune mise en forme Markdown : pas de titres (#), " +
+                    "pas de gras ni d'italique (*), pas de tableaux. Pour une liste, commence chaque " +
+                    "ligne par un tiret.",
+            )
+            appendLine()
             appendLine(
                 "Utilise le lieu, l'altitude et le climat comme éléments de contexte quand c'est " +
                     "pertinent. Ne donne jamais de conseil de consommation sans rappeler les risques et " +

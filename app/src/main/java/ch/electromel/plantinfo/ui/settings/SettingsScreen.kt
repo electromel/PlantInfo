@@ -55,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ch.electromel.plantinfo.BuildConfig
 import ch.electromel.plantinfo.R
 import ch.electromel.plantinfo.data.keys.ApiProvider
 import ch.electromel.plantinfo.data.keys.KeyTestState
@@ -77,7 +78,25 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.settings_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(stringResource(R.string.settings_title))
+                        // Version installée : ce qu'on demande en premier quand un défaut est signalé.
+                        Text(
+                            stringResource(
+                                R.string.settings_version,
+                                BuildConfig.VERSION_NAME,
+                                BuildConfig.VERSION_CODE,
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        )
+                    }
+                },
+            )
+        },
     ) { padding ->
         Column(
             Modifier

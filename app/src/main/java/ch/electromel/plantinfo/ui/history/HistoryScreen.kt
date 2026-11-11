@@ -155,13 +155,19 @@ fun HistoryScreen(
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        stringResource(R.string.history_empty_title),
+                        stringResource(
+                            if (filters.isActive) R.string.history_no_match_title
+                            else R.string.history_empty_title,
+                        ),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        stringResource(R.string.history_empty_body),
+                        stringResource(
+                            if (filters.isActive) R.string.history_no_match_body
+                            else R.string.history_empty_body,
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
                         textAlign = TextAlign.Center,

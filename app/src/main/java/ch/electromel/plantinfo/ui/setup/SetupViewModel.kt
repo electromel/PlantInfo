@@ -1,5 +1,8 @@
 package ch.electromel.plantinfo.ui.setup
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -97,6 +100,20 @@ class SetupViewModel @Inject constructor(
 
     private val index: StateFlow<Int> = savedState.getStateFlow(KEY_INDEX, 0)
     private val entry = MutableStateFlow(Entry())
+
+    /**
+     * Texte du champ de saisie, en état Compose et non dans [state] : relu à travers le `combine`
+     * ci-dessous, il arrivait à l'écran avec un temps de retard, et une frappe rapide perdait ou
+     * réordonnait des caractères. Toute écriture de [entry] passe par [setEntry], qui tient les
+     * deux alignés.
+     */
+    var input by mutableStateOf("")
+        private set
+
+    private fun setEntry(value: Entry) {
+        entry.value = value
+        input = value.input
+    }
     private val finished = MutableStateFlow(false)
 
     val state: StateFlow<SetupUiState> =
@@ -126,24 +143,26 @@ class SetupViewModel @Inject constructor(
         if (target !in steps.indices) return
         savedState[KEY_INDEX] = target
         // Changer d'étape remet la saisie à zéro : chaque étape a son propre fournisseur.
-        entry.value = Entry()
+        setEntry(Entry())
     }
 
     fun onInputChange(text: String) {
-        entry.value = Entry(input = text, test = KeyTestState.Idle)
+        setEntry(Entry(input = text, test = KeyTestState.Idle))
     }
 
     /** Enregistre puis teste la clé de l'étape courante. Le verdict est reversé au moniteur. */
     fun saveAndTest(provider: ApiProvider) {
         val key = entry.value.input.trim()
         if (key.isBlank()) return
-        entry.value = entry.value.copy(test = KeyTestState.Testing)
+        setEntry(entry.value.copy(test = KeyTestState.Testing))
         viewModelScope.launch {
             val verdict = keyTester.saveAndTest(provider, key)
             // Clé acceptée : on vide le champ pour ne pas laisser un secret affiché à l'écran.
-            entry.value = Entry(
-                input = if (verdict is KeyTestState.Valid) "" else key,
-                test = verdict,
+            setEntry(
+                Entry(
+                    input = if (verdict is KeyTestState.Valid) "" else key,
+                    test = verdict,
+                ),
             )
         }
     }
@@ -151,7 +170,7 @@ class SetupViewModel @Inject constructor(
     /** Efface une clé enregistrée pour ce fournisseur (saisie erronée qu'on veut reprendre). */
     fun clearKey(provider: ApiProvider) {
         keyStore.setKey(provider, "")
-        entry.value = Entry()
+        setEntry(Entry())
     }
 
     /**

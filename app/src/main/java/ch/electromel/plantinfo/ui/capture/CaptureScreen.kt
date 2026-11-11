@@ -114,7 +114,10 @@ fun CaptureScreen(
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
-    ) { /* les résultats sont lus à la demande via checkSelfPermission */ }
+    ) { results ->
+        // Les autres résultats sont lus à la demande via checkSelfPermission.
+        results[Manifest.permission.CAMERA]?.let { cameraGranted = it }
+    }
 
     // Import via le sélecteur de documents (SAF) : il donne accès à la seule photo choisie, sans
     // aucune permission de lecture des photos.
@@ -161,8 +164,11 @@ fun CaptureScreen(
     // aux photos de l'appareil : ACCESS_MEDIA_LOCATION, que le système présente comme un accès
     // « photos et vidéos », n'est demandée qu'au premier import (voir onGallery).
     LaunchedEffect(Unit) {
-        if (!cameraGranted) cameraPermLauncher.launch(Manifest.permission.CAMERA)
+        // Une seule demande groupée : deux demandes lancées en même temps se télescopent, la
+        // seconde est perdue et localisation et notifications n'étaient demandées qu'au
+        // lancement suivant. Android enchaîne lui-même les dialogues d'une demande groupée.
         val perms = buildList {
+            if (!cameraGranted) add(Manifest.permission.CAMERA)
             add(Manifest.permission.ACCESS_FINE_LOCATION)
             add(Manifest.permission.ACCESS_COARSE_LOCATION)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

@@ -118,10 +118,11 @@ class CaptureViewModel @Inject constructor(
     }
 
     fun removePhoto(index: Int) {
-        _state.update { s ->
-            s.photos.getOrNull(index)?.let { imageStorage.delete(it.path) }
-            s.copy(photos = s.photos.filterIndexed { i, _ -> i != index })
-        }
+        // Le fichier est supprimé hors de update {} : ce bloc peut être rejoué en cas de
+        // concurrence, et un effet de bord n'y a pas sa place.
+        val removed = _state.value.photos.getOrNull(index) ?: return
+        _state.update { s -> s.copy(photos = s.photos.filterNot { it === removed }) }
+        imageStorage.delete(removed.path)
     }
 
     fun identify() {

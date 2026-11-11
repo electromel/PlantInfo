@@ -134,7 +134,7 @@ fun SetupScreen(
                 is SetupStep.Key -> KeyStep(
                     provider = step.provider,
                     hasStoredKey = state.keys.present[step.provider] == true,
-                    input = state.input,
+                    input = viewModel.input,
                     test = state.test,
                     onInputChange = viewModel::onInputChange,
                     onSaveAndTest = { viewModel.saveAndTest(step.provider) },

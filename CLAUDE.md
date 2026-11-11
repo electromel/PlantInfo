@@ -45,8 +45,11 @@ Si `gradlew.bat`/`gradle-wrapper.jar` manquent, les régénérer avec une distri
 (`~/.gradle/wrapper/dists/gradle-9.x/.../bin/gradle.bat`) :
 `gradle.bat -p C:\DEV\PlantInfo "-Dorg.gradle.java.installations.paths=$jbr" wrapper --gradle-version 9.1.0 --distribution-type bin`.
 
-Il n'y a **pas de lint configuré** au-delà des warnings du compilateur Kotlin et d'AGP. Les tests
-sont des tests JVM (`src/test`, JUnit4 + MockK) — pas de tests instrumentés significatifs.
+**Lint** : `:app:lintDebug` s'appuie sur une base de référence (`app/lint-baseline.xml`, avertissements
+existants au 2026-11-11) ; il ne signale donc que les problèmes nouveaux, et une erreur fait échouer
+le build. À lancer avec les tests avant de livrer. Après avoir corrigé des avertissements, supprimer
+le fichier et relancer lint pour le régénérer. Les tests sont des tests JVM (`src/test`, JUnit4 +
+MockK) — pas de tests instrumentés significatifs.
 
 ### Build release : R8 et variante `minified`
 
@@ -226,7 +229,10 @@ Trois garde-fous cumulatifs, tous **renforçants et jamais désactivants** :
 
 `ui/result/IdentificationContent.kt` est le composable central réutilisé par `ResultScreen`
 (juste après l'ID) et `DetailScreen` (depuis l'historique, avec en-tête « notes » et actions
-partage/PDF/suppression). Toute évolution d'affichage de fiche se fait ici une seule fois.
+partage/PDF/suppression). Toute évolution d'affichage de fiche se fait ici une seule fois. Il en va
+de même du comportement : `ui/result/FicheViewModel` porte ce que les deux écrans font d'une fiche
+(réanalyse, photo complémentaire, validation d'une autre hypothèse, conseil), `ResultViewModel` et
+`DetailViewModel` en héritent.
 
 ### Carte & aire de répartition
 

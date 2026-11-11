@@ -72,7 +72,14 @@ class NotificationHelper @Inject constructor(
             .setAutoCancel(true)
             .setContentIntent(pending)
             .build()
-        NotificationManagerCompat.from(context).notify(id, notification)
+        // La permission est vérifiée en amont (hasPermission), mais elle peut être retirée entre
+        // la vérification et l'envoi : une notification perdue ne doit jamais faire planter un
+        // travail d'arrière-plan.
+        try {
+            NotificationManagerCompat.from(context).notify(id, notification)
+        } catch (e: SecurityException) {
+            // Permission retirée entre-temps : rien à afficher.
+        }
     }
 
     private fun hasPermission(): Boolean =

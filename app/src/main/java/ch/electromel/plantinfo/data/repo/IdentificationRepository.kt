@@ -254,6 +254,10 @@ class IdentificationRepository @Inject constructor(
         }
     }
 
+    /** Fiche par nom : ni santé ni photo à demander (la photo n'est pas celle de l'utilisateur). */
+    private fun IdentificationResult.forQueriedName(name: String?): IdentificationResult =
+        if (name == null) this else copy(health = null, photoSuggestions = emptyList(), queriedName = name)
+
     /**
      * Croisement avec la liste de référence Suisse **et** le statut UICN rapporté par Pl@ntNet :
      * renforce le drapeau « espèce protégée » renvoyé par l'IA (§2.4) sans jamais le désactiver.
@@ -263,10 +267,6 @@ class IdentificationRepository @Inject constructor(
      * du drapeau étant de déconseiller la cueillette. Le statut UICN reste par ailleurs affiché tel
      * quel, pour ne pas travestir les deux notions.
      */
-    /** Fiche par nom : ni santé ni photo à demander (la photo n'est pas celle de l'utilisateur). */
-    private fun IdentificationResult.forQueriedName(name: String?): IdentificationResult =
-        if (name == null) this else copy(health = null, photoSuggestions = emptyList(), queriedName = name)
-
     private fun withProtectedFlag(result: IdentificationResult): IdentificationResult {
         if (result.isProtected) return result
         val listed = ProtectedSpeciesChecker.isProtected(result.scientificName)

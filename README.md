@@ -3,17 +3,20 @@
 Application Android native d'identification de **plantes, arbres et champignons** par photo, avec
 diagnostic de santé, informations, géolocalisation, questions à l'IA et historique **100 % local**.
 
-> État : **Phase 4 terminée** — voir le journal de développement dans [`log/`](log/) et le découpage
-> par phases plus bas.
+> État : **publiée sur Google Play**. Le journal de développement est dans
+> [`log/`](log/) ; les instructions détaillées pour travailler sur le code sont dans
+> [`CLAUDE.md`](CLAUDE.md), qui fait référence en cas d'écart avec ce fichier.
 
 ## Fonctionnement
 
-1. On photographie (caméra) ou importe (galerie) une plante/arbre/champignon.
+1. On photographie (caméra) ou importe (galerie) une plante/arbre/champignon — ou on l'ajoute
+   **par son nom**, une photo étant alors cherchée sur Wikipédia.
 2. La position GPS (latitude, longitude, altitude, précision) est récupérée comme critère
    complémentaire. Pour une photo importée, le géotag EXIF du fichier prime sur la position courante.
 3. Pipeline hybride :
    - **Pl@ntNet** identifie les candidats taxonomiques (plantes/arbres).
-   - Une **IA générative multimodale** (Claude → Gemini → GPT, avec repli automatique) valide/corrige,
+   - Une **IA générative multimodale** (neuf fournisseurs possibles, avec repli automatique dans
+     l'ordre réglé ; par défaut seul Gemini, gratuit, est utilisé) valide/corrige,
      identifie les champignons, évalue l'état de santé, enrichit et calcule un **score d'exactitude
      sur 100**.
 4. Le résultat s'affiche (score, avertissements, comestibilité, habitat, santé, dimensions à
@@ -36,18 +39,21 @@ diagnostic de santé, informations, géolocalisation, questions à l'IA et histo
 | Clés API | `EncryptedSharedPreferences` (Android Keystore) — chiffrées au repos |
 | Carte | osmdroid (OpenStreetMap, libre) + occurrences GBIF |
 | File hors-ligne | WorkManager |
-| minSdk / targetSdk | 29 (Android 10) / 35 |
+| Langues | Français, anglais, allemand, italien, espagnol |
+| minSdk / targetSdk | 29 (Android 10) / 36 |
 
 Toutes les données personnelles (photos, GPS, historique) **restent sur l'appareil** (LPD/CH). Seuls
-les appels ponctuels aux API externes (Pl@ntNet, IA, GBIF, tuiles OSM) transmettent une photo et des
-coordonnées, sans conservation côté application.
+les appels ponctuels aux API externes (Pl@ntNet, IA, GBIF, tuiles OSM, Wikipédia) transmettent ce qui
+leur est nécessaire, sans conservation côté application. Le détail est dans la
+[politique de confidentialité](docs/privacy-policy.html).
 
 ## Clés API nécessaires
 
-Au **premier lancement**, l'application invite à ouvrir les Paramètres et explique ce qu'est une clé
-API. L'écran Paramètres n'affiche que les clés **déjà renseignées** ; les autres s'ajoutent avec le
-bouton **« + »**. Chaque clé propose une **aide pas à pas** (rôle, coût réel, marche à suivre
-numérotée, piège classique) et un test de validité immédiat.
+Au **premier lancement**, un **assistant de configuration** plein écran explique ce que fait
+l'application, ce qui sort de l'appareil et pour qui, puis guide la saisie des clés (rôle, coût réel,
+marche à suivre numérotée, piège classique, test de validité immédiat). Il revient tant qu'il n'a pas
+été mené à son terme. L'écran Paramètres ne gère ensuite que l'**état** des clés ; le bouton **« + »**
+et « Relancer l'assistant » renvoient vers ce même parcours.
 
 | Fournisseur | Rôle | Coût | Obtention |
 |---|---|---|---|
@@ -55,10 +61,11 @@ numérotée, piège classique) et un test de validité immédiat.
 | **Gemini** (Google) | Description, santé, champignons, Q&A | Gratuit dans le palier gratuit | https://aistudio.google.com/apikey |
 | Claude (Anthropic) | Même rôle, alternative | Payant à l'usage | https://console.anthropic.com/settings/keys |
 | GPT (OpenAI) | Même rôle, alternative | Payant à l'usage | https://platform.openai.com/api-keys |
+| DeepSeek, Grok (xAI), Qwen (Alibaba), Kimi (Moonshot), Mistral, OpenRouter | Même rôle, alternatives | Payant à l'usage | Lien et marche à suivre dans l'assistant |
 
 Un abonnement Claude Pro ou ChatGPT Plus **n'inclut aucun crédit API** : le compte développeur se
-crédite séparément. Le mode **« IA gratuite (Gemini seul) »**, actif par défaut, ignore Claude et GPT
-pour éviter de consommer des crédits par inadvertance.
+crédite séparément. Le mode **« IA gratuite (Gemini seul) »**, actif par défaut, ignore tous les
+autres fournisseurs pour éviter de consommer des crédits par inadvertance.
 
 Sans clé IA, l'app affiche le résultat **Pl@ntNet brut** avec un message explicite.
 
@@ -67,14 +74,14 @@ Sans clé IA, l'app affiche le résultat **Pl@ntNet brut** avec un message expli
 Les clés enregistrées sont retestées **une fois par jour** au lancement. Une clé refusée, un compte
 sans crédit ou un quota épuisé sont signalés au démarrage, avec le motif réel, et l'écran Paramètres
 permet de forcer une revérification. Un simple échec réseau ne fait jamais passer une clé valide pour
-invalide.
+invalide. Une clé mise de côté par le mode « Gemini seul » n'est ni testée d'office ni signalée.
 
 ### Clés par défaut pour le développement
 
 Copier `dev-keys.properties.example` en `dev-keys.properties` (racine, **non versionné**) et y mettre
 ses clés. Elles sont injectées dans `BuildConfig` et servent à **pré-remplir** les paramètres au
-premier lancement (sans jamais écraser une clé saisie manuellement). Voir le commentaire en tête de
-`app/build.gradle.kts` pour restreindre cela au build `debug` en cas de publication future.
+premier lancement (sans jamais écraser une clé saisie manuellement). Seuls les builds `debug` et
+`minified` les reçoivent : le build `release` publié n'en contient **aucune**.
 
 ## Build & installation
 
@@ -96,13 +103,21 @@ le JBR livré avec Android Studio convient — `C:\Program Files\Android\Android
        :app:compileDebugKotlin :app:testDebugUnitTest --console=plain
    & .\gradlew.bat "-Dorg.gradle.java.installations.paths=$jbr" assembleDebug
    ```
-   APK produit dans `app/build/outputs/apk/debug/`.
-5. **Installation par side-loading** sur un appareil Android 10+ (APK direct), ou via une piste de
-   test interne (Google Play Internal Testing / Firebase App Distribution). Pas de publication
-   publique prévue.
+   APK produit dans `app/build/outputs/apk/debug/`. Ce build a son propre identifiant (`.debug`),
+   une icône au bandeau **DEV** et un filigrane : il s'installe à côté de la version du Play Store.
+5. **Vérification complète** avant de livrer : tests, lint et traductions.
+   ```powershell
+   & .\gradlew.bat "-Dorg.gradle.java.installations.paths=$jbr" :app:testDebugUnitTest :app:lintDebug
+   python tools/check_translations.py
+   ```
+6. **Publication** : `bundleRelease` produit le bundle signé (`keystore.properties` à la racine, non
+   versionné). Le build release passe par **R8** ; il s'essaie sur un téléphone avec la variante
+   `minified` (« PlantInfo (R8) »), voir `CLAUDE.md`. Les textes de la fiche Play Store et les notes
+   de version sont dans [`docs/`](docs/).
 
-Les tests sont des tests JVM (`src/test`, JUnit4 + MockK). Il n'y a pas de lint configuré au-delà des
-warnings du compilateur Kotlin et d'AGP.
+Les tests sont des tests JVM (`src/test`, JUnit4 + MockK). **Lint** (`lintDebug`) s'appuie sur une base
+de référence (`app/lint-baseline.xml`) : il ne signale que les problèmes nouveaux, et une erreur fait
+échouer le build.
 
 ## Structure
 
@@ -111,12 +126,12 @@ app/src/main/java/ch/electromel/plantinfo/
 ├── data/
 │   ├── db/       Room (entité, DAO, base, migrations, convertisseurs)
 │   ├── keys/     ApiKeyStore chiffré, guides d'obtention, surveillance de validité
-│   ├── prefs/    Réglages en clair (seuils de sécurité, accueil vu)
-│   ├── remote/   Pl@ntNet + clients IA (Claude/Gemini/GPT) + orchestrateur + GBIF
+│   ├── prefs/    Réglages en clair (seuils de sécurité, assistant terminé, langue)
+│   ├── remote/   Pl@ntNet + clients IA (Claude, Gemini, compatibles OpenAI) + orchestrateur + GBIF + Wikipédia
 │   └── repo/     IdentificationRepository, HistoryRepository, PlantQaRepository, mappers
 ├── domain/       Modèles, ConfidenceEngine (fusion des scores), listes de sécurité, tarifs IA
 ├── di/           Modules Hilt (réseau, base)
-├── ui/           Écrans Compose (capture, result, detail, history, settings, startup, qa, map)
+├── ui/           Écrans Compose (capture, result, detail, history, settings, setup, startup, qa, map)
 ├── util/         Compression image, EXIF, localisation, export PDF, partage, notifications
 └── work/         File d'attente hors-ligne (WorkManager)
 ```
@@ -132,14 +147,17 @@ app/src/main/java/ch/electromel/plantinfo/
   (période, localisés), finitions d'accessibilité.
 - **Depuis** : comestibilité/toxicité, dimensions à maturité, calendrier d'entretien, usages et
   symbolique, questions libres à l'IA, avertissement de confusion toxique réglable, accompagnement
-  des clés API (premier lancement, aide novice, ajout par « + », alerte de clé invalide) et
-  affichage des jetons et du coût de chaque appel IA.
+  des clés API (assistant de configuration, ajout par « + », alerte de clé invalide), affichage des
+  jetons et du coût de chaque appel IA, cinq langues, six fournisseurs d'IA supplémentaires, photos
+  complémentaires demandées quand l'identification est incertaine, multiplication, ajout d'une
+  plante par son nom, build release minifié (R8).
 
 ## Limites connues
 
 - La **notification** de résultat différé ouvre l'app, sans deep-link direct vers la fiche.
-- Le **guidage des photos complémentaires** est indiqué sur la fiche mais le flux « ajouter la photo
-  demandée et relancer » n'est pas encore intégré.
+- Le **lieu d'une photo importée** n'est lu que si l'accès demandé au premier import est accordé :
+  sans lui, Android masque les coordonnées du fichier.
+- Les **réponses aux questions** ne sont pas conservées : elles disparaissent en quittant la fiche.
 - L'**alerte espèce protégée** combine le jugement de l'IA et une **liste de référence Suisse
   indicative et non exhaustive** (`ProtectedSpeciesChecker`) — la réglementation cantonale/fédérale
   fait foi.
@@ -149,8 +167,8 @@ app/src/main/java/ch/electromel/plantinfo/
   remises de cache et les tarifs d'introduction ne sont pas modélisés. La table de tarifs
   (`domain/model/TokenUsage.kt`) est tenue à la main et doit être relue quand un fournisseur change
   ses prix ou quand on change de modèle.
-- Modèles IA par défaut : `claude-sonnet-5`, `gemini-flash-latest`, `gpt-4o` (modifiables dans le
-  code des clients `data/remote/ai/`).
+- Les **modèles IA** de chaque fournisseur sont fixés dans le code des clients (`data/remote/ai/`),
+  avec leur tarif dans `AiPricing.rates` : les deux se modifient ensemble.
 
 ## Emplacement du projet
 

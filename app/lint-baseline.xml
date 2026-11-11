@@ -1,0 +1,803 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.13.2" type="baseline" client="gradle" dependencies="false" name="AGP (8.13.2)" variant="all" version="8.13.2">
+
+    <issue
+        id="OldTargetApi"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the `android.os.Build.VERSION_CODES` javadoc for details."
+        errorLine1="        targetSdk = 36"
+        errorLine2="        ~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="56"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppBundleLocaleChanges"
+        message="Found dynamic locale changes, but did not find corresponding Play Core library calls for downloading languages and splitting by language is not disabled in the `bundle` configuration"
+        errorLine1="        config.setLocale(locale)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/util/AppLocales.kt"
+            line="106"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="RedundantLabel"
+        message="Redundant label can be removed"
+        errorLine1="            android:label=&quot;@string/app_name&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="51"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.application than 8.13.2 is available: 9.5.1"
+        errorLine1="agp = &quot;8.13.2&quot;"
+        errorLine2="      ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="2"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.core:core-ktx than 1.15.0 is available: 1.19.1"
+        errorLine1="coreKtx = &quot;1.15.0&quot;"
+        errorLine2="          ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="5"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.8.7 is available: 2.11.0"
+        errorLine1="lifecycle = &quot;2.8.7&quot;"
+        errorLine2="            ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="6"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.7 is available: 2.11.0"
+        errorLine1="lifecycle = &quot;2.8.7&quot;"
+        errorLine2="            ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="6"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.8.7 is available: 2.11.0"
+        errorLine1="lifecycle = &quot;2.8.7&quot;"
+        errorLine2="            ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="6"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.activity:activity-compose than 1.9.3 is available: 1.13.0"
+        errorLine1="activityCompose = &quot;1.9.3&quot;"
+        errorLine2="                  ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="7"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose:compose-bom than 2024.12.01 is available: 2026.09.00"
+        errorLine1="composeBom = &quot;2024.12.01&quot;"
+        errorLine2="             ~~~~~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="8"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.navigation:navigation-compose than 2.8.5 is available: 2.10.2"
+        errorLine1="navigationCompose = &quot;2.8.5&quot;"
+        errorLine2="                    ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="9"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.hilt:hilt-navigation-compose than 1.2.0 is available: 1.4.0"
+        errorLine1="hiltNavigationCompose = &quot;1.2.0&quot;"
+        errorLine2="                        ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="11"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.5"
+        errorLine1="room = &quot;2.6.1&quot;"
+        errorLine2="       ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="12"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.5"
+        errorLine1="room = &quot;2.6.1&quot;"
+        errorLine2="       ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="12"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.5"
+        errorLine1="room = &quot;2.6.1&quot;"
+        errorLine2="       ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="12"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.camera:camera-camera2 than 1.4.1 is available: 1.6.2"
+        errorLine1="camerax = &quot;1.4.1&quot;"
+        errorLine2="          ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="16"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.camera:camera-core than 1.4.1 is available: 1.6.2"
+        errorLine1="camerax = &quot;1.4.1&quot;"
+        errorLine2="          ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="16"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.camera:camera-lifecycle than 1.4.1 is available: 1.6.2"
+        errorLine1="camerax = &quot;1.4.1&quot;"
+        errorLine2="          ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="16"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.camera:camera-view than 1.4.1 is available: 1.6.2"
+        errorLine1="camerax = &quot;1.4.1&quot;"
+        errorLine2="          ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="16"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.android.gms:play-services-location than 21.3.0 is available: 21.4.0"
+        errorLine1="playServicesLocation = &quot;21.3.0&quot;"
+        errorLine2="                       ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="17"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.security:security-crypto than 1.1.0-alpha06 is available: 1.1.0"
+        errorLine1="securityCrypto = &quot;1.1.0-alpha06&quot;"
+        errorLine2="                 ~~~~~~~~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="18"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.10.0 is available: 2.12.0"
+        errorLine1="workManager = &quot;2.10.0&quot;"
+        errorLine2="              ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="19"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.exifinterface:exifinterface than 1.3.7 is available: 1.4.2"
+        errorLine1="exifinterface = &quot;1.3.7&quot;"
+        errorLine2="                ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="21"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test.ext:junit than 1.2.1 is available: 1.3.0"
+        errorLine1="androidxJunit = &quot;1.2.1&quot;"
+        errorLine2="                ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="23"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.test.espresso:espresso-core than 3.6.1 is available: 3.7.0"
+        errorLine1="espresso = &quot;3.6.1&quot;"
+        errorLine2="           ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="24"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.hilt:hilt-work than 1.2.0 is available: 1.4.0"
+        errorLine1="hilt-work = { group = &quot;androidx.hilt&quot;, name = &quot;hilt-work&quot;, version = &quot;1.2.0&quot; }"
+        errorLine2="                                                                     ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="46"
+            column="70"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.hilt:hilt-compiler than 1.2.0 is available: 1.4.0"
+        errorLine1="hilt-work-compiler = { group = &quot;androidx.hilt&quot;, name = &quot;hilt-compiler&quot;, version = &quot;1.2.0&quot; }"
+        errorLine2="                                                                                  ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="47"
+            column="83"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlin.android than 2.0.21 is available: 2.4.21"
+        errorLine1="kotlin = &quot;2.0.21&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="3"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlin.plugin.compose than 2.0.21 is available: 2.4.21"
+        errorLine1="kotlin = &quot;2.0.21&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="3"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlin.plugin.serialization than 2.0.21 is available: 2.4.21"
+        errorLine1="kotlin = &quot;2.0.21&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="3"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.google.dagger.hilt.android than 2.52 is available: 2.60.1"
+        errorLine1="hilt = &quot;2.52&quot;"
+        errorLine2="       ~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="10"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.google.dagger:hilt-android than 2.52 is available: 2.60.1"
+        errorLine1="hilt = &quot;2.52&quot;"
+        errorLine2="       ~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="10"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.google.dagger:hilt-compiler than 2.52 is available: 2.60.1"
+        errorLine1="hilt = &quot;2.52&quot;"
+        errorLine2="       ~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="10"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.squareup.okhttp3:logging-interceptor than 4.12.0 is available: 5.5.1"
+        errorLine1="okhttp = &quot;4.12.0&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="13"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of com.squareup.okhttp3:okhttp than 4.12.0 is available: 5.5.1"
+        errorLine1="okhttp = &quot;4.12.0&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="13"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.7.3 is available: 1.12.0"
+        errorLine1="serialization = &quot;1.7.3&quot;"
+        errorLine2="                ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="14"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.9.0 is available: 1.11.0"
+        errorLine1="coroutinesTest = &quot;1.9.0&quot;"
+        errorLine2="                 ~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="25"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of io.mockk:mockk than 1.13.13 is available: 1.14.12"
+        errorLine1="mockk = &quot;1.13.13&quot;"
+        errorLine2="        ~~~~~~~~~">
+        <location
+            file="../gradle/libs.versions.toml"
+            line="26"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="fun ScoreBadge(score: Int, large: Boolean = false, modifier: Modifier = Modifier) {"
+        errorLine2="                                                   ~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/ui/components/Components.kt"
+            line="60"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier,"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/ui/components/Components.kt"
+            line="95"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Optional Modifier parameter should have a default value of `Modifier`"
+        errorLine1="    modifier: Modifier = Modifier.fillMaxWidth(),"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/ui/result/IdentificationContent.kt"
+            line="788"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;Schliessen&quot; is a common misspelling; did you mean &quot;Schließen&quot;?"
+        errorLine1="    &lt;string name=&quot;action_close&quot;>Schliessen&lt;/string>"
+        errorLine2="                                ~~~~~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="30"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;Vergrössern&quot; is a common misspelling; did you mean &quot;Vergrößern&quot;?"
+        errorLine1="    &lt;string name=&quot;capture_photo_tap_to_zoom&quot;>Foto — zum Vergrössern tippen&lt;/string>"
+        errorLine2="                                                        ~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="53"
+            column="57"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;schliessen&quot; is a common misspelling; did you mean &quot;schließen&quot;?"
+        errorLine1="    &lt;string name=&quot;capture_close_camera&quot;>Kamera schliessen&lt;/string>"
+        errorLine2="                                               ~~~~~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="55"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;Vergrössern&quot; is a common misspelling; did you mean &quot;Vergrößern&quot;?"
+        errorLine1="    &lt;string name=&quot;fiche_photo_of&quot;>Foto von %1$s — zum Vergrössern tippen&lt;/string>"
+        errorLine2="                                                      ~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="182"
+            column="55"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;Grösse&quot; is a common misspelling; did you mean &quot;Größe&quot;?"
+        errorLine1="    &lt;string name=&quot;fiche_maturity_title&quot;>Grösse bei Reife&lt;/string>"
+        errorLine2="                                        ~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="204"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;Grösse&quot; is a common misspelling; did you mean &quot;Größe&quot;?"
+        errorLine1="    &lt;string name=&quot;fiche_maturity_note&quot;>Grösse der ausgewachsenen Art, nur als Anhaltspunkt: Sie hängt von Boden, Lage und Klima ab.&lt;/string>"
+        errorLine2="                                       ~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="205"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;ausschliesslich&quot; is a common misspelling; did you mean &quot;ausschließlich&quot;?"
+        errorLine1="    &lt;string name=&quot;settings_free_gemini_body&quot;>Verwendet für Bestimmung und Fragen ausschliesslich Gemini.&lt;/string>"
+        errorLine2="                                                                                 ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="354"
+            column="82"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="&quot;anschliessend&quot; is a common misspelling; did you mean &quot;anschließend&quot;?"
+        errorLine1="    &lt;string name=&quot;setup_what_app_does&quot;>PlantInfo bestimmt eine Pflanze, einen Baum oder einen Pilz anhand Ihrer Fotos und trägt anschliessend in einem Eintrag zusammen, was man dazu wissen muss: Beschreibung, Zustand, Lebensraum, Verbreitungsgebiet, Essbarkeit und Giftigkeit. Danach können Sie eigene Fragen zur bestimmten Art stellen.&lt;/string>"
+        errorLine2="                                                                                                                                ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values-de/strings.xml"
+            line="377"
+            column="129"/>
+    </issue>
+
+    <issue
+        id="Typos"
+        message="Repeated word &quot;platform&quot; in message: possible typo"
+        errorLine1="    &lt;string name=&quot;guide_kimi_pitfall&quot;>Use the international platform platform.moonshot.ai: a key created on the Chinese platform (.cn) is refused by the app.&lt;/string>"
+        errorLine2="                                                            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="442"
+            column="61"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;photos&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;capture_identify_n_photos&quot;>Identify (%1$d photos)&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="80"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;and&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;settings_toxic_rule&quot;>Current rule: warn when the final score is below %1$d and a toxic hypothesis is above %2$d.&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="353"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;and&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;settings_toxic_reset&quot;>Back to the default values (%1$d and %2$d)&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="355"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="DataExtractionRules"
+        message="The attribute `android:allowBackup` is deprecated from Android 12 and higher and may be removed in future versions. Consider adding the attribute `android:dataExtractionRules` specifying an `@xml` resource which configures cloud backups and device transfers on Android 12 and higher."
+        errorLine1="        android:allowBackup=&quot;false&quot;"
+        errorLine2="                             ~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="39"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 29. Merge all the resources in this folder into `mipmap-anydpi`.">
+        <location
+            file="src/main/res/mipmap-anydpi-v26"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.range_disclaimer` appears to be unused"
+        errorLine1="    &lt;string name=&quot;range_disclaimer&quot;>Approximate distribution area, based on known observations (GBIF). It is not a precise scientific or legal boundary.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="16"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.no_ai_key_message` appears to be unused"
+        errorLine1="    &lt;string name=&quot;no_ai_key_message&quot;>No AI key configured: only the raw Pl@ntNet result is shown (no health assessment, no extra information). Add a key in the settings for the full analysis.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="19"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="MonochromeLauncherIcon"
+        message="The application adaptive icon is missing a monochrome tag"
+        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="MonochromeLauncherIcon"
+        message="The application adaptive roundIcon is missing a monochrome tag"
+        errorLine1="&lt;adaptive-icon xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;>"
+        errorLine2="^">
+        <location
+            file="src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="                    prefs.edit()"
+        errorLine2="                    ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/keys/ApiKeyStore.kt"
+            line="55"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().apply {"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/keys/ApiKeyStore.kt"
+            line="76"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putString("
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/keys/ApiKeyStore.kt"
+            line="92"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_FREE_GEMINI_ONLY, enabled).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/keys/ApiKeyStore.kt"
+            line="106"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `Bitmap.scale` instead?"
+        errorLine1="        return Bitmap.createScaledBitmap(bitmap, w, h, true)"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/util/ImageStorage.kt"
+            line="188"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="            prefs.edit()"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/keys/KeyHealthMonitor.kt"
+            line="118"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/keys/KeyHealthMonitor.kt"
+            line="129"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().apply {"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/prefs/LanguageStore.kt"
+            line="32"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_SETUP_COMPLETED, true).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/prefs/OnboardingStore.kt"
+            line="30"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putBoolean(KEY_PHOTO_LOCATION_EXPLAINED, true).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/prefs/OnboardingStore.kt"
+            line="41"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putInt(KEY_MAX_SCORE, coerced).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/prefs/SafetySettingsStore.kt"
+            line="42"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().putInt(KEY_MIN_ALTERNATIVE, coerced).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/prefs/SafetySettingsStore.kt"
+            line="48"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        prefs.edit().remove(KEY_MAX_SCORE).remove(KEY_MIN_ALTERNATIVE).apply()"
+        errorLine2="        ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/data/prefs/SafetySettingsStore.kt"
+            line="54"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="`onTouch` lambda should call `View#performClick` when a click is detected"
+        errorLine1="            setOnTouchListener { v, event ->"
+        errorLine2="                               ^">
+        <location
+            file="src/main/java/ch/electromel/plantinfo/ui/map/SpeciesMap.kt"
+            line="93"
+            column="32"/>
+    </issue>
+
+</issues>

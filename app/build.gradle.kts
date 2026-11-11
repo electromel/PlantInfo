@@ -194,6 +194,13 @@ android {
         // values/ porte l'anglais (langue de repli), values-fr/ le français d'origine.
         localeFilters += listOf("en", "fr", "de", "it", "es")
     }
+    lint {
+        // Base de référence : les avertissements existants au 2026-11-11 y sont consignés, si bien
+        // que `lintDebug` ne signale que ce qui est nouveau. Une erreur fait échouer le build.
+        // Après avoir corrigé des avertissements, supprimer le fichier et relancer lint pour le
+        // régénérer.
+        baseline = file("lint-baseline.xml")
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -228,12 +235,9 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
-    implementation(libs.datastore.preferences)
     implementation(libs.security.crypto)
 
     // Réseau
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.serialization)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.kotlinx.serialization.json)

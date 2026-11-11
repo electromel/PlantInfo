@@ -99,6 +99,8 @@
     <string name="history_filter_located">Con posizione</string>
     <string name="history_empty_title">Ancora nessuna identificazione</string>
     <string name="history_empty_body">Fotografate una pianta dalla scheda Identifica: le vostre identificazioni appariranno qui.</string>
+    <string name="history_no_match_title">Nessuna scheda corrisponde al filtro</string>
+    <string name="history_no_match_body">Modificate o cancellate la ricerca e i filtri per ritrovare le altre schede.</string>
     <string name="history_delete_all_title">Eliminare tutta la cronologia?</string>
     <string name="history_delete_all_body">L\'operazione è irreversibile ed elimina anche le foto associate.</string>
     <string name="history_delete_scope_title">Che cosa vuoi eliminare?</string>
@@ -331,6 +333,7 @@
 
     <!-- Schermata Impostazioni -->
     <string name="settings_title">Impostazioni</string>
+    <string name="settings_version">Versione %1$s (%2$d)</string>
     <string name="settings_api_keys">Chiavi API</string>
     <string name="settings_security">Sicurezza</string>
     <string name="settings_add_key">Aggiungi una chiave</string>
