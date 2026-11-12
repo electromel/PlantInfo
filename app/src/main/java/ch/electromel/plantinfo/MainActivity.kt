@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -55,7 +55,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // Affichage bord à bord. Android 15 et suivants l'imposent d'eux-mêmes ; en dessous, il
+        // suffit de laisser le contenu passer sous les barres, que le thème déclare déjà
+        // transparentes (res/values/themes.xml). Pas d'enableEdgeToEdge() : son code appelle
+        // setStatusBarColor et setNavigationBarColor, obsolètes depuis Android 15, ce que la
+        // Play Console signale. La couleur des icônes des barres est réglée par PlantInfoTheme.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             PlantInfoTheme {
                 // Le filigrane des builds de test se superpose à toute l'application, quel que soit

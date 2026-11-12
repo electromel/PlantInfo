@@ -178,6 +178,7 @@ projet hors d'un dossier synchronisé évite ces conflits.
 
 ## Versions de build
 
-AGP 8.13.2 / Gradle 9.1.0 / Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / JBR 21 (Android Studio). Ne pas
-accepter l'auto-montée vers AGP 9 proposée par Android Studio sans migration dédiée (elle casse KSP).
+AGP 9.0.1 / Gradle 9.1.0 / Kotlin 2.3.10 (intégré à AGP) / KSP 2.3.6 / JBR 21 (Android Studio).
+AGP, Kotlin, KSP, Hilt et Room montent ensemble : voir `CLAUDE.md` avant d'accepter une montée
+proposée par Android Studio.
 Les versions sont centralisées dans `gradle/libs.versions.toml`.

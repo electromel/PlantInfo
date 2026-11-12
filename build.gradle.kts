@@ -1,7 +1,6 @@
 // Fichier de build racine — déclare les plugins partagés par les sous-projets.
 plugins {
     alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.ksp) apply false

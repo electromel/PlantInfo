@@ -97,11 +97,38 @@ Cette variante s'appelle « PlantInfo (debug) », porte une icône au bandeau **
 
 ### Versions de build (compatibilité sensible)
 
-AGP 8.13.2 / **Gradle 9.1.0** / Kotlin 2.0.21 / KSP 2.0.21-1.0.28 / minSdk 29 / targetSdk &
-compileSdk **36**. La Play Console refuse au téléversement un bundle qui cible moins que 36 ;
-ce plancher monte d'un cran chaque année, il faudra le suivre.
-**Ne pas** accepter l'auto-montée vers AGP 9 proposée par Android Studio sans migration dédiée : elle
-casse KSP. Les versions sont centralisées dans `gradle/libs.versions.toml` (version catalog `libs`).
+**AGP 9.0.1** / **Gradle 9.1.0** / Kotlin 2.3.10 / KSP 2.3.6 / Hilt 2.59.2 / Room 2.8.4 / minSdk 29 /
+targetSdk & compileSdk **36**. La Play Console refuse au téléversement un bundle qui cible moins
+que 36 ; ce plancher monte d'un cran chaque année, il faudra le suivre.
+
+Migration AGP 9 faite le 2026-11-12 (recommandation de la Play Console). Ce qu'elle a changé :
+
+- **Kotlin est intégré à AGP** : le plugin `org.jetbrains.kotlin.android` n'est plus appliqué, les
+  options du compilateur sont dans le bloc `kotlin { compilerOptions { … } }` du module.
+- **KSP 2** : les versions de KSP ne suivent plus celles de Kotlin (plus de suffixe `-1.0.x`).
+- **Ces versions montent ensemble.** AGP, Kotlin, KSP, Hilt (plugin Gradle compris) et Room sont
+  liés : en changer un seul casse la génération de code. Vérifier après toute montée :
+  `:app:testDebugUnitTest :app:lintDebug :app:assembleMinified`, puis la variante `minified` sur
+  un téléphone, **et** le build debug installé par-dessus une base existante (migration Room).
+- `gradle.properties` ne garde que trois réglages hérités, non dépréciés à ce jour :
+  `uniquePackageNames=false`, `dependency.useConstraints=true` et
+  `r8.strictFullModeForKeepRules=false`. Ce dernier assouplit R8 ; le passer à `true` exige de
+  revérifier la variante `minified`.
+- La **réduction optimisée des ressources** est active par défaut avec AGP 9.
+
+Ne pas accepter sans vérification une montée proposée par Android Studio (AGP 9.5 et Kotlin 2.4
+existent) : refaire le contrôle ci-dessus. Les versions sont centralisées dans
+`gradle/libs.versions.toml` (version catalog `libs`).
+
+### Affichage bord à bord
+
+`MainActivity` appelle `WindowCompat.setDecorFitsSystemWindows(window, false)` et **non**
+`enableEdgeToEdge()` : le code de ce dernier appelle `setStatusBarColor` et
+`setNavigationBarColor`, obsolètes depuis Android 15, ce que la Play Console signale même quand
+l'appel vient d'une bibliothèque. Les barres sont transparentes par le thème
+(`res/values/themes.xml`), la couleur de leurs icônes est réglée par `PlantInfoTheme`. Android 15
+et suivants imposent le bord à bord d'eux-mêmes ; le rendu sur Android 10 à 14 repose sur le thème
+et n'a pas été vérifié sur appareil.
 
 ## Clés API
 
