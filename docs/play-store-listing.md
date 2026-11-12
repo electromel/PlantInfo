@@ -59,6 +59,15 @@ AVERTISSEMENT
 Les identifications sont automatiques et peuvent comporter des erreurs. Ne consommez jamais une plante ou un champignon sauvage sur la seule base de cette application : certaines espèces comestibles ont des sosies dangereux. En cas de doute, consultez un mycologue ou un expert qualifié.
 ```
 
+### Notes de version — 0.7.2 (versionCode 13)
+
+```
+Mise à jour technique :
+• Application un peu plus légère et mieux optimisée.
+• Outils de construction et bibliothèques mis à jour.
+Aucun changement dans le fonctionnement ni dans vos données.
+```
+
 ### Notes de version — 0.7.1 (versionCode 12)
 
 ```
@@ -138,6 +147,15 @@ WARNING
 Identifications are automatic and can be wrong. Never eat a wild plant or mushroom on the strength of this app alone: some edible species have dangerous look-alikes. If in doubt, consult a mycologist or a qualified expert.
 ```
 
+### Notes de version — 0.7.2 (versionCode 13)
+
+```
+Technical update:
+• Slightly smaller and better optimised app.
+• Build tools and libraries updated.
+No change to how the app works or to your data.
+```
+
 ### Notes de version — 0.7.1 (versionCode 12)
 
 ```
@@ -213,6 +231,15 @@ Die App arbeitet mit Ihren eigenen Schlüsseln (Pl@ntNet ist unerlässlich; ein 
 
 WARNUNG
 Die Bestimmungen erfolgen automatisch und können falsch sein. Essen Sie niemals eine wilde Pflanze oder einen Pilz allein auf Grundlage dieser App: Manche essbaren Arten haben gefährliche Doppelgänger. Ziehen Sie im Zweifelsfall eine Pilzfachperson oder eine andere fachkundige Person bei.
+```
+
+### Notes de version — 0.7.2 (versionCode 13)
+
+```
+Technisches Update:
+• Etwas kleinere und besser optimierte App.
+• Build-Werkzeuge und Bibliotheken aktualisiert.
+Keine Änderung an der Funktionsweise oder an Ihren Daten.
 ```
 
 ### Notes de version — 0.7.1 (versionCode 12)
@@ -292,6 +319,15 @@ AVVERTENZA
 Le identificazioni sono automatiche e possono contenere errori. Non consumate mai una pianta o un fungo selvatico basandovi solo su questa app: alcune specie commestibili hanno sosia pericolosi. In caso di dubbio, rivolgetevi a un micologo o a un esperto qualificato.
 ```
 
+### Notes de version — 0.7.2 (versionCode 13)
+
+```
+Aggiornamento tecnico:
+• App un po' più leggera e meglio ottimizzata.
+• Strumenti di compilazione e librerie aggiornati.
+Nessuna modifica al funzionamento né ai vostri dati.
+```
+
 ### Notes de version — 0.7.1 (versionCode 12)
 
 ```
@@ -367,6 +403,15 @@ La aplicación funciona con sus propias claves (Pl@ntNet imprescindible; una cla
 
 ADVERTENCIA
 Las identificaciones son automáticas y pueden contener errores. No consuma nunca una planta o una seta silvestre basándose solo en esta aplicación: algunas especies comestibles tienen dobles peligrosos. En caso de duda, consulte a un micólogo o a una persona experta.
+```
+
+### Notes de version — 0.7.2 (versionCode 13)
+
+```
+Actualización técnica:
+• Aplicación algo más ligera y mejor optimizada.
+• Herramientas de compilación y bibliotecas actualizadas.
+Ningún cambio en el funcionamiento ni en sus datos.
 ```
 
 ### Notes de version — 0.7.1 (versionCode 12)

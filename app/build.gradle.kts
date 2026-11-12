@@ -66,8 +66,10 @@ android {
         // 10 = bundle 0.6.1 sans READ_MEDIA_IMAGES (politique Photos et videos de Google Play).
         // 11 = bundle 0.7.0 du 2026.11.10 (ajout d'une plante par son nom).
         // 12 = bundle 0.7.1 du 2026.11.11 (R8 : la Console signalait 0 % d'obscurcissement ; audit v2).
-        versionCode = 12
-        versionName = "0.7.1"
+        // 13 = bundle 0.7.2 du 2026.11.12 (AGP 9, réduction optimisée des ressources, bord à bord
+        //      sans API obsolètes : recommandations de la Play Console).
+        versionCode = 13
+        versionName = "0.7.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
